@@ -1,0 +1,17 @@
+{
+  "1514787530": {
+    "mode": "PROP_FIRM",
+    "riskPercent": 0.75,
+    "label": "FTMO 100k"
+  },
+  "26727509": {
+    "mode": "PROP_FIRM",
+    "riskPercent": 0.75,
+    "label": "The5ers 5k"
+  },
+  "1290919": {
+    "mode": "PERSONAL",
+    "riskPercent": 2.0,
+    "label": "VT Markets 100€ (Capital Propio)"
+  }
+}

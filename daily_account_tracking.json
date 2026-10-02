@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-02",
+  "accounts": {
+    "1514787530": {
+      "dayStartBalance": 97834.02,
+      "dailyLoss": 2172.67,
+      "dailyLossPercent": 2.22,
+      "dailyHalted": true,
+      "haltReason": "Límite preventivo de 3% alcanzado. Cuenta FTMO congelada durante el resto del día por seguridad."
+    },
+    "26727509": {
+      "dayStartBalance": 5000.00,
+      "dailyLoss": 67.51,
+      "dailyLossPercent": 1.35,
+      "dailyHalted": false,
+      "haltReason": ""
+    },
+    "1290919": {
+      "dayStartBalance": 105.52,
+      "dailyLoss": 12.98,
+      "dailyLossPercent": 12.3,
+      "dailyHalted": false,
+      "haltReason": ""
+    }
+  }
+}

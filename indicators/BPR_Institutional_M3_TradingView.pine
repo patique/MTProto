@@ -1,0 +1,139 @@
+//@version=5
+indicator("Institutional BPR Sniper Strategy (M3 XAUUSD)", overlay=true, max_boxes_count=500, max_lines_count=500, max_labels_count=500)
+
+// ==========================================
+// 1. INPUTS Y CONFIGURACIÓN INSTITUCIONAL
+// ==========================================
+var string G_MAIN = "Configuración BPR"
+minFvgGapPoints     = input.float(0.20, "Mínimo Gap FVG ($)", step=0.05, group=G_MAIN, tooltip="Separación mínima entre vela 1 y vela 3 ($0.20 = 2 pips)")
+minOverlapPoints    = input.float(0.15, "Mínimo Solapamiento BPR ($)", step=0.05, group=G_MAIN, tooltip="Solapamiento mínimo entre FVGs opuestos")
+maxBarsBetween      = input.int(10, "Barras Máximas entre FVGs", minval=1, maxval=20, group=G_MAIN)
+minWickRatio        = input.float(0.25, "Ratio Mínimo de Mecha de Rechazo", step=0.05, group=G_MAIN)
+
+var string G_TREND = "Filtro de Tendencia Macro"
+useEmaFilter        = input.bool(true, "Activar Filtro EMA Tendencial", group=G_TREND)
+emaLength           = input.int(100, "Periodo EMA", group=G_TREND)
+
+var string G_TARGETS = "Objetivos y Gestión (Pips en Oro)"
+slPips              = input.float(12.0, "Stop Loss (Pips detrás de la caja)", group=G_TARGETS)
+tp1Pips             = input.float(30.0, "Take Profit 1 (Pips)", group=G_TARGETS)
+tp2Pips             = input.float(60.0, "Take Profit 2 (Pips)", group=G_TARGETS)
+
+var string G_STYLE = "Visualización"
+bullBoxColor        = input.color(color.new(color.teal, 80), "Caja BPR Alcista", group=G_STYLE)
+bullBorderColor     = input.color(color.teal, "Borde BPR Alcista", group=G_STYLE)
+bearBoxColor        = input.color(color.new(color.maroon, 80), "Caja BPR Bajista", group=G_STYLE)
+bearBorderColor     = input.color(color.maroon, "Borde BPR Bajista", group=G_STYLE)
+
+// ==========================================
+// 2. INDICADORES BASE
+// ==========================================
+emaTrend = ta.ema(close, emaLength)
+plot(useEmaFilter ? emaTrend : na, "EMA 100 Trend", color=color.new(color.orange, 20), linewidth=2)
+
+// ==========================================
+// 3. DETECCIÓN DE FVGs Y BPRs
+// ==========================================
+isBearishFVG = (low[2] - high) >= minFvgGapPoints
+isBullishFVG = (low - high[2]) >= minFvgGapPoints
+
+type BPRZone
+    bool isBullish
+    float top
+    float bottom
+    int startBar
+    box visualBox
+    bool tested
+
+var BPRZone[] activeZones = array.new<BPRZone>()
+
+// Registro de últimos índices de FVG
+var int lastBearFvgBar = -999
+var float lastBearFvgTop = 0.0
+var float lastBearFvgBottom = 0.0
+
+var int lastBullFvgBar = -999
+var float lastBullFvgTop = 0.0
+var float lastBullFvgBottom = 0.0
+
+if isBearishFVG
+    lastBearFvgBar := bar_index
+    lastBearFvgTop := low[2]
+    lastBearFvgBottom := high
+
+if isBullishFVG
+    lastBullFvgBar := bar_index
+    lastBullFvgTop := low
+    lastBullFvgBottom := high[2]
+
+// BPR Alcista: FVG alcista reciente que solapa con un FVG bajista previo
+if isBullishFVG and (bar_index - lastBearFvgBar) <= maxBarsBetween and (bar_index - lastBearFvgBar) > 0
+    cLow = math.max(lastBearFvgBottom, high[2])
+    cHigh = math.min(lastBearFvgTop, low)
+    if (cHigh - cLow) >= minOverlapPoints
+        bBox = box.new(left=lastBearFvgBar, top=cHigh, right=bar_index + 20, bottom=cLow, bgcolor=bullBoxColor, border_color=bullBorderColor)
+        array.push(activeZones, BPRZone.new(true, cHigh, cLow, bar_index, bBox, false))
+
+// BPR Bajista: FVG bajista reciente que solapa con un FVG alcista previo
+if isBearishFVG and (bar_index - lastBullFvgBar) <= maxBarsBetween and (bar_index - lastBullFvgBar) > 0
+    cLow = math.max(high, lastBullFvgBottom)
+    cHigh = math.min(low[2], lastBullFvgTop)
+    if (cHigh - cLow) >= minOverlapPoints
+        bBox = box.new(left=lastBullFvgBar, top=cHigh, right=bar_index + 20, bottom=cLow, bgcolor=bearBoxColor, border_color=bearBorderColor)
+        array.push(activeZones, BPRZone.new(false, cHigh, cLow, bar_index, bBox, false))
+
+// ==========================================
+// 4. EVALUACIÓN DE SEÑALES EN RETEST
+// ==========================================
+candleRange = high - low
+
+if array.size(activeZones) > 0 and candleRange > 0.25
+    for i = array.size(activeZones) - 1 to 0
+        zone = array.get(activeZones, i)
+        
+        // Expirar cajas viejas
+        if (bar_index - zone.startBar) > 40
+            array.remove(activeZones, i)
+            continue
+            
+        if not zone.tested
+            if zone.isBullish
+                // Test en BPR alcista (vela penetra o toca el top del BPR)
+                if low <= zone.top and low >= (zone.bottom - 0.6)
+                    lowerWick = math.min(open, close) - low
+                    if (lowerWick / candleRange) >= minWickRatio
+                        if not useEmaFilter or close > emaTrend
+                            zone.tested := true
+                            entryPrice = zone.top
+                            slPrice = zone.bottom - (slPips / 10.0)
+                            tp1Price = entryPrice + (tp1Pips / 10.0)
+                            tp2Price = entryPrice + (tp2Pips / 10.0)
+                            
+                            label.new(bar_index, low - 0.5, "🎯 BPR BUY\n" + str.tostring(close, "#.##"), 
+                                      color=color.green, textcolor=color.white, style=label.style_label_up, size=size.small)
+                            
+                            line.new(bar_index, slPrice, bar_index + 15, slPrice, color=color.red, width=1, style=line.style_dashed)
+                            line.new(bar_index, tp1Price, bar_index + 15, tp1Price, color=color.teal, width=1, style=line.style_dotted)
+                            line.new(bar_index, tp2Price, bar_index + 15, tp2Price, color=color.green, width=2)
+                            
+                            alert("BPR M3 ALCISTA: Entrada @" + str.tostring(entryPrice) + " SL:" + str.tostring(slPrice) + " TP1:" + str.tostring(tp1Price), alert.freq_once_per_bar_close)
+
+            else // Bearish BPR
+                if high >= zone.bottom and high <= (zone.top + 0.6)
+                    upperWick = high - math.max(open, close)
+                    if (upperWick / candleRange) >= minWickRatio
+                        if not useEmaFilter or close < emaTrend
+                            zone.tested := true
+                            entryPrice = zone.bottom
+                            slPrice = zone.top + (slPips / 10.0)
+                            tp1Price = entryPrice - (tp1Pips / 10.0)
+                            tp2Price = entryPrice - (tp2Pips / 10.0)
+                            
+                            label.new(bar_index, high + 0.5, "🎯 BPR SELL\n" + str.tostring(close, "#.##"), 
+                                      color=color.red, textcolor=color.white, style=label.style_label_down, size=size.small)
+                            
+                            line.new(bar_index, slPrice, bar_index + 15, slPrice, color=color.red, width=1, style=line.style_dashed)
+                            line.new(bar_index, tp1Price, bar_index + 15, tp1Price, color=color.teal, width=1, style=line.style_dotted)
+                            line.new(bar_index, tp2Price, bar_index + 15, tp2Price, color=color.green, width=2)
+                            
+                            alert("BPR M3 BAJISTA: Entrada @" + str.tostring(entryPrice) + " SL:" + str.tostring(slPrice) + " TP1:" + str.tostring(tp1Price), alert.freq_once_per_bar_close)

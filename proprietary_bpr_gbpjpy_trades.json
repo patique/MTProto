@@ -1,0 +1,74 @@
+{
+  "strategy": "BPR_GBPJPY_Bearish_Sniper",
+  "symbol": "GBPJPY",
+  "metrics": {
+    "totalTrades": 1,
+    "wins": 0,
+    "losses": 1,
+    "winRate": 0,
+    "netPips": -16,
+    "grossWon": 0,
+    "grossLost": 16,
+    "profitFactor": 0,
+    "maxDrawdownPips": 16,
+    "peakPips": 0,
+    "byTimeframe": {
+      "M2": {
+        "trades": 0,
+        "wins": 0,
+        "pips": 0
+      },
+      "M3": {
+        "trades": 1,
+        "wins": 0,
+        "pips": -16
+      },
+      "M5": {
+        "trades": 0,
+        "wins": 0,
+        "pips": 0
+      },
+      "M15": {
+        "trades": 0,
+        "wins": 0,
+        "pips": 0
+      }
+    }
+  },
+  "activeTrades": [
+    {
+      "id": "BPR_GBPJPY_M3_1790942760034",
+      "timeframe": "M3",
+      "symbol": "GBPJPY",
+      "type": "SELL",
+      "entryPrice": 208.206,
+      "initialSL": 208.303,
+      "currentSL": 208.303,
+      "tpPrice": 208.108,
+      "slPips": 9.7,
+      "tpPips": 9.7,
+      "openTime": "2026-10-02T12:03:00.027Z",
+      "status": "OPEN"
+    }
+  ],
+  "history": [
+    {
+      "id": "BPR_GBPJPY_M3_1790942040054",
+      "timeframe": "M3",
+      "symbol": "GBPJPY",
+      "type": "SELL",
+      "entryPrice": 208.081,
+      "initialSL": 208.24,
+      "currentSL": 208.24,
+      "tpPrice": 207.921,
+      "slPips": 16,
+      "tpPips": 16,
+      "openTime": "2026-10-02T11:51:00.031Z",
+      "status": "LOSS",
+      "closePrice": 208.2415,
+      "closeTime": "2026-10-02T11:59:51.676Z",
+      "pips": -16
+    }
+  ],
+  "lastUpdated": "2026-10-02T12:06:00.037Z"
+}

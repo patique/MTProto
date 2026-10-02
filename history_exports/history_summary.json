@@ -1,0 +1,116 @@
+{
+  "generatedAt": "2026-10-02T17:31:08.395Z",
+  "accounts": {
+    "1290919": {
+      "meta": {
+        "name": "VT Markets (Capital Propio)",
+        "broker": "VT Markets (Pty) Ltd",
+        "type": "PERSONAL"
+      },
+      "totalTrades": 764,
+      "wins": 407,
+      "losses": 357,
+      "beTrades": 67,
+      "beRate": "8.8%",
+      "winRate": "53.3%",
+      "netPnL": -90514.57,
+      "grossPnL": -90729.29,
+      "totalCommissions": 0,
+      "totalSwap": 214.72,
+      "totalPips": -40817.2,
+      "profitFactor": 0.85,
+      "bySymbol": {
+        "XAUUSD-VIP": {
+          "trades": 754,
+          "wins": 402,
+          "losses": 352,
+          "beCount": 64,
+          "netPnL": -90512.26,
+          "pips": -40808
+        },
+        "EURUSD-VIP": {
+          "trades": 8,
+          "wins": 4,
+          "losses": 4,
+          "beCount": 3,
+          "netPnL": -2.3600000000000003,
+          "pips": -0.9999999999999991
+        },
+        "GBPJPY-VIP": {
+          "trades": 2,
+          "wins": 1,
+          "losses": 1,
+          "beCount": 0,
+          "netPnL": 0.04999999999999982,
+          "pips": -8.200000000000001
+        }
+      }
+    },
+    "26727509": {
+      "meta": {
+        "name": "The5ers 5k",
+        "broker": "Five Percent Online Ltd",
+        "type": "PROP_FIRM"
+      },
+      "totalTrades": 11,
+      "wins": 3,
+      "losses": 8,
+      "beTrades": 0,
+      "beRate": "0%",
+      "winRate": "27.3%",
+      "netPnL": 4.09,
+      "grossPnL": 12.39,
+      "totalCommissions": -8.3,
+      "totalSwap": 0,
+      "totalPips": 138,
+      "profitFactor": 1.05,
+      "bySymbol": {
+        "XAUUSD": {
+          "trades": 11,
+          "wins": 3,
+          "losses": 8,
+          "beCount": 0,
+          "netPnL": 4.090000000000002,
+          "pips": 138
+        }
+      }
+    },
+    "1514787530": {
+      "meta": {
+        "name": "FTMO 100k",
+        "broker": "FTMO Global Markets Ltd",
+        "type": "PROP_FIRM"
+      },
+      "totalTrades": 34,
+      "wins": 11,
+      "losses": 23,
+      "beTrades": 2,
+      "beRate": "5.9%",
+      "winRate": "32.4%",
+      "netPnL": -4338.65,
+      "grossPnL": -3926.63,
+      "totalCommissions": -412.02,
+      "totalSwap": 0,
+      "totalPips": -7367.8,
+      "profitFactor": 0.55,
+      "bySymbol": {
+        "XAUUSD": {
+          "trades": 33,
+          "wins": 10,
+          "losses": 23,
+          "beCount": 1,
+          "netPnL": -4476.61,
+          "pips": -7369
+        },
+        "EURUSD": {
+          "trades": 1,
+          "wins": 1,
+          "losses": 0,
+          "beCount": 1,
+          "netPnL": 137.96,
+          "pips": 1.2
+        }
+      }
+    }
+  }
+}

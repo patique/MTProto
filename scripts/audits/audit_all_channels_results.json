@@ -1,0 +1,386 @@
+{
+  "-1003102563197": {
+    "name": "G.S Market Analysis",
+    "currentlyEnabled": false,
+    "strategy": "GSMarketStrategy",
+    "totalSignals": 45,
+    "metrics": {
+      "tp1HitRate": 77.8,
+      "tp2HitRate": 48.9,
+      "tp3HitRate": 0,
+      "slDirectRate": 22.2,
+      "bePullbackRate": 28.9,
+      "netPipsHybrid": 5917.8,
+      "netPipsTP1Only": 4839.8,
+      "netPipsTP2Only": 6379.8
+    },
+    "recentWeek": {
+      "trades": 1,
+      "wins": 1,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 250
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1004307971022": {
+    "name": "Attaullah Trading Zone",
+    "currentlyEnabled": true,
+    "strategy": "AttaullahStrategy",
+    "totalSignals": 90,
+    "metrics": {
+      "tp1HitRate": 64.4,
+      "tp2HitRate": 57.8,
+      "tp3HitRate": 11.1,
+      "slDirectRate": 35.6,
+      "bePullbackRate": 6.7,
+      "netPipsHybrid": 13941,
+      "netPipsTP1Only": 13960,
+      "netPipsTP2Only": 13440
+    },
+    "recentWeek": {
+      "trades": 16,
+      "wins": 8,
+      "losses": 8,
+      "wr": 50,
+      "netPips": 498.3
+    },
+    "verdict": "NEUTRO"
+  },
+  "-1003745883830": {
+    "name": "Williams tradershub",
+    "currentlyEnabled": false,
+    "strategy": "WilliamsStrategy",
+    "totalSignals": 50,
+    "metrics": {
+      "tp1HitRate": 80,
+      "tp2HitRate": 64,
+      "tp3HitRate": 14,
+      "slDirectRate": 20,
+      "bePullbackRate": 16,
+      "netPipsHybrid": 1904.3,
+      "netPipsTP1Only": 1600.1,
+      "netPipsTP2Only": 1321.1
+    },
+    "recentWeek": {
+      "trades": 8,
+      "wins": 7,
+      "losses": 1,
+      "wr": 87.5,
+      "netPips": 270.3
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1002157727490": {
+    "name": "MARCO TRADING HUB",
+    "currentlyEnabled": true,
+    "strategy": "MarcoStrategy",
+    "totalSignals": 68,
+    "metrics": {
+      "tp1HitRate": 86.8,
+      "tp2HitRate": 64.7,
+      "tp3HitRate": 19.1,
+      "slDirectRate": 13.2,
+      "bePullbackRate": 22.1,
+      "netPipsHybrid": 3491.4,
+      "netPipsTP1Only": 2931.4,
+      "netPipsTP2Only": 2331.4
+    },
+    "recentWeek": {
+      "trades": 20,
+      "wins": 16,
+      "losses": 4,
+      "wr": 80,
+      "netPips": 1031
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1003915769321": {
+    "name": "Aliens- Royal fx",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 73,
+    "metrics": {
+      "tp1HitRate": 53.4,
+      "tp2HitRate": 15.1,
+      "tp3HitRate": 5.5,
+      "slDirectRate": 46.6,
+      "bePullbackRate": 38.4,
+      "netPipsHybrid": 563,
+      "netPipsTP1Only": 1200,
+      "netPipsTP2Only": -2640
+    },
+    "recentWeek": {
+      "trades": 7,
+      "wins": 1,
+      "losses": 6,
+      "wr": 14.3,
+      "netPips": -319
+    },
+    "verdict": "TOXICO / DESCARTAR"
+  },
+  "-1002235039984": {
+    "name": "Candle Logic Lab",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 47,
+    "metrics": {
+      "tp1HitRate": 74.5,
+      "tp2HitRate": 53.2,
+      "tp3HitRate": 38.3,
+      "slDirectRate": 25.5,
+      "bePullbackRate": 21.3,
+      "netPipsHybrid": 505,
+      "netPipsTP1Only": 160,
+      "netPipsTP2Only": -270
+    },
+    "recentWeek": {
+      "trades": 3,
+      "wins": 3,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 206
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1001823957090": {
+    "name": "Craig Percoco Daily Trades",
+    "currentlyEnabled": true,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 30,
+    "metrics": {
+      "tp1HitRate": 93.3,
+      "tp2HitRate": 73.3,
+      "tp3HitRate": 6.7,
+      "slDirectRate": 6.7,
+      "bePullbackRate": 20,
+      "netPipsHybrid": 1793.5,
+      "netPipsTP1Only": 2102.5,
+      "netPipsTP2Only": 702.5
+    },
+    "recentWeek": {
+      "trades": 12,
+      "wins": 12,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 651
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1004339716486": {
+    "name": "EXNESS GOLD TRADER",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 21,
+    "metrics": {
+      "tp1HitRate": 85.7,
+      "tp2HitRate": 76.2,
+      "tp3HitRate": 14.3,
+      "slDirectRate": 14.3,
+      "bePullbackRate": 9.5,
+      "netPipsHybrid": 987,
+      "netPipsTP1Only": 640,
+      "netPipsTP2Only": 1110
+    },
+    "recentWeek": {
+      "trades": 6,
+      "wins": 5,
+      "losses": 1,
+      "wr": 83.3,
+      "netPips": 295
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1002429125771": {
+    "name": "GOLD PRO SIGNAL",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 109,
+    "metrics": {
+      "tp1HitRate": 80.7,
+      "tp2HitRate": 76.1,
+      "tp3HitRate": 47.7,
+      "slDirectRate": 19.3,
+      "bePullbackRate": 4.6,
+      "netPipsHybrid": 1890,
+      "netPipsTP1Only": 500,
+      "netPipsTP2Only": 2780
+    },
+    "recentWeek": {
+      "trades": 16,
+      "wins": 16,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 735
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1002176496064": {
+    "name": "META TRADER 5 OFFICIALL",
+    "currentlyEnabled": true,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 98,
+    "metrics": {
+      "tp1HitRate": 66.3,
+      "tp2HitRate": 40.8,
+      "tp3HitRate": 9.2,
+      "slDirectRate": 33.7,
+      "bePullbackRate": 25.5,
+      "netPipsHybrid": 395.3,
+      "netPipsTP1Only": 485.3,
+      "netPipsTP2Only": -2930.7
+    },
+    "recentWeek": {
+      "trades": 46,
+      "wins": 27,
+      "losses": 19,
+      "wr": 58.7,
+      "netPips": -275.6
+    },
+    "verdict": "NEUTRO"
+  },
+  "-1001891914408": {
+    "name": "THE TRADERS CLUB – FWA",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 20,
+    "metrics": {
+      "tp1HitRate": 65,
+      "tp2HitRate": 55,
+      "tp3HitRate": 0,
+      "slDirectRate": 35,
+      "bePullbackRate": 10,
+      "netPipsHybrid": 952,
+      "netPipsTP1Only": 820,
+      "netPipsTP2Only": 980
+    },
+    "recentWeek": {
+      "trades": 10,
+      "wins": 5,
+      "losses": 5,
+      "wr": 50,
+      "netPips": 172
+    },
+    "verdict": "NEUTRO"
+  },
+  "-1003669486746": {
+    "name": "Smart Pips Alerts",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 50,
+    "metrics": {
+      "tp1HitRate": 72,
+      "tp2HitRate": 42,
+      "tp3HitRate": 22,
+      "slDirectRate": 28,
+      "bePullbackRate": 30,
+      "netPipsHybrid": -81.5,
+      "netPipsTP1Only": -123.6,
+      "netPipsTP2Only": -1783.6
+    },
+    "recentWeek": {
+      "trades": 6,
+      "wins": 4,
+      "losses": 2,
+      "wr": 66.7,
+      "netPips": -98
+    },
+    "verdict": "TOXICO / DESCARTAR"
+  },
+  "-1002493671900": {
+    "name": "XAUUSD FOREX TRADING",
+    "currentlyEnabled": true,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 80,
+    "metrics": {
+      "tp1HitRate": 90,
+      "tp2HitRate": 72.5,
+      "tp3HitRate": 30,
+      "slDirectRate": 10,
+      "bePullbackRate": 17.5,
+      "netPipsHybrid": 3809,
+      "netPipsTP1Only": 2720,
+      "netPipsTP2Only": 2810
+    },
+    "recentWeek": {
+      "trades": 6,
+      "wins": 6,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 401
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1001936020052": {
+    "name": "GOLD BTC TRADER",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 18,
+    "metrics": {
+      "tp1HitRate": 100,
+      "tp2HitRate": 77.8,
+      "tp3HitRate": 50,
+      "slDirectRate": 0,
+      "bePullbackRate": 22.2,
+      "netPipsHybrid": 779,
+      "netPipsTP1Only": 600,
+      "netPipsTP2Only": 530
+    },
+    "recentWeek": {
+      "trades": 7,
+      "wins": 7,
+      "losses": 0,
+      "wr": 100,
+      "netPips": 277
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1002206734647": {
+    "name": "Risk Management-revealed",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 37,
+    "metrics": {
+      "tp1HitRate": 78.4,
+      "tp2HitRate": 37.8,
+      "tp3HitRate": 0,
+      "slDirectRate": 21.6,
+      "bePullbackRate": 40.5,
+      "netPipsHybrid": 296.2,
+      "netPipsTP1Only": 289.6,
+      "netPipsTP2Only": -1440.6
+    },
+    "recentWeek": {
+      "trades": 12,
+      "wins": 9,
+      "losses": 3,
+      "wr": 75,
+      "netPips": 139.5
+    },
+    "verdict": "RECOMENDADO"
+  },
+  "-1003862726389": {
+    "name": "Ai Premium Pips",
+    "currentlyEnabled": false,
+    "strategy": "DefaultStrategy",
+    "totalSignals": 54,
+    "metrics": {
+      "tp1HitRate": 51.9,
+      "tp2HitRate": 16.7,
+      "tp3HitRate": 1.9,
+      "slDirectRate": 48.1,
+      "bePullbackRate": 35.2,
+      "netPipsHybrid": -48289.5,
+      "netPipsTP1Only": -47185.7,
+      "netPipsTP2Only": -52731.9
+    },
+    "recentWeek": {
+      "trades": 5,
+      "wins": 2,
+      "losses": 3,
+      "wr": 40,
+      "netPips": -273
+    },
+    "verdict": "TOXICO / DESCARTAR"
+  }
+}
