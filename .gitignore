@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Large historical raw tick/candle CSV dumps (>20MB)
+*_2020*.csv
+*.log
+
+# Sensitive telegram sessions
+*.session
+*.session-journal
+.env
+
+# System & IDE
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
