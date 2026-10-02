@@ -10,6 +10,7 @@ npm-debug.log*
 *.session
 *.session-journal
 .env
+.app.lock
 
 # System & IDE
 Thumbs.db
