@@ -37,11 +37,18 @@ input double             InpBasketTP_USD          = 2.0;                // Take 
 input double             InpReentryStep_USD       = 3.5;                // Distancia para Re-entrada en $ (3.5$ en Oro)
 input int                InpMinReentrySeconds     = 60;                 // Tiempo mínimo entre órdenes (segundos)
 
-input group "=== 2. FILTRO INSTITUCIONAL HTF (GATILLO 3) ===";
+input group "=== 2. CORTACIRCUITOS DE VOLATILIDAD (CIRCUIT BREAKER) ===";
+input bool               InpEnableCircuitBreaker  = true;               // Activar Cortacircuitos de Volatilidad Anormal
+input double             InpMaxPrevH1RangeUSD     = 45.0;               // Rango Máximo Permitido en última vela H1 ($45.0)
+input double             InpMaxDailyRangeUSD      = 100.0;              // Rango Diario Acumulado Máximo en D1 ($100.0)
+input bool               InpBlockMonthEndDay      = true;               // Bloquear operativa en Cierre de Mes (Último día)
+input int                InpMonthEndStartHourES   = 12;                 // Hora inicio bloqueo Fin de Mes España (12:00)
+
+input group "=== 3. FILTRO INSTITUCIONAL HTF (GATILLO 3) ===";
 input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (Recomendado H1)
 input int                InpHTF_EMA_Period        = 50;                 // Periodo EMA Institucional HTF (ej: 50)
 
-input group "=== 3. GESTIÓN DE LOTAJE ===";
+input group "=== 4. GESTIÓN DE LOTAJE ===";
 input double             InpBaseLot               = 0.01;               // Lote Base Inicial
 input double             InpLotMultiplier         = 2.0;                // Multiplicador de Lote por Orden (x2.0)
 input int                InpMaxOrders             = 6;                  // Máximo de Órdenes por Cesta (6)
@@ -74,16 +81,16 @@ input bool               InpEnableFridayClose     = true;               // Activ
 input int                InpFridayCloseHourES     = 21;                 // Hora Cierre Viernes España (21:15)
 input int                InpFridayCloseMinES      = 15;                 // Minuto Cierre Viernes España
 
-input group "=== 5. PROTECCIONES Y SEGURIDAD ===";
+input group "=== 6. PROTECCIONES Y SEGURIDAD ===";
 input double             InpMaxSpreadUSD          = 0.60;               // Spread Máximo Permitido en $
 input double             InpMinMarginLevelPct     = 150.0;              // Nivel Mínimo de Margen Libre (%)
 input double             InpEmergencyBasketSL     = 0.0;                // SL de Emergencia en $ (0 = Desactivado)
 input double             InpDailyTargetUSD        = 0.0;                // Meta Diaria de Beneficio en $ (0 = Ilimitado)
-input bool               InpEnableHedgingLock     = true;               // Candado de Cobertura (Step 7 Hedging Lock) - ON
+input bool               InpEnableHedgingLock     = false;              // Candado de Cobertura (Step 7 Hedging Lock) - OFF
 input double             InpHedgeStepOffsetUSD    = 3.5;                // Distancia tras Orden 6 para activar Hedge ($3.5 = Step 7)
 input double             InpHedgeReleaseHystUSD   = 0.5;                // Histéresis de rebote para liberar Hedge ($0.50)
 
-input group "=== 6. IDENTIFICACIÓN & CONTROL ===";
+input group "=== 7. IDENTIFICACIÓN & CONTROL ===";
 input ulong              InpMagicNumber           = 176200;             // Magic Number
 input string             InpTradeComment          = "XAU_Burst_Safe";   // Comentario de Trade
 input bool               InpShowDashboard         = true;               // Mostrar Panel Visual en Gráfico
@@ -309,6 +316,14 @@ void OnTick()
          return;
       }
 
+      // 5.1 CORTACIRCUITOS DE VOLATILIDAD ANORMAL (CIRCUIT BREAKER)
+      string cbReason = "";
+      if(IsCircuitBreakerTriggered(cbReason))
+      {
+         UpdateDashboard(cbReason);
+         return;
+      }
+
       double currentSpread = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(!CheckFilters(currentSpread))
       {
@@ -413,6 +428,74 @@ bool IsForceCloseTime(datetime time)
       int nightCloseMin = (InpNightCloseHourES * 60) + InpNightCloseMinES;
       if(spainTotalMinutes >= nightCloseMin || spainTotalMinutes < 180) // 180 min = 03:00 AM
          return true;
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Evalúa si el Cortacircuitos de Volatilidad debe bloquear la entrada|
+//+------------------------------------------------------------------+
+bool IsCircuitBreakerTriggered(string &reason)
+{
+   if(!InpEnableCircuitBreaker)
+      return false;
+
+   // 1. Comprobar si la última vela H1 cerrada tuvo un rango anómalo
+   if(InpMaxPrevH1RangeUSD > 0.0)
+   {
+      MqlRates h1Rates[];
+      ArraySetAsSeries(h1Rates, true);
+      if(CopyRates(_Symbol, PERIOD_H1, 1, 1, h1Rates) > 0)
+      {
+         double prevH1Range = h1Rates[0].high - h1Rates[0].low;
+         if(prevH1Range > InpMaxPrevH1RangeUSD)
+         {
+            reason = StringFormat("CORTACIRCUITOS H1: %.1f$ > %.1f$", prevH1Range, InpMaxPrevH1RangeUSD);
+            return true;
+         }
+      }
+   }
+
+   // 2. Comprobar si el rango acumulado de hoy en D1 ya superó el límite
+   if(InpMaxDailyRangeUSD > 0.0)
+   {
+      MqlRates d1Rates[];
+      ArraySetAsSeries(d1Rates, true);
+      if(CopyRates(_Symbol, PERIOD_D1, 0, 1, d1Rates) > 0)
+      {
+         double todayRange = d1Rates[0].high - d1Rates[0].low;
+         if(todayRange > InpMaxDailyRangeUSD)
+         {
+            reason = StringFormat("CORTACIRCUITOS D1: %.1f$ > %.1f$", todayRange, InpMaxDailyRangeUSD);
+            return true;
+         }
+      }
+   }
+
+   // 3. Bloqueo en Cierre de Mes (Month-End Rebalancing institucional)
+   if(InpBlockMonthEndDay)
+   {
+      datetime now = TimeCurrent();
+      MqlDateTime dt;
+      TimeToStruct(now, dt);
+
+      int spainHour = dt.hour - InpServerOffsetFromSpain;
+      if(spainHour < 0) spainHour += 24;
+
+      // Calcular días del mes actual
+      int daysInMonth = 31;
+      if(dt.mon == 2) daysInMonth = 28;
+      else if(dt.mon == 4 || dt.mon == 6 || dt.mon == 9 || dt.mon == 11) daysInMonth = 30;
+
+      bool isLastDay = (dt.day == daysInMonth);
+      bool isLastFriday = (dt.day_of_week == 5 && dt.day >= (daysInMonth - 2));
+
+      if((isLastDay || isLastFriday) && spainHour >= InpMonthEndStartHourES)
+      {
+         reason = "CORTACIRCUITOS: Cierre Mensual Institucional";
+         return true;
+      }
    }
 
    return false;
