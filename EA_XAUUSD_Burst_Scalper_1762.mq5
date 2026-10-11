@@ -41,8 +41,8 @@ input group "=== 2. CORTACIRCUITOS DE VOLATILIDAD (CIRCUIT BREAKER) ===";
 input bool               InpEnableCircuitBreaker  = true;               // Activar Cortacircuitos de Volatilidad Anormal
 input double             InpMaxPrevH1RangeUSD     = 45.0;               // Rango Máximo Permitido en última vela H1 ($45.0)
 input double             InpMaxDailyRangeUSD      = 100.0;              // Rango Diario Acumulado Máximo en D1 ($100.0)
-input bool               InpBlockMonthEndDay      = true;               // Bloquear operativa en Cierre de Mes (Último día)
-input int                InpMonthEndStartHourES   = 12;                 // Hora inicio bloqueo Fin de Mes España (12:00)
+input bool               InpBlockMonthEndDay      = true;               // Bloquear operativa en Cierre de Mes (Día Completo)
+input int                InpMonthEndStartHourES   = 0;                  // Hora inicio bloqueo Fin de Mes España (0 = Todo el día)
 
 input group "=== 3. FILTRO INSTITUCIONAL HTF (GATILLO 3) ===";
 input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (Recomendado H1)
@@ -84,7 +84,7 @@ input int                InpFridayCloseMinES      = 15;                 // Minut
 input group "=== 6. PROTECCIONES Y SEGURIDAD ===";
 input double             InpMaxSpreadUSD          = 0.60;               // Spread Máximo Permitido en $
 input double             InpMinMarginLevelPct     = 150.0;              // Nivel Mínimo de Margen Libre (%)
-input double             InpEmergencyBasketSL     = 0.0;                // SL de Emergencia en $ (0 = Desactivado)
+input double             InpEmergencyBasketSL     = 25.0;               // SL de Emergencia en $ (25$ = Corte de protección)
 input double             InpDailyTargetUSD        = 0.0;                // Meta Diaria de Beneficio en $ (0 = Ilimitado)
 input bool               InpEnableHedgingLock     = false;              // Candado de Cobertura (Step 7 Hedging Lock) - OFF
 input double             InpHedgeStepOffsetUSD    = 3.5;                // Distancia tras Orden 6 para activar Hedge ($3.5 = Step 7)
@@ -483,9 +483,10 @@ bool IsCircuitBreakerTriggered(string &reason)
       int spainHour = dt.hour - InpServerOffsetFromSpain;
       if(spainHour < 0) spainHour += 24;
 
-      // Calcular días del mes actual
+      // Calcular días del mes actual (con bisiestos)
       int daysInMonth = 31;
-      if(dt.mon == 2) daysInMonth = 28;
+      if(dt.mon == 2)
+         daysInMonth = ((dt.year % 4 == 0 && dt.year % 100 != 0) || (dt.year % 400 == 0)) ? 29 : 28;
       else if(dt.mon == 4 || dt.mon == 6 || dt.mon == 9 || dt.mon == 11) daysInMonth = 30;
 
       bool isLastDay = (dt.day == daysInMonth);
@@ -493,7 +494,7 @@ bool IsCircuitBreakerTriggered(string &reason)
 
       if((isLastDay || isLastFriday) && spainHour >= InpMonthEndStartHourES)
       {
-         reason = "CORTACIRCUITOS: Cierre Mensual Institucional";
+         reason = "CORTACIRCUITOS: Cierre Mensual Institucional (Día Completo)";
          return true;
       }
    }
