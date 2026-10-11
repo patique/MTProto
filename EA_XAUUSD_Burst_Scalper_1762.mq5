@@ -1,13 +1,13 @@
 //+------------------------------------------------------------------+
 //|                               EA_XAUUSD_Burst_Scalper_1762.mq5   |
-//|               Estrategia Dual-Engine: Rango + Expansión           |
-//|          Compensación Cruzada en Breakeven (Cross-Close)          |
+//|               Estrategia XAUUSD Breakout Burst Scalper (#1762)    |
+//|       Versión 1 Original + Filtro Cuantitativo de Zonas Seguras   |
 //+------------------------------------------------------------------+
 #property copyright "Antigravity Quant Lab"
 #property link      "https://github.com/telegram-mtproto"
-#property version   "4.00"
-#property description "EA Dual-Engine de Alta Frecuencia para XAUUSD"
-#property description "Motor 1 (Rango con mult suave 1.4x) + Motor 2 (Expansión) + Cierre Cruzado en Breakeven"
+#property version   "3.50"
+#property description "EA de Scalping Dinámico de Alta Frecuencia para XAUUSD"
+#property description "Versión 1 Original (#1762) operando ÚNICAMENTE en las Zonas Seguras de bajo riesgo"
 
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
@@ -15,46 +15,39 @@
 //--- ENUMERACIONES ---
 enum ENUM_ENTRY_MODE
 {
-   ENTRY_BREAKOUT_M15,    // Rotura de Rango 15m
-   ENTRY_MOMENTUM_M1,     // Momentum de vela M1 (Recomendado)
+   ENTRY_BREAKOUT_M15,    // Rotura de Rango 15m (Configuración Original #1762)
+   ENTRY_MOMENTUM_M1,     // Momentum de vela M1
    ENTRY_MOMENTUM_M1_HTF, // Gatillo 3: Momentum M1 + Filtro Institucional HTF (H1)
    ENTRY_MANUAL_DIRECTION // Dirección manual fija
 };
 
 enum ENUM_MANUAL_DIR
 {
-   DIR_BOTH, // Ambos sentidos
+   DIR_BOTH, // Ambos sentidos (según rotura)
    DIR_BUY,  // Solo Compras
    DIR_SELL  // Solo Ventas
 };
 
 //--- PARÁMETROS DE ENTRADA ---
-input group "=== 1. MOTOR 1: RANGO / MICRO-BURST (SCALPING) ===";
-input ENUM_ENTRY_MODE    InpEntryMode             = ENTRY_MOMENTUM_M1;  // Gatillo Motor Rango (Momentum M1)
+input group "=== 1. CONFIGURACIÓN DEL CICLO ORIGINAL (#1762) ===";
+input ENUM_ENTRY_MODE    InpEntryMode             = ENTRY_MOMENTUM_M1;  // Gatillo de Entrada (Momentum M1)
 input int                InpRangeLookbackM1       = 15;                 // Periodo de Rango en M1 (minutos)
 input ENUM_MANUAL_DIR    InpAllowedDirection      = DIR_BOTH;           // Dirección Permitida
-input double             InpBasketTP_USD          = 2.5;                // Take Profit de Cesta Rango en $ (2.5$)
-input double             InpReentryStep_USD       = 2.5;                // Distancia para Re-entrada en $ (2.5$)
-input int                InpMinReentrySeconds     = 180;                // Pausa mínima entre órdenes (180s = 3 min)
+input double             InpBasketTP_USD          = 2.0;                // Take Profit de Cesta en $ (2.0$ en Oro)
+input double             InpReentryStep_USD       = 3.5;                // Distancia para Re-entrada en $ (3.5$ en Oro)
+input int                InpMinReentrySeconds     = 60;                 // Tiempo mínimo entre órdenes (segundos)
+
+input group "=== 2. FILTRO INSTITUCIONAL HTF (GATILLO 3) ===";
+input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (Recomendado H1)
+input int                InpHTF_EMA_Period        = 50;                 // Periodo EMA Institucional HTF (ej: 50)
+
+input group "=== 3. GESTIÓN DE LOTAJE ===";
 input double             InpBaseLot               = 0.01;               // Lote Base Inicial
-input double             InpLotMultiplier         = 1.4;                // Multiplicador Suave (1.4x en vez de 2.0x)
-input int                InpMaxOrders             = 6;                  // Máximo de Órdenes en Rango (6)
+input double             InpLotMultiplier         = 2.0;                // Multiplicador de Lote por Orden (x2.0)
+input int                InpMaxOrders             = 6;                  // Máximo de Órdenes por Cesta (6)
+input bool               InpScaleWithBalance      = false;              // Escalar lote base al duplicar balance
 
-input group "=== 2. MOTOR 2: EXPANSIÓN (A FAVOR DE ROTURA) ===";
-input bool               InpEnableTrendEngine     = true;               // Activar Motor 2 de Expansión
-input int                InpTrendTriggerOrders    = 3;                  // Activar Expansión si Rango acumula N órdenes (ej: 3)
-input double             InpTrendLotFactor        = 1.5;                // Factor de Lote Expansión vs Rango (1.5x = Delta positivo)
-input double             InpTrendTakeProfitUSD    = 15.0;               // TP Individual de Expansión en $ (15$)
-
-input group "=== 3. COMPENSACIÓN CRUZADA (CROSS-CLOSE BREAKEVEN) ===";
-input bool               InpEnableCrossClose      = true;               // Activar Cierre Combinado en Breakeven
-input double             InpCombinedTargetUSD     = 1.5;                // Ganancia Neta Combinada para Cerrar Ambos (+1.5$)
-
-input group "=== 4. FILTRO INSTITUCIONAL HTF (OPCIONAL) ===";
-input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (ej: H1)
-input int                InpHTF_EMA_Period        = 50;                 // Periodo EMA Institucional HTF
-
-input group "=== 5. ZONAS SEGURAS CUANTITATIVAS (HORA ESPAÑA) ===";
+input group "=== 3. ZONAS SEGURAS CUANTITATIVAS (HORA ESPAÑA) ===";
 input bool               InpUseSafeHoursOnly      = true;               // Operar ÚNICAMENTE en Zonas Seguras
 input int                InpServerOffsetFromSpain = 1;                  // Diferencia Servidor vs España (+1h en FTMO)
 
@@ -72,7 +65,7 @@ input int                InpWin2StartMinES        = 0;                  // Minut
 input int                InpWin2EndHourES         = 21;                 // Fin Ventana 2 Hora España (21:30)
 input int                InpWin2EndMinES          = 30;                 // Minuto Fin Ventana 2
 
-input group "=== 6. CIERRE NO OVERNIGHT & CIERRE DE VIERNES ===";
+input group "=== 4. CIERRE NO OVERNIGHT & CIERRE DE VIERNES ===";
 input bool               InpEnableNightClose      = true;               // Activar Cierre Nocturno Diario (No Overnight)
 input int                InpNightCloseHourES      = 21;                 // Hora Cierre Diario España (21:45)
 input int                InpNightCloseMinES       = 45;                 // Minuto Cierre Diario España
@@ -81,20 +74,23 @@ input bool               InpEnableFridayClose     = true;               // Activ
 input int                InpFridayCloseHourES     = 21;                 // Hora Cierre Viernes España (21:15)
 input int                InpFridayCloseMinES      = 15;                 // Minuto Cierre Viernes España
 
-input group "=== 7. PROTECCIONES Y SEGURIDAD ===";
+input group "=== 5. PROTECCIONES Y SEGURIDAD ===";
 input double             InpMaxSpreadUSD          = 0.60;               // Spread Máximo Permitido en $
 input double             InpMinMarginLevelPct     = 150.0;              // Nivel Mínimo de Margen Libre (%)
 input double             InpEmergencyBasketSL     = 0.0;                // SL de Emergencia en $ (0 = Desactivado)
 input double             InpDailyTargetUSD        = 0.0;                // Meta Diaria de Beneficio en $ (0 = Ilimitado)
+input bool               InpEnableHedgingLock     = true;               // Candado de Cobertura (Step 7 Hedging Lock) - ON
+input double             InpHedgeStepOffsetUSD    = 3.5;                // Distancia tras Orden 6 para activar Hedge ($3.5 = Step 7)
+input double             InpHedgeReleaseHystUSD   = 0.5;                // Histéresis de rebote para liberar Hedge ($0.50)
 
-input group "=== 8. IDENTIFICACIÓN & CONTROL ===";
-input ulong              InpMagicRange            = 176201;             // Magic Number Motor 1 (Rango)
-input ulong              InpMagicTrend            = 176202;             // Magic Number Motor 2 (Expansión)
-input string             InpTradeComment          = "XAU_DualEngine";   // Comentario de Trade
+input group "=== 6. IDENTIFICACIÓN & CONTROL ===";
+input ulong              InpMagicNumber           = 176200;             // Magic Number
+input string             InpTradeComment          = "XAU_Burst_Safe";   // Comentario de Trade
 input bool               InpShowDashboard         = true;               // Mostrar Panel Visual en Gráfico
 input color              InpDashboardColor        = C'15,25,38';        // Color de Fondo del Panel
 
 //--- OBJETOS Y VARIABLES GLOBALES ---
+CTrade            m_trade;
 CPositionInfo     m_pos;
 datetime          m_lastOrderTime       = 0;
 int               m_currentCycleId      = 0;
@@ -103,12 +99,17 @@ double            m_closedCyclesProfit  = 0.0;
 double            m_dayStartBalance     = 0.0;
 datetime          m_lastDayCheck        = 0;
 int               m_htfEmaHandle        = INVALID_HANDLE;
+bool              m_hedgeActive         = false;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit()
 {
+   m_trade.SetExpertMagicNumber(InpMagicNumber);
+   m_trade.SetMarginMode();
+   m_trade.SetTypeFillingBySymbol(_Symbol);
+
    m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
    m_lastDayCheck    = TimeCurrent();
 
@@ -118,8 +119,8 @@ int OnInit()
       PrintFormat("📊 [Filtro HTF Activado] Temporalidad: %s | Periodo EMA: %d", EnumToString(InpHTFTimeframe), InpHTF_EMA_Period);
    }
 
-   PrintFormat("🚀 [EA Dual-Engine XAUUSD] Rango Mult: %.2fx | Expansión Trigger: %d órdenes | Cross-Close: %.2f$",
-               InpLotMultiplier, InpTrendTriggerOrders, InpCombinedTargetUSD);
+   PrintFormat("🚀 [EA_XAUUSD_Burst_Scalper_1762] Modo: %s | TP: %.2f$ | Step: %.2f$ | Mult: %.2fx",
+               EnumToString(InpEntryMode), InpBasketTP_USD, InpReentryStep_USD, InpLotMultiplier);
 
    if(InpShowDashboard)
       CreateDashboard();
@@ -160,7 +161,7 @@ void OnTick()
    if(InpDailyTargetUSD > 0.0)
    {
       double currentDailyGain = AccountInfoDouble(ACCOUNT_BALANCE) - m_dayStartBalance;
-      if(currentDailyGain >= InpDailyTargetUSD && CountTotalOpenOrders() == 0)
+      if(currentDailyGain >= InpDailyTargetUSD && CountOpenOrders() == 0)
       {
          UpdateDashboard("Meta diaria conseguida. Operativa en pausa.");
          return;
@@ -170,116 +171,138 @@ void OnTick()
    // 3. CIERRE FORZOSO NOCTURNO Y DE FIN DE SEMANA (NO OVERNIGHT / NO WEEKEND HOLDING)
    if(IsForceCloseTime(now))
    {
-      if(CountTotalOpenOrders() > 0)
+      if(CountOpenOrders() > 0)
       {
-         PrintFormat("🔒 [CIERRE FORZOSO] Cerrando ambas operativas antes del cierre de mercado (No Overnight / Friday Close)...");
-         CloseBothEngines();
+         PrintFormat("🔒 [CIERRE FORZOSO] Cerrando cesta abierta antes del cierre de mercado (No Overnight / Friday Close)...");
+         CloseEntireBasket();
          m_lastOrderTime = now;
       }
       UpdateDashboard("MERCADO CERRADO / NO OVERNIGHT");
       return;
    }
 
-   // 4. Inspeccionar el estado de ambos motores
-   int rangeCount = 0;
-   long rangeType = -1;
-   double rangeLots = 0.0, rangeWeighted = 0.0, rangeLastPrice = 0.0, rangeProfit = 0.0;
-   GetEngineState(InpMagicRange, rangeCount, rangeType, rangeLots, rangeWeighted, rangeLastPrice, rangeProfit);
+   // 4. Inspeccionar el estado de la cesta actual
+   int openCount = 0;
+   long cycleType = -1; // 0 = BUY, 1 = SELL
+   double totalLots = 0.0;
+   double weightedEntry = 0.0;
+   double lastOrderPrice = 0.0;
+   double totalFloatingProfit = 0.0;
 
-   int trendCount = 0;
-   long trendType = -1;
-   double trendLots = 0.0, trendWeighted = 0.0, trendLastPrice = 0.0, trendProfit = 0.0;
-   GetEngineState(InpMagicTrend, trendCount, trendType, trendLots, trendWeighted, trendLastPrice, trendProfit);
+   GetBasketState(openCount, cycleType, totalLots, weightedEntry, lastOrderPrice, totalFloatingProfit);
 
-   double netCombinedProfit = rangeProfit + trendProfit;
-
-   // 4.1 COMPENSACIÓN CRUZADA (CROSS-CLOSE BREAKEVEN)
-   // En cuanto la suma de flotantes Rango + Expansión supere el objetivo (+1.5$), liquidar ambos
-   if(InpEnableCrossClose && rangeCount > 0 && trendCount > 0)
-   {
-      if(netCombinedProfit >= InpCombinedTargetUSD)
-      {
-         PrintFormat("🎯 [COMPENSACIÓN CRUZADA EXITOSA] Rango: $%.2f | Expansión: $%.2f | Neto Total: +$%.2f. ¡Cerrando ambos motores!",
-                     rangeProfit, trendProfit, netCombinedProfit);
-         CloseBothEngines();
-         m_closedCyclesCount++;
-         m_closedCyclesProfit += netCombinedProfit;
-         m_lastOrderTime = TimeCurrent();
-         UpdateDashboard(StringFormat("Compensación Cruzada Ganada (+%.2f$)", netCombinedProfit));
-         return;
-      }
-   }
-
-   // 4.2 GESTIÓN DEL MOTOR 1 (RANGO)
-   if(rangeCount > 0)
+   // 4. Si hay órdenes abiertas, gestionar Take Profit de Cesta o Re-entradas
+   if(openCount > 0)
    {
       double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       double currentSpread = currentAsk - currentBid;
 
       bool tpTriggered = false;
-      if(rangeType == POSITION_TYPE_BUY)
+      double targetPrice = 0.0;
+
+      if(cycleType == POSITION_TYPE_BUY)
       {
-         double targetPrice = rangeWeighted + InpBasketTP_USD + currentSpread;
-         if(currentBid >= targetPrice) tpTriggered = true;
+         targetPrice = weightedEntry + InpBasketTP_USD + currentSpread;
+         if(currentBid >= targetPrice)
+            tpTriggered = true;
       }
-      else if(rangeType == POSITION_TYPE_SELL)
+      else if(cycleType == POSITION_TYPE_SELL)
       {
-         double targetPrice = rangeWeighted - InpBasketTP_USD - currentSpread;
-         if(currentAsk <= targetPrice) tpTriggered = true;
+         targetPrice = weightedEntry - InpBasketTP_USD - currentSpread;
+         if(currentAsk <= targetPrice)
+            tpTriggered = true;
       }
 
-      // Si el Motor de Rango resuelve por sí solo en su Take Profit:
+      // Evaluar cierre por TP de cesta
       if(tpTriggered)
       {
-         PrintFormat("🎯 [TP Rango Solitario Alcanzado] Ciclo #%d | Órdenes: %d | Lotes: %.2f | Profit: $%.2f",
-                     m_currentCycleId, rangeCount, rangeLots, rangeProfit);
-         CloseBasketByMagic(InpMagicRange);
-         if(trendCount > 0) CloseBasketByMagic(InpMagicTrend);
+         PrintFormat("🎯 [TP Cesta Alcanzado] Ciclo #%d cerrado | Órdenes: %d | Lotes: %.2f | Profit: $%.2f",
+                     m_currentCycleId, openCount, totalLots, totalFloatingProfit);
+         CloseEntireBasket();
          m_closedCyclesCount++;
-         m_closedCyclesProfit += rangeProfit;
+         m_closedCyclesProfit += totalFloatingProfit;
          m_lastOrderTime = TimeCurrent();
-         UpdateDashboard("TP Rango ganado con éxito");
+         UpdateDashboard("Ciclo cerrado en TP con éxito");
          return;
       }
 
-      // Re-entradas suaves del Motor de Rango (con multiplicador suave y pausa)
-      if(rangeCount < InpMaxOrders && (now - m_lastOrderTime) >= InpMinReentrySeconds)
+      // Evaluar SL de emergencia si estuviera activo
+      if(InpEmergencyBasketSL > 0.0 && totalFloatingProfit <= -InpEmergencyBasketSL)
+      {
+         PrintFormat("🛑 [SL Emergencia Cesta] Ciclo #%d cerrado por SL | Flotante: $%.2f",
+                     m_currentCycleId, totalFloatingProfit);
+         CloseEntireBasket();
+         m_lastOrderTime = TimeCurrent();
+         UpdateDashboard("Cesta cerrada por SL de emergencia");
+         return;
+      }
+
+      // Evaluar si corresponde añadir una re-entrada consecutiva
+      if(openCount < InpMaxOrders && (now - m_lastOrderTime) >= InpMinReentrySeconds)
       {
          bool canAdd = false;
-         double lotForNext = CalculateNextLot(rangeCount);
+         double lotForNext = CalculateNextLot(openCount);
 
-         if(rangeType == POSITION_TYPE_BUY && (rangeLastPrice - currentAsk) >= InpReentryStep_USD)
-            canAdd = true;
-         else if(rangeType == POSITION_TYPE_SELL && (currentBid - rangeLastPrice) >= InpReentryStep_USD)
-            canAdd = true;
+         if(cycleType == POSITION_TYPE_BUY)
+         {
+            if((lastOrderPrice - currentAsk) >= InpReentryStep_USD)
+               canAdd = true;
+         }
+         else if(cycleType == POSITION_TYPE_SELL)
+         {
+            if((currentBid - lastOrderPrice) >= InpReentryStep_USD)
+               canAdd = true;
+         }
 
          if(canAdd && CheckFilters(currentSpread))
          {
-            ExecuteOrder((ENUM_POSITION_TYPE)rangeType, lotForNext, InpMagicRange, "Range #" + IntegerToString(rangeCount + 1));
+            ExecuteOrder((ENUM_POSITION_TYPE)cycleType, lotForNext, "Re-entry #" + IntegerToString(openCount + 1));
             m_lastOrderTime = TimeCurrent();
          }
       }
 
-      // 4.3 ACTIVACIÓN DEL MOTOR 2 (EXPANSIÓN)
-      // Si la cesta de rango acumula >= InpTrendTriggerOrders y la expansión aún no está dentro:
-      if(InpEnableTrendEngine && rangeCount >= InpTrendTriggerOrders && trendCount == 0)
+      // Evaluar Candado de Cobertura Dinámico Step 7 (N steps + 1)
+      if(InpEnableHedgingLock && openCount >= InpMaxOrders)
       {
-         ENUM_POSITION_TYPE trendDir = (rangeType == POSITION_TYPE_BUY) ? POSITION_TYPE_SELL : POSITION_TYPE_BUY;
-         double trendLot = NormalizeDouble(rangeLots * InpTrendLotFactor, 2);
-         double minLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
-         double maxLot = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
-         if(trendLot < minLot) trendLot = minLot;
-         if(trendLot > maxLot) trendLot = maxLot;
+         ulong hedgeMagic = InpMagicNumber + 999;
+         bool hedgeIsOpen = IsHedgeOpen(hedgeMagic);
 
-         PrintFormat("🚀 [MOTOR EXPANSIÓN DISPARADO] Rango en orden %d (%.2f lotes) | Entrando a favor de la rotura: %s %.2f lotes",
-                     rangeCount, rangeLots, EnumToString(trendDir), trendLot);
-         ExecuteOrder(trendDir, trendLot, InpMagicTrend, "Trend_Expansion");
+         if(cycleType == POSITION_TYPE_BUY)
+         {
+            double hedgeTriggerPrice = lastOrderPrice - InpHedgeStepOffsetUSD;
+            if(!hedgeIsOpen && currentAsk <= hedgeTriggerPrice)
+            {
+               PrintFormat("🛡️ [HEDGE STEP 7 ON] BUY Cesta 6 órdenes completada | Precio tocó Step 7 (%.2f) | Cobertura SELL %.2f lotes activada",
+                           hedgeTriggerPrice, totalLots);
+               ExecuteHedgeOrder(POSITION_TYPE_SELL, totalLots, hedgeMagic, "Hedge_Step7");
+            }
+            else if(hedgeIsOpen && currentBid >= (hedgeTriggerPrice + InpHedgeReleaseHystUSD))
+            {
+               PrintFormat("🔓 [HEDGE STEP 7 OFF] Precio rebotó a %.2f | Liberando cobertura para que la cesta BUY continúe a TP", currentBid);
+               CloseHedgeOrder(hedgeMagic);
+            }
+         }
+         else if(cycleType == POSITION_TYPE_SELL)
+         {
+            double hedgeTriggerPrice = lastOrderPrice + InpHedgeStepOffsetUSD;
+            if(!hedgeIsOpen && currentBid >= hedgeTriggerPrice)
+            {
+               PrintFormat("🛡️ [HEDGE STEP 7 ON] SELL Cesta 6 órdenes completada | Precio tocó Step 7 (%.2f) | Cobertura BUY %.2f lotes activada",
+                           hedgeTriggerPrice, totalLots);
+               ExecuteHedgeOrder(POSITION_TYPE_BUY, totalLots, hedgeMagic, "Hedge_Step7");
+            }
+            else if(hedgeIsOpen && currentAsk <= (hedgeTriggerPrice - InpHedgeReleaseHystUSD))
+            {
+               PrintFormat("🔓 [HEDGE STEP 7 OFF] Precio rebotó a %.2f | Liberando cobertura para que la cesta SELL continúe a TP", currentAsk);
+               CloseHedgeOrder(hedgeMagic);
+            }
+         }
       }
    }
    else
    {
-      // 5. No hay órdenes activas en rango: Buscar nueva oportunidad en Zonas Seguras
+      // 5. No hay órdenes activas: Verificar FILTRO DE ZONAS SEGURAS antes de buscar nuevo ciclo
       if(InpUseSafeHoursOnly && !IsWithinSafeHours())
       {
          UpdateDashboard("FUERA DE ZONA SEGURA (CONGELADO)");
@@ -289,7 +312,7 @@ void OnTick()
       double currentSpread = SymbolInfoDouble(_Symbol, SYMBOL_ASK) - SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(!CheckFilters(currentSpread))
       {
-         UpdateDashboard("Filtro de spread o margen bloqueando");
+         UpdateDashboard("Filtro de spread o margen bloqueando entrada");
          return;
       }
 
@@ -298,14 +321,24 @@ void OnTick()
       {
          m_currentCycleId++;
          double startLot = InpBaseLot;
-         PrintFormat("⚡ [Nuevo Ciclo Rango #%d] Disparo inicial: %s | Lote: %.2f",
+         if(InpScaleWithBalance && m_dayStartBalance > 0.0)
+         {
+            double scaleFactor = MathMax(1.0, AccountInfoDouble(ACCOUNT_BALANCE) / m_dayStartBalance);
+            startLot = NormalizeDouble(InpBaseLot * scaleFactor, 2);
+         }
+
+         PrintFormat("⚡ [Nuevo Ciclo #%d] Disparo inicial: %s | Lote: %.2f",
                      m_currentCycleId, EnumToString(triggerDirection), startLot);
-         ExecuteOrder(triggerDirection, startLot, InpMagicRange, "Init #" + IntegerToString(m_currentCycleId));
+
+         ExecuteOrder(triggerDirection, startLot, "Init Cycle #" + IntegerToString(m_currentCycleId));
          m_lastOrderTime = TimeCurrent();
       }
       else
       {
-         UpdateDashboard("ZONA SEGURA: Buscando Momentum M1");
+         string waitMode = (InpEntryMode == ENTRY_MOMENTUM_M1_HTF) ? "ZONA SEGURA: Esperando M1 + HTF" :
+                           (InpEntryMode == ENTRY_MOMENTUM_M1)     ? "ZONA SEGURA: Esperando vela M1" :
+                                                                     "ZONA SEGURA: Esperando Rotura 15m";
+         UpdateDashboard(waitMode);
       }
    }
 
@@ -323,6 +356,7 @@ bool IsWithinSafeHours()
    MqlDateTime dt;
    TimeToStruct(serverTime, dt);
 
+   // Calcular minutos del día en hora de España
    int spainHour = dt.hour - InpServerOffsetFromSpain;
    if(spainHour < 0) spainHour += 24;
    if(spainHour >= 24) spainHour -= 24;
@@ -356,15 +390,16 @@ bool IsForceCloseTime(datetime time)
 {
    MqlDateTime dt;
    TimeToStruct(time, dt);
-
    int spainHour = dt.hour - InpServerOffsetFromSpain;
    if(spainHour < 0) spainHour += 24;
    if(spainHour >= 24) spainHour -= 24;
    int spainTotalMinutes = (spainHour * 60) + dt.min;
 
+   // 1. Fin de semana completo (Sábado = 6, Domingo = 0)
    if(dt.day_of_week == 6 || dt.day_of_week == 0)
       return true;
 
+   // 2. Viernes por la tarde/noche (Friday Close Guard)
    if(InpEnableFridayClose && dt.day_of_week == 5)
    {
       int friCloseMin = (InpFridayCloseHourES * 60) + InpFridayCloseMinES;
@@ -372,10 +407,11 @@ bool IsForceCloseTime(datetime time)
          return true;
    }
 
+   // 3. Lunes a Jueves: Cierre diario nocturno No Overnight (21:45 España hasta las 03:00 de la madrugada)
    if(InpEnableNightClose && (dt.day_of_week >= 1 && dt.day_of_week <= 4))
    {
       int nightCloseMin = (InpNightCloseHourES * 60) + InpNightCloseMinES;
-      if(spainTotalMinutes >= nightCloseMin || spainTotalMinutes < 180)
+      if(spainTotalMinutes >= nightCloseMin || spainTotalMinutes < 180) // 180 min = 03:00 AM
          return true;
    }
 
@@ -383,7 +419,7 @@ bool IsForceCloseTime(datetime time)
 }
 
 //+------------------------------------------------------------------+
-//| Evalúa la señal de rotura o momentum                             |
+//| Evalúa la señal de rotura de rango (Configuración #1762)         |
 //+------------------------------------------------------------------+
 bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
 {
@@ -438,6 +474,7 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
    }
    else if(InpEntryMode == ENTRY_MOMENTUM_M1_HTF)
    {
+      // 1. Obtener tendencia HTF (ej: H1 con EMA 50)
       if(m_htfEmaHandle == INVALID_HANDLE)
          m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
 
@@ -454,6 +491,7 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
       bool htfBullish = (htfRates[0].close > emaValues[0]);
       bool htfBearish = (htfRates[0].close < emaValues[0]);
 
+      // 2. Obtener momentum M1 (última vela cerrada)
       MqlRates m1Rates[];
       ArraySetAsSeries(m1Rates, true);
       if(CopyRates(_Symbol, PERIOD_M1, 1, 1, m1Rates) <= 0)
@@ -462,6 +500,7 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
       bool m1Bullish = (m1Rates[0].close > m1Rates[0].open);
       bool m1Bearish = (m1Rates[0].close < m1Rates[0].open);
 
+      // 3. Gatillo: Solo disparamos M1 en la misma dirección que la tendencia HTF
       if(htfBullish && m1Bullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
       {
          direction = POSITION_TYPE_BUY;
@@ -522,60 +561,101 @@ bool CheckFilters(double spreadUSD)
 }
 
 //+------------------------------------------------------------------+
-//| Ejecuta una orden asignada a un Magic Number específico          |
+//| Ejecuta una orden a mercado                                      |
 //+------------------------------------------------------------------+
-bool ExecuteOrder(ENUM_POSITION_TYPE type, double lot, ulong magic, string comment)
+bool ExecuteOrder(ENUM_POSITION_TYPE type, double lot, string comment)
 {
-   CTrade trade;
-   trade.SetExpertMagicNumber(magic);
-   trade.SetMarginMode();
-   trade.SetTypeFillingBySymbol(_Symbol);
+   string fullComment = InpTradeComment + "_" + comment;
+   if(type == POSITION_TYPE_BUY)
+   {
+      double price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      return m_trade.Buy(lot, _Symbol, price, 0.0, 0.0, fullComment);
+   }
+   else
+   {
+      double price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      return m_trade.Sell(lot, _Symbol, price, 0.0, 0.0, fullComment);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Ejecuta una orden de cobertura candado (Hedging Lock)            |
+//+------------------------------------------------------------------+
+bool ExecuteHedgeOrder(ENUM_POSITION_TYPE type, double lot, ulong magic, string comment)
+{
+   CTrade hedgeTrade;
+   hedgeTrade.SetExpertMagicNumber(magic);
+   hedgeTrade.SetMarginMode();
+   hedgeTrade.SetTypeFillingBySymbol(_Symbol);
 
    string fullComment = InpTradeComment + "_" + comment;
    if(type == POSITION_TYPE_BUY)
    {
       double price = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      return trade.Buy(lot, _Symbol, price, 0.0, 0.0, fullComment);
+      return hedgeTrade.Buy(lot, _Symbol, price, 0.0, 0.0, fullComment);
    }
    else
    {
       double price = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-      return trade.Sell(lot, _Symbol, price, 0.0, 0.0, fullComment);
+      return hedgeTrade.Sell(lot, _Symbol, price, 0.0, 0.0, fullComment);
    }
 }
 
 //+------------------------------------------------------------------+
-//| Cierra todas las posiciones asociadas a un Magic Number          |
+//| Verifica si existe una orden de cobertura activa                 |
 //+------------------------------------------------------------------+
-void CloseBasketByMagic(ulong magic)
+bool IsHedgeOpen(ulong magic)
 {
-   CTrade trade;
-   trade.SetExpertMagicNumber(magic);
+   for(int i = 0; i < PositionsTotal(); i++)
+   {
+      if(m_pos.SelectByIndex(i))
+      {
+         if(m_pos.Symbol() == _Symbol && m_pos.Magic() == magic)
+            return true;
+      }
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Cierra la orden de cobertura candado                             |
+//+------------------------------------------------------------------+
+void CloseHedgeOrder(ulong magic)
+{
    for(int i = PositionsTotal() - 1; i >= 0; i--)
    {
       if(m_pos.SelectByIndex(i))
       {
          if(m_pos.Symbol() == _Symbol && m_pos.Magic() == magic)
          {
-            trade.PositionClose(m_pos.Ticket());
+            m_trade.PositionClose(m_pos.Ticket());
          }
       }
    }
 }
 
 //+------------------------------------------------------------------+
-//| Cierra simultáneamente ambos motores (Rango + Expansión)         |
+//| Cierra toda la cesta de órdenes y coberturas a mercado           |
 //+------------------------------------------------------------------+
-void CloseBothEngines()
+void CloseEntireBasket()
 {
-   CloseBasketByMagic(InpMagicRange);
-   CloseBasketByMagic(InpMagicTrend);
+   ulong hedgeMagic = InpMagicNumber + 999;
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+   {
+      if(m_pos.SelectByIndex(i))
+      {
+         if(m_pos.Symbol() == _Symbol && (m_pos.Magic() == InpMagicNumber || m_pos.Magic() == hedgeMagic))
+         {
+            m_trade.PositionClose(m_pos.Ticket());
+         }
+      }
+   }
 }
 
 //+------------------------------------------------------------------+
-//| Obtiene el estado acumulado de un motor por su Magic Number      |
+//| Obtiene las métricas acumuladas de la cesta activa               |
 //+------------------------------------------------------------------+
-void GetEngineState(ulong magic, int &count, long &posType, double &totalLots, double &weightedPrice, double &lastPrice, double &floatingProfit)
+void GetBasketState(int &count, long &posType, double &totalLots, double &weightedPrice, double &lastPrice, double &floatingProfit)
 {
    count = 0;
    posType = -1;
@@ -590,7 +670,7 @@ void GetEngineState(ulong magic, int &count, long &posType, double &totalLots, d
    {
       if(m_pos.SelectByIndex(i))
       {
-         if(m_pos.Symbol() == _Symbol && m_pos.Magic() == magic)
+         if(m_pos.Symbol() == _Symbol && m_pos.Magic() == InpMagicNumber)
          {
             count++;
             posType = m_pos.PositionType();
@@ -615,16 +695,16 @@ void GetEngineState(ulong magic, int &count, long &posType, double &totalLots, d
 }
 
 //+------------------------------------------------------------------+
-//| Cuenta total de órdenes abiertas por ambos motores               |
+//| Cuenta las órdenes abiertas activas                              |
 //+------------------------------------------------------------------+
-int CountTotalOpenOrders()
+int CountOpenOrders()
 {
    int count = 0;
    for(int i = 0; i < PositionsTotal(); i++)
    {
       if(m_pos.SelectByIndex(i))
       {
-         if(m_pos.Symbol() == _Symbol && (m_pos.Magic() == InpMagicRange || m_pos.Magic() == InpMagicTrend))
+         if(m_pos.Symbol() == _Symbol && m_pos.Magic() == InpMagicNumber)
             count++;
       }
    }
@@ -636,11 +716,11 @@ int CountTotalOpenOrders()
 //+------------------------------------------------------------------+
 void CreateDashboard()
 {
-   string prefix = "XAUDUAL_";
+   string prefix = "XAU1762_";
    int x = 20;
    int y = 30;
-   int width = 340;
-   int height = 240;
+   int width = 320;
+   int height = 230;
 
    ObjectCreate(0, prefix + "BG", OBJ_RECTANGLE_LABEL, 0, 0, 0);
    ObjectSetInteger(0, prefix + "BG", OBJPROP_XDISTANCE, x);
@@ -655,15 +735,15 @@ void CreateDashboard()
    ObjectSetInteger(0, prefix + "TITLE", OBJPROP_XDISTANCE, x + 12);
    ObjectSetInteger(0, prefix + "TITLE", OBJPROP_YDISTANCE, y + 10);
    ObjectSetInteger(0, prefix + "TITLE", OBJPROP_COLOR, clrGold);
-   ObjectSetString(0, prefix + "TITLE", OBJPROP_TEXT, "⚡ XAUUSD DUAL-ENGINE (RANGO + EXPANSIÓN)");
+   ObjectSetString(0, prefix + "TITLE", OBJPROP_TEXT, "⚡ XAUUSD BURST SCALPER #1762");
    ObjectSetString(0, prefix + "TITLE", OBJPROP_FONT, "Segoe UI Semibold");
-   ObjectSetInteger(0, prefix + "TITLE", OBJPROP_FONTSIZE, 10);
+   ObjectSetInteger(0, prefix + "TITLE", OBJPROP_FONTSIZE, 11);
 
    ObjectCreate(0, prefix + "SUB", OBJ_LABEL, 0, 0, 0);
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_XDISTANCE, x + 12);
-   ObjectSetInteger(0, prefix + "SUB", OBJPROP_YDISTANCE, y + 30);
+   ObjectSetInteger(0, prefix + "SUB", OBJPROP_YDISTANCE, y + 32);
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_COLOR, clrSilver);
-   ObjectSetString(0, prefix + "SUB", OBJPROP_TEXT, "Cierre Cruzado en Breakeven (+1.5$) | Mult 1.4x");
+   ObjectSetString(0, prefix + "SUB", OBJPROP_TEXT, "Zonas Seguras: 09:00-12:30 y 18:00-21:30 ES");
    ObjectSetString(0, prefix + "SUB", OBJPROP_FONT, "Segoe UI");
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_FONTSIZE, 8);
 
@@ -672,7 +752,7 @@ void CreateDashboard()
       string name = prefix + "LINE_" + IntegerToString(i);
       ObjectCreate(0, name, OBJ_LABEL, 0, 0, 0);
       ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x + 12);
-      ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y + 52 + (i * 22));
+      ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y + 55 + (i * 22));
       ObjectSetInteger(0, name, OBJPROP_COLOR, clrWhite);
       ObjectSetString(0, name, OBJPROP_FONT, "Consolas");
       ObjectSetInteger(0, name, OBJPROP_FONTSIZE, 9);
@@ -684,23 +764,21 @@ void CreateDashboard()
 //+------------------------------------------------------------------+
 void UpdateDashboard(string statusMsg)
 {
-   string prefix = "XAUDUAL_";
+   string prefix = "XAU1762_";
+   int openCount = 0;
+   long cycleType = -1;
+   double totalLots = 0.0;
+   double weightedEntry = 0.0;
+   double lastOrderPrice = 0.0;
+   double floatingProfit = 0.0;
 
-   int rangeCount = 0;
-   long rangeType = -1;
-   double rangeLots = 0.0, rangeWeighted = 0.0, rangeLastPrice = 0.0, rangeProfit = 0.0;
-   GetEngineState(InpMagicRange, rangeCount, rangeType, rangeLots, rangeWeighted, rangeLastPrice, rangeProfit);
+   GetBasketState(openCount, cycleType, totalLots, weightedEntry, lastOrderPrice, floatingProfit);
 
-   int trendCount = 0;
-   long trendType = -1;
-   double trendLots = 0.0, trendWeighted = 0.0, trendLastPrice = 0.0, trendProfit = 0.0;
-   GetEngineState(InpMagicTrend, trendCount, trendType, trendLots, trendWeighted, trendLastPrice, trendProfit);
-
-   double netProfit = rangeProfit + trendProfit;
-   double balance   = AccountInfoDouble(ACCOUNT_BALANCE);
-   double equity    = AccountInfoDouble(ACCOUNT_EQUITY);
-   double currentAsk= SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   double currentBid= SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+   double equity  = AccountInfoDouble(ACCOUNT_EQUITY);
+   double marginLvl = AccountInfoDouble(ACCOUNT_MARGIN_LEVEL);
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double spreadUSD = currentAsk - currentBid;
 
    datetime serverTime = TimeCurrent();
@@ -710,17 +788,20 @@ void UpdateDashboard(string statusMsg)
    if(spainHour < 0) spainHour += 24;
 
    bool inSafe = IsWithinSafeHours();
-   string dirStr = (rangeCount == 0 && trendCount == 0) ? (inSafe ? "ZONA SEGURA: BUSCANDO" : "CONGELADO (FUERA ZONA)") :
-                   StringFormat("M1: %s (%d) | M2: %s (%d)", 
-                                (rangeType == POSITION_TYPE_BUY ? "BUY" : (rangeType == POSITION_TYPE_SELL ? "SELL" : "---")), rangeCount,
-                                (trendType == POSITION_TYPE_BUY ? "BUY" : (trendType == POSITION_TYPE_SELL ? "SELL" : "---")), trendCount);
+   string dirStr = (openCount == 0) ? (inSafe ? "ZONA SEGURA: BUSCANDO" : "CONGELADO (FUERA ZONA)") : (cycleType == POSITION_TYPE_BUY ? "BUY (COMPRAS)" : "SELL (VENTAS)");
+   color dirColor = (openCount == 0) ? (inSafe ? clrAqua : clrDarkGray) : (cycleType == POSITION_TYPE_BUY ? clrLime : clrTomato);
 
-   color statusClr = (rangeCount == 0 && trendCount == 0) ? (inSafe ? clrAqua : clrDarkGray) : (netProfit >= 0 ? clrLime : clrOrange);
+   string targetDistStr = "---";
+   if(openCount > 0)
+   {
+      double dist = (cycleType == POSITION_TYPE_BUY) ? (weightedEntry + InpBasketTP_USD - currentBid) : (currentAsk - (weightedEntry - InpBasketTP_USD));
+      targetDistStr = StringFormat("%.2f$ (%.1fp)", dist, dist * 10);
+   }
 
-   SetLabelText(prefix + "LINE_0", StringFormat("Estado: %s", (statusMsg != "" ? statusMsg : dirStr)), statusClr);
-   SetLabelText(prefix + "LINE_1", StringFormat("M1 (Rango): %d ord | %.2f lot | P&L: $%.2f", rangeCount, rangeLots, rangeProfit), clrWhite);
-   SetLabelText(prefix + "LINE_2", StringFormat("M2 (Trend): %d ord | %.2f lot | P&L: $%.2f", trendCount, trendLots, trendProfit), (trendCount > 0 ? clrAqua : clrDarkGray));
-   SetLabelText(prefix + "LINE_3", StringFormat("Neto Combinado: $%.2f (%+.2f%%)", netProfit, (balance > 0 ? netProfit/balance*100.0 : 0.0)), (netProfit >= InpCombinedTargetUSD ? clrLime : (netProfit >= 0 ? clrAqua : clrOrangeRed)));
+   SetLabelText(prefix + "LINE_0", StringFormat("Estado: %s", (statusMsg != "" ? statusMsg : dirStr)), dirColor);
+   SetLabelText(prefix + "LINE_1", StringFormat("Cesta: %d/%d ordenes | Lotes: %.2f", openCount, InpMaxOrders, totalLots), clrWhite);
+   SetLabelText(prefix + "LINE_2", StringFormat("P. Medio: %.2f | Distancia TP: %s", weightedEntry, targetDistStr), clrAqua);
+   SetLabelText(prefix + "LINE_3", StringFormat("Flotante: $%.2f (%+.2f%%)", floatingProfit, (balance > 0 ? floatingProfit/balance*100.0 : 0.0)), (floatingProfit >= 0 ? clrLime : clrOrangeRed));
    SetLabelText(prefix + "LINE_4", StringFormat("Balance: $%.2f | Equidad: $%.2f", balance, equity), clrWhite);
    SetLabelText(prefix + "LINE_5", StringFormat("Hora ES: %02d:%02d | Spread: %.2f$", spainHour, dt.min, spreadUSD), (spreadUSD > InpMaxSpreadUSD ? clrRed : clrLightGray));
    SetLabelText(prefix + "LINE_6", StringFormat("Ciclos Ganados: %d | Ganancia: $%.2f", m_closedCyclesCount, m_closedCyclesProfit), clrGold);
@@ -734,6 +815,6 @@ void SetLabelText(string name, string text, color clr)
 
 void DestroyDashboard()
 {
-   ObjectsDeleteAll(0, "XAUDUAL_");
+   ObjectsDeleteAll(0, "XAU1762_");
 }
 //+------------------------------------------------------------------+
