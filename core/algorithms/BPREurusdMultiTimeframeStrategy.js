@@ -15,14 +15,15 @@ const path = require('path');
 const { notificationService } = require('../NotificationService');
 const { riskEngine } = require('../RiskEngine');
 
-const SHADOW_EURUSD_FILE = path.join(__dirname, '..', '..', 'proprietary_bpr_eurusd_trades.json');
+const { databaseService } = require('../DatabaseService');
+
 const CANDLE_CACHE_FILE = path.join(__dirname, '..', '..', 'bpr_eurusd_candle_cache.json');
 
 const EURUSD_CONFIG = {
-  M2:  { tfMinutes: 2,  minFvgGap: 0.00008, minOverlap: 0.00005, minRange: 0.00010, bufferPips: 1.2, slMinPips: 2.0, rrRatio: 1.0, lookback: 25, maxDistPips: 4.5 },
-  M3:  { tfMinutes: 3,  minFvgGap: 0.00010, minOverlap: 0.00006, minRange: 0.00012, bufferPips: 1.2, slMinPips: 2.0, rrRatio: 1.0, lookback: 25, maxDistPips: 6.0 },
-  M5:  { tfMinutes: 5,  minFvgGap: 0.00012, minOverlap: 0.00008, minRange: 0.00015, bufferPips: 1.5, slMinPips: 2.5, rrRatio: 1.0, lookback: 25, maxDistPips: 8.5 },
-  M15: { tfMinutes: 15, minFvgGap: 0.00018, minOverlap: 0.00010, minRange: 0.00020, bufferPips: 2.0, slMinPips: 3.0, rrRatio: 1.0, lookback: 25, maxDistPips: 15.0 }
+  M2: { tfMinutes: 2, minFvgGap: 0.00008, minOverlap: 0.00005, minRange: 0.00010, bufferPips: 1.2, slMinPips: 2.0, rrRatio: 2.0, lookback: 25, maxDistPips: 4.5 },
+  M3: { tfMinutes: 3, minFvgGap: 0.00010, minOverlap: 0.00006, minRange: 0.00012, bufferPips: 1.2, slMinPips: 2.0, rrRatio: 2.0, lookback: 25, maxDistPips: 6.0 },
+  M5: { tfMinutes: 5, minFvgGap: 0.00012, minOverlap: 0.00008, minRange: 0.00015, bufferPips: 1.5, slMinPips: 2.5, rrRatio: 2.0, lookback: 25, maxDistPips: 8.5 },
+  M15: { tfMinutes: 15, minFvgGap: 0.00018, minOverlap: 0.00010, minRange: 0.00020, bufferPips: 2.0, slMinPips: 3.0, rrRatio: 2.5, lookback: 25, maxDistPips: 15.0 }
 };
 
 class BPREurusdMultiTimeframeStrategy {
@@ -33,9 +34,9 @@ class BPREurusdMultiTimeframeStrategy {
     this.executionHandler = null;
 
     this.timeframes = {
-      M2:  { config: EURUSD_CONFIG.M2,  candles: [], currentBar: null, bprZones: [] },
-      M3:  { config: EURUSD_CONFIG.M3,  candles: [], currentBar: null, bprZones: [] },
-      M5:  { config: EURUSD_CONFIG.M5,  candles: [], currentBar: null, bprZones: [] },
+      M2: { config: EURUSD_CONFIG.M2, candles: [], currentBar: null, bprZones: [] },
+      M3: { config: EURUSD_CONFIG.M3, candles: [], currentBar: null, bprZones: [] },
+      M5: { config: EURUSD_CONFIG.M5, candles: [], currentBar: null, bprZones: [] },
       M15: { config: EURUSD_CONFIG.M15, candles: [], currentBar: null, bprZones: [] }
     };
 
@@ -53,9 +54,9 @@ class BPREurusdMultiTimeframeStrategy {
       maxDrawdownPips: 0,
       peakPips: 0,
       byTimeframe: {
-        M2:  { trades: 0, wins: 0, pips: 0 },
-        M3:  { trades: 0, wins: 0, pips: 0 },
-        M5:  { trades: 0, wins: 0, pips: 0 },
+        M2: { trades: 0, wins: 0, pips: 0 },
+        M3: { trades: 0, wins: 0, pips: 0 },
+        M5: { trades: 0, wins: 0, pips: 0 },
         M15: { trades: 0, wins: 0, pips: 0 }
       }
     };
@@ -73,14 +74,22 @@ class BPREurusdMultiTimeframeStrategy {
 
   loadState() {
     try {
-      if (fs.existsSync(SHADOW_EURUSD_FILE)) {
-        const data = JSON.parse(fs.readFileSync(SHADOW_EURUSD_FILE, 'utf-8'));
-        this.history = data.history || [];
-        this.metrics = data.metrics || this.metrics;
-        this.activeTrades = data.activeTrades || [];
+      const dbMetrics = databaseService.getProprietaryMetrics(this.symbol);
+      if (dbMetrics && dbMetrics.totalTrades > 0) {
+        this.metrics = {
+          ...this.metrics,
+          totalTrades: dbMetrics.totalTrades,
+          wins: dbMetrics.wins,
+          losses: dbMetrics.losses,
+          winRate: dbMetrics.winRate,
+          netPips: dbMetrics.netPips,
+          profitFactor: dbMetrics.profitFactor
+        };
       }
+      this.history = databaseService.getRecentProprietaryTrades({ symbol: this.symbol, status: 'CLOSED', limit: 50 });
+      this.activeTrades = databaseService.getActiveProprietaryTrades(this.symbol);
     } catch (e) {
-      console.warn('⚠️ No se pudo cargar estado de BPR EURUSD:', e.message);
+      console.warn('⚠️ No se pudo cargar estado de BPR EURUSD desde SQLite:', e.message);
     }
     this.loadCandleCache();
   }
@@ -96,7 +105,7 @@ class BPREurusdMultiTimeframeStrategy {
             this.scanAllBprZones(tfKey, tfObj);
           }
         }
-        const summary = Object.keys(this.timeframes).map(k => `${k}:${this.timeframes[k].candles.length}v(${this.timeframes[k].bprZones.filter(z=>!z.mitigated).length}z)`).join(' ');
+        const summary = Object.keys(this.timeframes).map(k => `${k}:${this.timeframes[k].candles.length}v(${this.timeframes[k].bprZones.filter(z => !z.mitigated).length}z)`).join(' ');
         console.log(`💶 [BPR EURUSD Cache] Velas restauradas en caliente tras reinicio (${summary}). Zonas BPR listas.`);
       }
     } catch (e) {
@@ -111,21 +120,19 @@ class BPREurusdMultiTimeframeStrategy {
         dump[tfKey] = tfObj.candles.slice(-450);
       }
       fs.writeFileSync(CANDLE_CACHE_FILE, JSON.stringify(dump), 'utf-8');
-    } catch (e) {}
+    } catch (e) { }
   }
 
   saveState() {
     try {
-      fs.writeFileSync(SHADOW_EURUSD_FILE, JSON.stringify({
-        strategy: this.name,
-        symbol: this.symbol,
-        metrics: this.metrics,
-        activeTrades: this.activeTrades,
-        history: this.history.slice(-150),
-        lastUpdated: new Date().toISOString()
-      }, null, 2), 'utf-8');
+      for (const t of this.activeTrades) {
+        databaseService.upsertProprietaryTrade(t, this.name, this.isLiveExecution);
+      }
+      for (const t of this.history.slice(-10)) {
+        databaseService.upsertProprietaryTrade(t, this.name, this.isLiveExecution);
+      }
     } catch (e) {
-      console.error('❌ Error guardando BPR EURUSD:', e.message);
+      console.error('❌ Error guardando BPR EURUSD en SQLite:', e.message);
     }
   }
 
@@ -362,6 +369,143 @@ class BPREurusdMultiTimeframeStrategy {
     }
   }
 
+  checkBOS(candles, targetDirection, options = {}) {
+    const lookbackBars = options.lookbackBars || 45;
+    const pivotBars = options.pivotBars || 2;
+    const decimals = 5;
+
+    if (!candles || candles.length < (pivotBars * 2 + 5)) {
+      return { ok: false, detail: 'Insuficientes velas para BOS' };
+    }
+
+    const n = candles.length;
+    const startIdx = Math.max(pivotBars, n - lookbackBars);
+    const endIdx = n - pivotBars - 1;
+
+    const swingHighs = [];
+    const swingLows = [];
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      let isHigh = true;
+      let isLow = true;
+      for (let j = 1; j <= pivotBars; j++) {
+        if (candles[i].high < candles[i - j].high || candles[i].high <= candles[i + j].high) isHigh = false;
+        if (candles[i].low > candles[i - j].low || candles[i].low >= candles[i + j].low) isLow = false;
+      }
+      if (isHigh) {
+        swingHighs.push({ price: candles[i].high, time: candles[i].time, index: i });
+      }
+      if (isLow) {
+        swingLows.push({ price: candles[i].low, time: candles[i].time, index: i });
+      }
+    }
+
+    const isBuy = targetDirection === 'BUY' || targetDirection === 'BULLISH';
+    const isSell = targetDirection === 'SELL' || targetDirection === 'BEARISH';
+
+    if (isBuy) {
+      let validBos = null;
+
+      for (let s = swingHighs.length - 1; s >= 0; s--) {
+        const sh = swingHighs[s];
+        for (let i = sh.index + 1; i < n; i++) {
+          if (candles[i].close > sh.price) {
+            const priorLows = swingLows.filter(sl => sl.index <= i && sl.index >= sh.index - 15);
+            const originLow = priorLows.length > 0 ? priorLows.reduce((min, cur) => cur.price < min.price ? cur : min, priorLows[0]) : null;
+
+            let invalidated = false;
+            if (originLow) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close < originLow.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenHigh: sh,
+                breakIndex: i,
+                originLow
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSh = swingHighs[swingHighs.length - 1];
+        return {
+          ok: false,
+          detail: lastSh ? `Pendiente BOS Alcista (Swing ${lastSh.price.toFixed(decimals)})` : 'Sin Swing High previo',
+          pivotPrice: lastSh ? lastSh.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Alcista (Rotura ${validBos.brokenHigh.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenHigh.price,
+        originLow: validBos.originLow ? validBos.originLow.price : null
+      };
+    }
+
+    if (isSell) {
+      let validBos = null;
+
+      for (let s = swingLows.length - 1; s >= 0; s--) {
+        const sl = swingLows[s];
+        for (let i = sl.index + 1; i < n; i++) {
+          if (candles[i].close < sl.price) {
+            const priorHighs = swingHighs.filter(sh => sh.index <= i && sh.index >= sl.index - 15);
+            const originHigh = priorHighs.length > 0 ? priorHighs.reduce((max, cur) => cur.price > max.price ? cur : max, priorHighs[0]) : null;
+
+            let invalidated = false;
+            if (originHigh) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close > originHigh.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenLow: sl,
+                breakIndex: i,
+                originHigh
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSl = swingLows[swingLows.length - 1];
+        return {
+          ok: false,
+          detail: lastSl ? `Pendiente BOS Bajista (Swing ${lastSl.price.toFixed(decimals)})` : 'Sin Swing Low previo',
+          pivotPrice: lastSl ? lastSl.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Bajista (Rotura ${validBos.brokenLow.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenLow.price,
+        originHigh: validBos.originHigh ? validBos.originHigh.price : null
+      };
+    }
+
+    return { ok: false, detail: 'Dirección no válida' };
+  }
+
   evaluateEntry(tfKey, tfObj, candle) {
     const date = new Date(candle.time);
     const hour = date.getUTCHours();
@@ -391,6 +535,12 @@ class BPREurusdMultiTimeframeStrategy {
           const lowerWick = Math.min(candle.open, candle.close) - candle.low;
           if (lowerWick / candleRange < 0.20) continue;
 
+          // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+          const bosCheck = this.checkBOS(tfObj.candles, 'BULLISH', { symbol: 'EURUSD' });
+          if (!bosCheck.ok) {
+            continue;
+          }
+
           bpr.tested = true;
           const entry = candle.close; // Precio real de mercado al cierre
           const sl = bpr.bottom - bufferPrice;
@@ -408,6 +558,12 @@ class BPREurusdMultiTimeframeStrategy {
         if (candle.high >= bpr.bottom && candle.high <= bpr.top + bufferPrice) {
           const upperWick = candle.high - Math.max(candle.open, candle.close);
           if (upperWick / candleRange < 0.20) continue;
+
+          // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+          const bosCheck = this.checkBOS(tfObj.candles, 'BEARISH', { symbol: 'EURUSD' });
+          if (!bosCheck.ok) {
+            continue;
+          }
 
           bpr.tested = true;
           const entry = candle.close; // Precio real de mercado al cierre
@@ -463,28 +619,21 @@ class BPREurusdMultiTimeframeStrategy {
     this.activeTrades.push(trade);
     console.log(`\n🎯 [BPR EURUSD ${tfKey}] Señal Detectada: ${type} @ ${trade.entryPrice} | SL: ${trade.initialSL} (${trade.slPips}p) | TP: ${trade.tpPrice} (${trade.tpPips}p)`);
 
-    // Notificación Telegram
-    try {
-      if (typeof notificationService.notifyTradeSignal === 'function') {
-        notificationService.notifyTradeSignal({
-          channel: `BPR Sniper EURUSD [${tfKey}]`,
-          type,
-          symbol: 'EURUSD',
-          entry: trade.entryPrice,
-          sl: trade.initialSL,
-          tp: trade.tpPrice,
-          comment: `BPR EURUSD ${tfKey}`
-        }).catch(() => {});
-      } else if (typeof notificationService.notifyBprSignal === 'function') {
-        notificationService.notifyBprSignal({
-          ...trade,
-          isLive: this.isLiveExecution,
-          tp1Price: trade.tpPrice,
-          tp2Price: trade.tpPrice,
-          autoBePips: 20
-        }).catch(() => {});
-      }
-    } catch (e) {}
+    const sendNotification = (isLive) => {
+      try {
+        if (typeof notificationService.notifyBprSignal === 'function') {
+          notificationService.notifyBprSignal({
+            ...trade,
+            timeframe: tfKey,
+            symbol: 'EURUSD',
+            isLive,
+            tpPrice: trade.tpPrice,
+            tpPips: trade.tpPips,
+            slPips: trade.slPips
+          }).catch(() => { });
+        }
+      } catch (e) { }
+    };
 
     // Despacho a MT5 si el executionHandler está activo
     if (this.isLiveExecution && this.executionHandler) {
@@ -503,10 +652,28 @@ class BPREurusdMultiTimeframeStrategy {
           channelName: `BPR EURUSD ${tfKey}`,
           comment: `BPR EURUSD ${tfKey}`
         };
-        this.executionHandler(orderPayload);
+        Promise.resolve(this.executionHandler(orderPayload)).then(res => {
+          if (res === false) {
+            console.log(`⚠️ [BPR EURUSD ${tfKey}] Orden rechazada por puente MT5 / Gestión de Riesgo. Retirando de activeTrades.`);
+            this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+            this.saveState();
+          } else {
+            console.log(`🚀 [BPR EURUSD ${tfKey}] Orden confirmada en MT5. Enviando notificación Telegram...`);
+            sendNotification(true);
+          }
+        }).catch(err => {
+          console.error('❌ Error despachando orden EURUSD a MT5:', err.message);
+          this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+          this.saveState();
+        });
       } catch (err) {
         console.error('❌ Error despachando orden EURUSD a MT5:', err.message);
+        this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+        this.saveState();
       }
+    } else {
+      // Modo Shadow Paper-Trading
+      sendNotification(false);
     }
 
     this.saveState();
@@ -629,14 +796,15 @@ class BPREurusdMultiTimeframeStrategy {
           activeType: openTrade.type,
           statusLabel: 'EN MERCADO (ORDEN VIVA)',
           statusColor: 'var(--accent-green-bright)',
-          score: '5/5',
+          score: '6/6',
           scorePercent: 100,
           rules: [
             { name: '1. Sesion Institucional', ok: true, detail: `Operación activa en ${openTrade.type}` },
             { name: '2. Zona BPR Viva (Reciente)', ok: true, detail: `Entrada: ${openTrade.entryPrice}` },
-            { name: '3. Retest Zona BPR (CE 50%)', ok: true, detail: 'Zona mitigada y testeada con éxito' },
-            { name: '4. SL Estructural + Buffer', ok: true, detail: `SL: ${openTrade.initialSL} (${openTrade.slPips}p)` },
-            { name: '5. Rechazo Institucional >= 20%', ok: true, detail: `TP: ${openTrade.tpPrice} (${openTrade.tpPips}p)` }
+            { name: '3. Ruptura Estructura (BOS)', ok: true, detail: 'BOS confirmado previo a entrada' },
+            { name: '4. Retest Zona BPR (CE 50%)', ok: true, detail: 'Zona mitigada y testeada con éxito' },
+            { name: '5. SL Estructural + Buffer', ok: true, detail: `SL: ${openTrade.initialSL} (${openTrade.slPips}p)` },
+            { name: '6. Rechazo Institucional >= 20%', ok: true, detail: `TP: ${openTrade.tpPrice} (${openTrade.tpPips}p)` }
           ],
           sessionOk: true,
           activeZone: null,
@@ -654,14 +822,15 @@ class BPREurusdMultiTimeframeStrategy {
           activeType: recentClosedTrade.type,
           statusLabel: isWin ? `TP ALCANZADO (+${recentClosedTrade.pips}p)` : `SL CERRADO (${recentClosedTrade.pips}p)`,
           statusColor: isWin ? 'var(--accent-green-bright)' : 'var(--accent-rose)',
-          score: '5/5',
+          score: '6/6',
           scorePercent: 100,
           rules: [
             { name: '1. Sesion Institucional', ok: true, detail: `Cierre: ${recentClosedTrade.reason}` },
             { name: '2. Zona BPR Viva (Reciente)', ok: true, detail: `Entrada: ${recentClosedTrade.entryPrice}` },
-            { name: '3. Retest Zona BPR (CE 50%)', ok: true, detail: 'Retesteo completado con éxito' },
-            { name: '4. SL Estructural + Buffer', ok: true, detail: `SL inicial: ${recentClosedTrade.initialSL}` },
-            { name: '5. Rechazo Institucional >= 20%', ok: true, detail: `Resultado: ${recentClosedTrade.pips > 0 ? '+' : ''}${recentClosedTrade.pips}p` }
+            { name: '3. Ruptura Estructura (BOS)', ok: true, detail: 'BOS confirmado previo a entrada' },
+            { name: '4. Retest Zona BPR (CE 50%)', ok: true, detail: 'Retesteo completado con éxito' },
+            { name: '5. SL Estructural + Buffer', ok: true, detail: `SL inicial: ${recentClosedTrade.initialSL}` },
+            { name: '6. Rechazo Institucional >= 20%', ok: true, detail: `Resultado: ${recentClosedTrade.pips > 0 ? '+' : ''}${recentClosedTrade.pips}p` }
           ],
           sessionOk: true,
           activeZone: null,
@@ -673,9 +842,9 @@ class BPREurusdMultiTimeframeStrategy {
       }
 
       // Priorizar zonas vivas (no mitigadas y no testeadas) recientes y en rango
-      const freshZones = tfObj.bprZones.filter(z => 
-        !z.mitigated && 
-        !z.tested && 
+      const freshZones = tfObj.bprZones.filter(z =>
+        !z.mitigated &&
+        !z.tested &&
         (lastIndex - (z.createdIndex ?? z.barIndex ?? 0)) <= MAX_ZONE_AGE_BARS &&
         (price > 0 ? (Math.abs(price - z.consequentEncroachment) * 10000 <= MAX_ZONE_DIST_PIPS) : true)
       );
@@ -685,7 +854,7 @@ class BPREurusdMultiTimeframeStrategy {
       }
 
       // Zona de referencia reciente dentro de un rango razonable (no a decenas de pips)
-      const recentZones = tfObj.bprZones.filter(z => 
+      const recentZones = tfObj.bprZones.filter(z =>
         (lastIndex - (z.createdIndex ?? z.barIndex ?? 0)) <= MAX_ZONE_AGE_BARS &&
         (price > 0 ? (Math.abs(price - z.consequentEncroachment) * 10000 <= MAX_ZONE_DIST_PIPS * 1.5) : true)
       );
@@ -772,6 +941,9 @@ class BPREurusdMultiTimeframeStrategy {
       }
 
       const targetZone = activeZone || refZone;
+      const targetDirection = (targetZone && targetZone.type === 'BEARISH') ? 'BEARISH' : 'BULLISH';
+      const bosCheck = this.checkBOS(tfObj.candles, targetDirection, { symbol: 'EURUSD' });
+
       const rules = [
         {
           name: '1. Sesion Institucional',
@@ -784,17 +956,22 @@ class BPREurusdMultiTimeframeStrategy {
           detail: activeZone ? `${activeZone.type} [${(activeZone.top).toFixed(5)}]` : (refZone ? `Ref [${refZone.top.toFixed(5)}]` : 'Rastreando nuevo Imbalance')
         },
         {
-          name: '3. Retest Zona BPR (CE 50%)',
+          name: '3. Ruptura Estructura (BOS)',
+          ok: bosCheck.ok,
+          detail: bosCheck.detail
+        },
+        {
+          name: '4. Retest Zona BPR (CE 50%)',
           ok: retestPassed,
           detail: retestDetail
         },
         {
-          name: '4. SL Estructural + Buffer',
+          name: '5. SL Estructural + Buffer',
           ok: true,
           detail: `Min: ${tfObj.config.slMinPips}p | Buf: ${tfObj.config.bufferPips}p`
         },
         {
-          name: '5. Rechazo Institucional >= 20%',
+          name: '6. Rechazo Institucional >= 20%',
           ok: wickPassed,
           detail: wickDetail
         }

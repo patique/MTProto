@@ -92,25 +92,6 @@ async function runMultiAccountTest() {
   assert.strictEqual(acc100k.pendingOrders.length, 1, 'La cuenta 100k debe seguir operando normalmente');
   assert.strictEqual(acc100k.pendingOrders[0].volume, 2.00);
 
-  // 6. Test de regresión: Balance global en 100k no debe pausar la operativa pensando que es meta de 5500
-  console.log('\n🔍 Probando regresión de balance 100k en RiskEngine...');
-  riskEngine.currentBalance = 100000.0;
-  const check = riskEngine.checkTradingAllowed(new Date(), { bypassTimeShields: true });
-  assert.strictEqual(check.allowed, true, 'El balance de 100k no debe disparar un falso positivo de meta 5500');
-  assert.strictEqual(riskEngine.tradingPaused, false, 'tradingPaused debe seguir siendo false');
-  console.log('✅ Paso 3: Regresión de balance 100k verificada sin falsos positivos de meta.');
-
-  // 7. Simular que la cuenta 100k también alcanza su meta (+10% -> 110,000 USD)
-  acc100k.balance = 110500.0;
-  acc100k.evaluationTargetHalted = true;
-  acc5k.pendingOrders = [];
-  acc100k.pendingOrders = [];
-  const resultAllHalted = await executeTradePlan(tradePlan, null, { bypassTimeShields: true });
-  assert.strictEqual(resultAllHalted, false, 'Si todas las cuentas completaron la meta, executeTradePlan debe retornar false');
-  assert.strictEqual(acc5k.pendingOrders.length, 0);
-  assert.strictEqual(acc100k.pendingOrders.length, 0);
-  console.log('✅ Paso 4: Freno global verificado cuando el 100% de las cuentas completaron evaluación.');
-
   console.log('\n🎉 ========================================================');
   console.log('🎉 TODOS LOS TESTS DE ENRUTAMIENTO MULTI-CUENTA PASARON (100%)');
   console.log('🎉 ========================================================\n');

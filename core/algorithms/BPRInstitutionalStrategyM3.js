@@ -219,6 +219,143 @@ class BPRInstitutionalStrategyM3 {
     if (this.bprZones.length > 30) this.bprZones.shift();
   }
 
+  checkBOS(candles, targetDirection, options = {}) {
+    const lookbackBars = options.lookbackBars || 45;
+    const pivotBars = options.pivotBars || 2;
+    const decimals = 2;
+
+    if (!candles || candles.length < (pivotBars * 2 + 5)) {
+      return { ok: false, detail: 'Insuficientes velas para BOS' };
+    }
+
+    const n = candles.length;
+    const startIdx = Math.max(pivotBars, n - lookbackBars);
+    const endIdx = n - pivotBars - 1;
+
+    const swingHighs = [];
+    const swingLows = [];
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      let isHigh = true;
+      let isLow = true;
+      for (let j = 1; j <= pivotBars; j++) {
+        if (candles[i].high < candles[i - j].high || candles[i].high <= candles[i + j].high) isHigh = false;
+        if (candles[i].low > candles[i - j].low || candles[i].low >= candles[i + j].low) isLow = false;
+      }
+      if (isHigh) {
+        swingHighs.push({ price: candles[i].high, time: candles[i].time, index: i });
+      }
+      if (isLow) {
+        swingLows.push({ price: candles[i].low, time: candles[i].time, index: i });
+      }
+    }
+
+    const isBuy = targetDirection === 'BUY' || targetDirection === 'BULLISH';
+    const isSell = targetDirection === 'SELL' || targetDirection === 'BEARISH';
+
+    if (isBuy) {
+      let validBos = null;
+
+      for (let s = swingHighs.length - 1; s >= 0; s--) {
+        const sh = swingHighs[s];
+        for (let i = sh.index + 1; i < n; i++) {
+          if (candles[i].close > sh.price) {
+            const priorLows = swingLows.filter(sl => sl.index <= i && sl.index >= sh.index - 15);
+            const originLow = priorLows.length > 0 ? priorLows.reduce((min, cur) => cur.price < min.price ? cur : min, priorLows[0]) : null;
+
+            let invalidated = false;
+            if (originLow) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close < originLow.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenHigh: sh,
+                breakIndex: i,
+                originLow
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSh = swingHighs[swingHighs.length - 1];
+        return {
+          ok: false,
+          detail: lastSh ? `Pendiente BOS Alcista (Swing ${lastSh.price.toFixed(decimals)})` : 'Sin Swing High previo',
+          pivotPrice: lastSh ? lastSh.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Alcista (Rotura ${validBos.brokenHigh.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenHigh.price,
+        originLow: validBos.originLow ? validBos.originLow.price : null
+      };
+    }
+
+    if (isSell) {
+      let validBos = null;
+
+      for (let s = swingLows.length - 1; s >= 0; s--) {
+        const sl = swingLows[s];
+        for (let i = sl.index + 1; i < n; i++) {
+          if (candles[i].close < sl.price) {
+            const priorHighs = swingHighs.filter(sh => sh.index <= i && sh.index >= sl.index - 15);
+            const originHigh = priorHighs.length > 0 ? priorHighs.reduce((max, cur) => cur.price > max.price ? cur : max, priorHighs[0]) : null;
+
+            let invalidated = false;
+            if (originHigh) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close > originHigh.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenLow: sl,
+                breakIndex: i,
+                originHigh
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSl = swingLows[swingLows.length - 1];
+        return {
+          ok: false,
+          detail: lastSl ? `Pendiente BOS Bajista (Swing ${lastSl.price.toFixed(decimals)})` : 'Sin Swing Low previo',
+          pivotPrice: lastSl ? lastSl.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Bajista (Rotura ${validBos.brokenLow.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenLow.price,
+        originHigh: validBos.originHigh ? validBos.originHigh.price : null
+      };
+    }
+
+    return { ok: false, detail: 'Dirección no válida' };
+  }
+
   evaluateEntry(candle) {
     if (!candle.ema100) return;
 
@@ -226,8 +363,8 @@ class BPRInstitutionalStrategyM3 {
     const date = new Date(candle.time);
     const hour = date.getUTCHours();
     const min = date.getUTCMinutes();
-    if (hour === 23 || (hour === 0 && min < 30) || hour === 10) {
-      return; // Protección de spread ensanchado y merma pre-almuerzo
+    if (hour === 23 || (hour === 0 && min < 30)) {
+      return; // Protección de spread ensanchado
     }
 
     const candleRange = candle.high - candle.low;
@@ -242,6 +379,12 @@ class BPRInstitutionalStrategyM3 {
           const lowerWick = Math.min(candle.open, candle.close) - candle.low;
           if (lowerWick / candleRange >= 0.25) { // Mecha de rechazo alcista
             if (candle.close > candle.ema100) { // Tendencia alcista
+              // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+              const bosCheck = this.checkBOS(this.candlesM3, 'BULLISH', { symbol: this.symbol });
+              if (!bosCheck.ok) {
+                continue;
+              }
+
               bpr.tested = true;
               this.openShadowTrade('BUY', bpr.top, bpr.bottom - 1.2, candle.time);
               break;
@@ -254,6 +397,12 @@ class BPRInstitutionalStrategyM3 {
           const upperWick = candle.high - Math.max(candle.open, candle.close);
           if (upperWick / candleRange >= 0.25) { // Mecha de rechazo bajista
             if (candle.close < candle.ema100) { // Tendencia bajista
+              // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+              const bosCheck = this.checkBOS(this.candlesM3, 'BEARISH', { symbol: this.symbol });
+              if (!bosCheck.ok) {
+                continue;
+              }
+
               bpr.tested = true;
               this.openShadowTrade('SELL', bpr.bottom, bpr.top + 1.2, candle.time);
               break;

@@ -22,6 +22,7 @@ class AdaptiveParser {
     return text
       .normalize('NFKD')
       .replace(/[\u200B-\u200D\uFEFF]/g, '') // Zero-width spaces
+      .replace(/(\d),(\d{3})/g, '$1$2')       // Eliminar comas de miles (ej: 4,128 -> 4128)
       .trim();
   }
 
@@ -90,7 +91,7 @@ class AdaptiveParser {
 
     // 4. Detección de Stop Loss
     let sl = null;
-    const slRegex = /(?:STOP\s*LOSS|STOPLOSS|\bSL\b)[\s:\.@]*([0-9]{2,4}(?:\.[0-9]+)?)/i;
+    const slRegex = /(?:STOP\s*LOSS|STOPLOSS|\bSL\b|INVALIDATION[^\d]*?(?:BELOW|ABOVE)?[\s:]*)[\s:\.@]*([0-9]{2,4}(?:\.[0-9]+)?)/i;
     const slMatch = clean.match(slRegex);
     if (slMatch) {
       sl = parseFloat(slMatch[1]);

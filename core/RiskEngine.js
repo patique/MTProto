@@ -9,6 +9,8 @@
  *   - Botón de Pánico Manual (Pausar / Reanudar)
  */
 
+const { getSymbolSpec } = require('../config/symbols.config');
+
 const CONFIG = {
   MODE: 'PROP_FIRM', // 'PERSONAL' | 'PROP_FIRM' (Predeterminado: PROP_FIRM institucional)
   accountBalance: 5263.49, // Saldo real auditado The5%ers ($5,263.49 USD)
@@ -20,19 +22,19 @@ const CONFIG = {
   },
 
   PROP_FIRM: {
-    riskPercent: 0.75, // Riesgo por trade en fase de examen (0.75%)
-    maxOpenTrades: 2, // 🛡️ Regla 2: Máximo 2 posiciones simultáneas en toda la cuenta
-    maxTotalRiskPercent: 1.5, // 🛡️ Regla 3: Máximo 1.5% de riesgo acumulado en mercado
-    antiHedging: true, // Regla 1: Prohibido operar direcciones opuestas en el mismo par
-    breakEvenSlotRelease: true, // Regla 4: Al entrar en BE, el riesgo es 0 y se libera slot
-    newsBufferMinutes: 15, // Reglas 5 y 6: Cerrar 15 min antes y bloquear 15 min después de noticia roja
-    dailyMaxDrawdownPercent: 2.5, // 🛡️ Límite interno conservador 2.5% como colchón preventivo ante el 5% de la prop firm
-    totalMaxDrawdownPercent: 10.0, // Regla 7: Límite de pérdida total 10.0%
-    dailyProfitTargetUSD: 300.0, // Regla 8: Take Profit diario configurable (+$300/día)
-    targetEvaluationBalance: 5500.0, // 🎯 Meta Global Fase 1: $5,500 USD (+10%). Al alcanzarse se congela la operativa.
+    riskPercent: 0.75, // Riesgo por trade para fase de examen Challenge (0.75%)
+    maxOpenTrades: 2, // Regla 2: Máximo 2 posiciones simultáneas con riesgo vivo (sin BE)
+    maxTotalRiskPercent: 1.5, // Máximo 1.5% de riesgo acumulado simultáneo
+    antiHedging: true, // Prohibido operar direcciones opuestas en el mismo par
+    breakEvenSlotRelease: true, // 🎯 Slot dinámico: al poner BE el riesgo es $0 y se libera el slot para otra entrada
+    newsBufferMinutes: 10, // Cerrar 10 min antes y bloquear 10 min después de noticia roja
+    dailyMaxDrawdownPercent: 2.25, // 🛑 Circuit Breaker: Freno de emergencia al -2.25% diario (lejos del 5% de FTMO)
+    totalMaxDrawdownPercent: 10.0, // Límite de pérdida total 10.0%
+    dailyProfitTargetUSD: 3000.0, // Take Profit diario recomendado en 100k
+    targetEvaluationBalance: 110000.0, // 🎯 Meta Global Fase 1 FTMO: $110,000 USD (+10%). Al alcanzarse se congela la operativa.
     maxSlippagePips: 3.0,
     maxStopLossPips: 100,
-    maxLotSize: 2.0
+    maxLotSize: 15.0
   }
 };
 
@@ -48,6 +50,7 @@ class RiskEngine {
     this.dailyMaxLossUSD = isProp ? 300.0 : 20.0; // $300 en 10k (3.0% buffer de seguridad preventivo)
     this.activePositionsCount = 0; // Conteo en vivo de órdenes activas reportado por MT5
     this.tradingPaused = false;
+    this.isManualPause = false;
     this.pauseReason = '';
   }
 
@@ -156,6 +159,16 @@ class RiskEngine {
   }
 
   /**
+   * 🏛️ Comprueba si estamos dentro de la ventana operativa permitida:
+   * Operativa Continua desde las 03:00 AM España hasta las 22:55 PM España (Asia + Londres + NY)
+   */
+  isTradingSessionActive(date = new Date()) {
+    const { totalMinutes } = this.getMadridTime(date);
+    // 03:00 CET = 180 min | 22:55 CET = 1375 min
+    return totalMinutes >= 180 && totalMinutes < 1375;
+  }
+
+  /**
    * 🛑 VERIFICADOR DE STOP TRADING:
    * Evalúa botones de pánico, Rollover Shield, Friday Close Guard, Daily Close y reglas de Prop Firm.
    * @param {Date} [checkDate=new Date()]
@@ -164,7 +177,7 @@ class RiskEngine {
    */
   checkTradingAllowed(checkDate = new Date(), options = {}) {
     // Si el usuario pausó manualmente desde el botón de pánico
-    if (this.tradingPaused) {
+    if (this.tradingPaused && this.isManualPause) {
       return {
         allowed: false,
         reason: this.pauseReason || 'Trading pausado manualmente por el usuario.'
@@ -195,67 +208,31 @@ class RiskEngine {
       };
     }
 
-    // 🛑 REGLA 2: Límite estricto de operaciones activas simultáneas en mercado
-    if (this.config.MODE === 'PROP_FIRM' && this.activePositionsCount >= (this.config.PROP_FIRM.maxOpenTrades || 2)) {
+    // 🏛️ CONTROL DE VENTANA OPERATIVA (Operativa continua 03:00 a 22:55 CET)
+    if (!options.bypassTimeShields && !this.isTradingSessionActive(checkDate)) {
+      const { hour: mHour, minute: mMin } = this.getMadridTime(checkDate);
       return {
         allowed: false,
-        reason: `⚠️ [PROP FIRM - REGLA 2] Límite de ${this.config.PROP_FIRM.maxOpenTrades} operaciones activas alcanzado (${this.activePositionsCount} abiertas). Slot de riesgo no disponible.`
+        reason: `🏛️ [FUERA DE SESIÓN OPERATIVA] Pausa nocturna (${mHour.toString().padStart(2, '0')}:${mMin.toString().padStart(2, '0')} CET). Apertura de sesión a las 03:00 CET.`
       };
     }
 
-    const pnl = this.dailyPnL;
+    // Reglas de Prop Firm a nivel global (solo si NO se gestiona de forma desacoplada por cuenta en mt5_bridge)
+    if (!options.isMultiAccountManaged && this.config.MODE === 'PROP_FIRM') {
+      if (this.activePositionsCount >= (this.config.PROP_FIRM.maxOpenTrades || 2)) {
+        return {
+          allowed: false,
+          reason: `⚠️ [PROP FIRM - REGLA 2] Límite de ${this.config.PROP_FIRM.maxOpenTrades} operaciones activas alcanzado (${this.activePositionsCount} abiertas). Slot de riesgo no disponible.`
+        };
+      }
 
-    // Reglas exclusivas para cuentas de Fondeo (PROP_FIRM):
-    // (Nota: La meta global de evaluación +10% se gestiona individualmente por cuenta en mt5_bridge.js)
-    // 1. Meta de Ganancia Diaria Alcanzada
-    if (this.dailyTargetProfitUSD > 0 && pnl >= this.dailyTargetProfitUSD) {
-      this.tradingPaused = true;
-      this.pauseReason = `🎯 [PROP FIRM] Meta diaria alcanzada (+$${pnl.toFixed(2)} USD). Trading pausado por reglas de consistencia.`;
-      console.log(`🎯 [PROP FIRM STOP]: ${this.pauseReason}`);
-      return { allowed: false, reason: this.pauseReason };
-    }
-
-    // 2. Límite de Pérdida Diaria (Drawdown Estricto 5.0% / $500 en 10k)
-    if (this.dailyMaxLossUSD > 0 && pnl <= -this.dailyMaxLossUSD) {
-      this.tradingPaused = true;
-      this.pauseReason = `🚨 [PROP FIRM] Límite de pérdida diaria alcanzado (-$${Math.abs(pnl).toFixed(2)} USD). Freno de emergencia activado.`;
-      console.log(`🚨 [PROP FIRM FRENO]: ${this.pauseReason}`);
-      return { allowed: false, reason: this.pauseReason };
-    }
-
-    // Flujo continuo sin freno por metas diarias en MODO PERSONAL
-    if (this.config.MODE !== 'PROP_FIRM') {
-      return { allowed: true, reason: '' };
-    }
-
-    return { allowed: true, reason: '' };
-  }
-
-  /**
-   * 🛡️ REGLA 1: Comprobación Estricta de Anti-Hedging (Prop Firms vs Capital Propio)
-   * En cuentas PROP_FIRM, está terminantemente prohibido abrir posiciones en sentido opuesto
-   * en el mismo activo. En cuentas PERSONAL (Capital Propio) sí está permitido si el usuario lo desea.
-   */
-  checkAntiHedging(symbol, action, openBuy = 0, openSell = 0, mode = 'PROP_FIRM') {
-    if (mode !== 'PROP_FIRM') {
-      return { allowed: true, reason: '' };
-    }
-
-    const isBuy = action === 'BUY' || action === 'BUY_LIMIT' || action === 'BUY_STOP' || action === 'BUY NOW';
-    const isSell = action === 'SELL' || action === 'SELL_LIMIT' || action === 'SELL_STOP' || action === 'SELL NOW';
-
-    if (isBuy && openSell > 0) {
-      return {
-        allowed: false,
-        reason: `⚠️ [PROP FIRM - REGLA 1 ANTI-HEDGING] Prohibido abrir BUY en ${symbol}: existen ${openSell} posiciones de SELL abiertas.`
-      };
-    }
-
-    if (isSell && openBuy > 0) {
-      return {
-        allowed: false,
-        reason: `⚠️ [PROP FIRM - REGLA 1 ANTI-HEDGING] Prohibido abrir SELL en ${symbol}: existen ${openBuy} posiciones de BUY abiertas.`
-      };
+      const pnl = this.dailyPnL;
+      if (this.dailyMaxLossUSD > 0 && pnl <= -this.dailyMaxLossUSD) {
+        return {
+          allowed: false,
+          reason: `🚨 [PROP FIRM] Límite de pérdida diaria alcanzado (-$${Math.abs(pnl).toFixed(2)} USD). Freno de emergencia activado.`
+        };
+      }
     }
 
     return { allowed: true, reason: '' };
@@ -266,6 +243,7 @@ class RiskEngine {
    */
   setTradingPaused(paused, reason = '') {
     this.tradingPaused = !!paused;
+    this.isManualPause = !!paused;
     this.pauseReason = paused ? (reason || 'Pausado manualmente por el usuario') : '';
   }
 
@@ -285,11 +263,10 @@ class RiskEngine {
   /**
    * Calcula el lotaje óptimo según balance y distancia al SL
    */
-  calculateLotSize(entryPrice, slPrice, symbol = 'XAUUSD', isReducedRisk = false, targetBalance = null, accountMode = null, customRiskPercent = null) {
-    const activeMode = accountMode || this.config.MODE;
+  calculateLotSize(entryPrice, slPrice, symbol = 'XAUUSD', isReducedRisk = false, targetBalance = null, customRiskPercent = null) {
     let effectiveRiskPercent = (typeof customRiskPercent === 'number' && customRiskPercent > 0)
       ? customRiskPercent
-      : ((activeMode === 'PERSONAL') ? (this.config.PERSONAL.riskPercent || 2.0) : this.currentRiskPercent);
+      : this.currentRiskPercent;
 
     if (isReducedRisk) {
       effectiveRiskPercent = effectiveRiskPercent / 2.0;
@@ -297,84 +274,47 @@ class RiskEngine {
 
     const currentBal = (typeof targetBalance === 'number' && targetBalance > 0) ? targetBalance : this.config.accountBalance;
     const riskAmount = (currentBal * effectiveRiskPercent) / 100;
-    const pipsRisk = Math.abs(entryPrice - slPrice);
+    const priceRisk = Math.abs(entryPrice - slPrice);
     const symUpper = symbol.toUpperCase();
 
-    if (!entryPrice || !slPrice || isNaN(pipsRisk) || pipsRisk <= 0) {
+    if (!entryPrice || !slPrice || isNaN(priceRisk) || priceRisk <= 0) {
       if (symUpper.includes('XAU') || symUpper.includes('GOLD')) {
-        if (activeMode === 'PERSONAL') {
-          const defaultLotGold = riskAmount / 200.0; // SL típico de 2.0 USD ($200/lote)
-          return Math.max(0.01, Math.floor(defaultLotGold * 100) / 100);
-        }
         return Math.max(0.01, Math.floor((currentBal / 50000.0) * 100) / 100);
       }
-      if (symUpper.includes('JPY')) {
-        const defaultPipRiskJPY = 8.0;
-        const defaultLotJPY = riskAmount / (defaultPipRiskJPY * 6.70);
-        if (activeMode === 'PERSONAL') {
-          return Math.max(0.01, Math.floor(defaultLotJPY * 100) / 100);
-        }
-        const jpyCap = Math.max(0.01, Math.floor((currentBal / 5000.0) * 100) / 100);
-        return Math.max(0.01, Math.min(Math.floor(defaultLotJPY * 100) / 100, jpyCap));
-      }
-      if (symUpper.includes('NAS') || symUpper.includes('US100') || symUpper.includes('USTEC')) {
-        const defaultPointRiskNAS = 15.0;
-        const defaultLotNAS = riskAmount / (defaultPointRiskNAS * 1.0);
-        if (activeMode === 'PERSONAL') {
-          return Math.max(0.01, Math.min(Math.floor(defaultLotNAS * 100) / 100, 20.0));
-        }
-        const nasCap = Math.max(0.01, Math.floor((currentBal / 5000.0) * 100) / 100);
-        return Math.max(0.01, Math.min(Math.floor(defaultLotNAS * 100) / 100, nasCap, 20.0));
-      }
-      const defaultPipRisk = 4.0;
-      const defaultLot = riskAmount / (defaultPipRisk * 10.0);
-      if (activeMode === 'PERSONAL') {
-        return Math.max(0.01, Math.floor(defaultLot * 100) / 100);
-      }
-      const forexCap = Math.max(0.01, Math.floor((currentBal / 5000.0) * 100) / 100);
-      return Math.max(0.01, Math.min(Math.floor(defaultLot * 100) / 100, forexCap));
+      return 0.01;
     }
 
-    let lotSize = 0.01;
-
-    if (symUpper.includes('XAU') || symUpper.includes('GOLD')) {
-      const riskPerLot = pipsRisk * 100;
-      lotSize = riskAmount / riskPerLot;
-    } else if (symUpper.includes('JPY')) {
-      // En pares con JPY: 1 pip = 0.01 (2º decimal)
-      // Valor del pip por lote estándar = 1,000 JPY / USDJPY (aprox $6.70 USD)
-      const pips = pipsRisk * 100.0;
-      const pipValuePerLot = 6.70;
-      lotSize = riskAmount / (pips * pipValuePerLot);
-    } else if (symUpper.includes('NAS') || symUpper.includes('US100') || symUpper.includes('USTEC')) {
-      // En Índices (NAS100): 1 punto = $1 USD por lote estándar
-      const points = pipsRisk;
-      lotSize = riskAmount / (points * 1.0);
-    } else {
-      const pipValuePerLot = 10;
-      const pips = pipsRisk * 10000;
-      lotSize = riskAmount / (pips * pipValuePerLot);
-    }
+    const spec = getSymbolSpec(symbol);
+    const unitsRisk = priceRisk / spec.pipSize;
+    const riskPerLot = unitsRisk * spec.pipValuePerLot;
+    let lotSize = riskPerLot > 0 ? riskAmount / riskPerLot : 0.01;
 
     lotSize = Math.max(0.01, Math.floor(lotSize * 100) / 100);
 
-    if (activeMode === 'PROP_FIRM') {
-      // 🛡️ Cap Proporcional de Margen para Prop Firms en Metales (Oro / The5ers):
-      // Con apalancamiento 1:25 en Oro, el límite seguro de margen es 0.10 lotes por cada $5,000 USD de balance:
-      if (symUpper.includes('XAU') || symUpper.includes('GOLD')) {
-        const propFirmGoldLotCap = Math.max(0.01, Math.floor((currentBal / 50000.0) * 100) / 100);
-        lotSize = Math.min(lotSize, propFirmGoldLotCap);
-      } else {
-        // 🛡️ Cap Proporcional de Margen en Forex / Índices (EURUSD / GBPJPY / NAS100): Máximo 1.00 lote por cada $5,000 de balance
-        const propFirmLotCap = Math.max(0.01, Math.floor((currentBal / 5000.0) * 100) / 100);
-        lotSize = Math.min(lotSize, propFirmLotCap);
-      }
+    // 🛡️ Cap Proporcional de Margen por Balance (Prop Firm & Margen Seguro):
+    if (symUpper.includes('XAU') || symUpper.includes('GOLD')) {
+      const lotsPerBalance = spec.propFirmMaxLotsPerBalanceUSD || (1 / 50000.0);
+      const propFirmGoldLotCap = Math.max(0.01, Math.floor((currentBal * lotsPerBalance) * 100) / 100);
+      lotSize = Math.min(lotSize, propFirmGoldLotCap);
     } else {
-      // MODO PERSONAL: sin caps de prop firms, limitado únicamente al techo general seguro
-      lotSize = Math.min(lotSize, 20.0);
+      // 🛡️ Cap Proporcional de Margen para Forex (EURUSD, GBPUSD, GBPJPY, etc.):
+      // Máximo 1.0 lote por cada $33,333 USD de balance (Apalancamiento institucional seguro):
+      // • $100,000 -> 3.00 lotes máx
+      // • $50,000  -> 1.50 lotes máx
+      // • $10,000  -> 0.30 lotes máx
+      // • $5,000   -> 0.15 lotes máx
+      // • $130     -> 0.01 lotes máx
+      const maxForexLotsPerBalance = 1.0 / 33333.33;
+      const propFirmForexCap = Math.max(0.01, Math.floor((currentBal * maxForexLotsPerBalance) * 100) / 100);
+      lotSize = Math.min(lotSize, propFirmForexCap);
     }
 
-    return lotSize;
+    // 🛡️ Filtro de Margen Físico: El margen requerido no puede superar el 35% del balance de la cuenta
+    const marginPerLot = symUpper.includes('XAU') || symUpper.includes('GOLD') ? 4000.0 : 3333.33;
+    const maxAffordableLot = Math.max(0.01, Math.floor(((currentBal * 0.35) / marginPerLot) * 100) / 100);
+    lotSize = Math.min(lotSize, maxAffordableLot);
+
+    return Math.max(0.01, parseFloat(lotSize.toFixed(2)));
   }
 }
 

@@ -20,10 +20,10 @@ const SHADOW_GBPJPY_FILE = path.join(__dirname, '..', '..', 'proprietary_bpr_gbp
 const CANDLE_CACHE_FILE = path.join(__dirname, '..', '..', 'bpr_gbpjpy_candle_cache.json');
 
 const GBPJPY_CONFIG = {
-  M2:  { tfMinutes: 2,  minFvgGap: 0.020, minOverlap: 0.012, minRange: 0.025, bufferPips: 3.0, slMinPips: 4.0,  slMaxPips: 25.0, rrRatio: 1.0, lookback: 25 },
-  M3:  { tfMinutes: 3,  minFvgGap: 0.025, minOverlap: 0.015, minRange: 0.030, bufferPips: 3.5, slMinPips: 5.0,  slMaxPips: 30.0, rrRatio: 1.0, lookback: 25 },
-  M5:  { tfMinutes: 5,  minFvgGap: 0.035, minOverlap: 0.020, minRange: 0.045, bufferPips: 4.0, slMinPips: 6.0,  slMaxPips: 40.0, rrRatio: 1.0, lookback: 25 },
-  M15: { tfMinutes: 15, minFvgGap: 0.055, minOverlap: 0.030, minRange: 0.065, bufferPips: 5.0, slMinPips: 8.0,  slMaxPips: 60.0, rrRatio: 1.0, lookback: 25 }
+  M2:  { tfMinutes: 2,  minFvgGap: 0.035, minOverlap: 0.020, minRange: 0.040, bufferPips: 4.0, slMinPips: 6.0,  slMaxPips: 35.0, rrRatio: 2.0, lookback: 25 },
+  M3:  { tfMinutes: 3,  minFvgGap: 0.040, minOverlap: 0.025, minRange: 0.045, bufferPips: 4.5, slMinPips: 7.0,  slMaxPips: 40.0, rrRatio: 2.0, lookback: 25 },
+  M5:  { tfMinutes: 5,  minFvgGap: 0.050, minOverlap: 0.030, minRange: 0.055, bufferPips: 5.0, slMinPips: 8.0,  slMaxPips: 50.0, rrRatio: 2.0, lookback: 25 },
+  M15: { tfMinutes: 15, minFvgGap: 0.075, minOverlap: 0.045, minRange: 0.080, bufferPips: 6.0, slMinPips: 10.0, slMaxPips: 70.0, rrRatio: 2.0, lookback: 25 }
 };
 
 class BPRGbpjpyBearishStrategy {
@@ -299,6 +299,143 @@ class BPRGbpjpyBearishStrategy {
     }
   }
 
+  checkBOS(candles, targetDirection, options = {}) {
+    const lookbackBars = options.lookbackBars || 45;
+    const pivotBars = options.pivotBars || 2;
+    const decimals = 3;
+
+    if (!candles || candles.length < (pivotBars * 2 + 5)) {
+      return { ok: false, detail: 'Insuficientes velas para BOS' };
+    }
+
+    const n = candles.length;
+    const startIdx = Math.max(pivotBars, n - lookbackBars);
+    const endIdx = n - pivotBars - 1;
+
+    const swingHighs = [];
+    const swingLows = [];
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      let isHigh = true;
+      let isLow = true;
+      for (let j = 1; j <= pivotBars; j++) {
+        if (candles[i].high < candles[i - j].high || candles[i].high <= candles[i + j].high) isHigh = false;
+        if (candles[i].low > candles[i - j].low || candles[i].low >= candles[i + j].low) isLow = false;
+      }
+      if (isHigh) {
+        swingHighs.push({ price: candles[i].high, time: candles[i].time, index: i });
+      }
+      if (isLow) {
+        swingLows.push({ price: candles[i].low, time: candles[i].time, index: i });
+      }
+    }
+
+    const isSell = targetDirection === 'SELL' || targetDirection === 'BEARISH';
+    const isBuy = targetDirection === 'BUY' || targetDirection === 'BULLISH';
+
+    if (isSell) {
+      let validBos = null;
+
+      for (let s = swingLows.length - 1; s >= 0; s--) {
+        const sl = swingLows[s];
+        for (let i = sl.index + 1; i < n; i++) {
+          if (candles[i].close < sl.price) {
+            const priorHighs = swingHighs.filter(sh => sh.index <= i && sh.index >= sl.index - 15);
+            const originHigh = priorHighs.length > 0 ? priorHighs.reduce((max, cur) => cur.price > max.price ? cur : max, priorHighs[0]) : null;
+
+            let invalidated = false;
+            if (originHigh) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close > originHigh.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenLow: sl,
+                breakIndex: i,
+                originHigh
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSl = swingLows[swingLows.length - 1];
+        return {
+          ok: false,
+          detail: lastSl ? `Pendiente BOS Bajista (Swing ${lastSl.price.toFixed(decimals)})` : 'Sin Swing Low previo',
+          pivotPrice: lastSl ? lastSl.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Bajista (Rotura ${validBos.brokenLow.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenLow.price,
+        originHigh: validBos.originHigh ? validBos.originHigh.price : null
+      };
+    }
+
+    if (isBuy) {
+      let validBos = null;
+
+      for (let s = swingHighs.length - 1; s >= 0; s--) {
+        const sh = swingHighs[s];
+        for (let i = sh.index + 1; i < n; i++) {
+          if (candles[i].close > sh.price) {
+            const priorLows = swingLows.filter(sl => sl.index <= i && sl.index >= sh.index - 15);
+            const originLow = priorLows.length > 0 ? priorLows.reduce((min, cur) => cur.price < min.price ? cur : min, priorLows[0]) : null;
+
+            let invalidated = false;
+            if (originLow) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close < originLow.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenHigh: sh,
+                breakIndex: i,
+                originLow
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSh = swingHighs[swingHighs.length - 1];
+        return {
+          ok: false,
+          detail: lastSh ? `Pendiente BOS Alcista (Swing ${lastSh.price.toFixed(decimals)})` : 'Sin Swing High previo',
+          pivotPrice: lastSh ? lastSh.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Alcista (Rotura ${validBos.brokenHigh.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenHigh.price,
+        originLow: validBos.originLow ? validBos.originLow.price : null
+      };
+    }
+
+    return { ok: false, detail: 'Dirección no válida' };
+  }
+
   evaluateEntry(tfKey, tfObj, candle) {
     const date = new Date(candle.time);
     const hour = date.getUTCHours();
@@ -328,6 +465,12 @@ class BPRGbpjpyBearishStrategy {
         // Mecha superior de rechazo >= 20% del rango de la vela
         const upperWick = candle.high - Math.max(candle.open, candle.close);
         if (upperWick / candleRange < 0.20) continue;
+
+        // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+        const bosCheck = this.checkBOS(tfObj.candles, 'SELL', { symbol: 'GBPJPY' });
+        if (!bosCheck.ok) {
+          continue;
+        }
 
         bpr.tested = true;
         const entry = candle.close; // Precio real de mercado al cierre
@@ -380,19 +523,20 @@ class BPRGbpjpyBearishStrategy {
     this.activeTrades.push(trade);
     console.log(`\n🎯 [BPR GBPJPY ${tfKey}] SEÑAL SHORT DETECTADA: SELL @ ${trade.entryPrice} | SL: ${trade.initialSL} (${trade.slPips}p) | TP: ${trade.tpPrice} (${trade.tpPips}p)`);
 
-    // Notificación Telegram segura
-    try {
-      if (typeof notificationService.notifyTradeExecuted === 'function') {
-        notificationService.notifyTradeExecuted({
-          symbol: 'GBPJPY',
-          action: 'SELL',
-          entryPrice: trade.entryPrice,
-          slPrice: trade.initialSL,
-          tp1Price: trade.tpPrice,
-          channelName: `BPR Sniper GBPJPY [${tfKey}]`
-        }).catch(() => {});
-      }
-    } catch (e) {}
+    const sendNotify = () => {
+      try {
+        if (typeof notificationService.notifyTradeExecuted === 'function') {
+          notificationService.notifyTradeExecuted({
+            symbol: 'GBPJPY',
+            action: 'SELL',
+            entryPrice: trade.entryPrice,
+            slPrice: trade.initialSL,
+            tp1Price: trade.tpPrice,
+            channelName: `BPR Sniper GBPJPY [${tfKey}]`
+          }).catch(() => {});
+        }
+      } catch (e) {}
+    };
 
     // Despacho a MT5 si el executionHandler está activo
     if (this.isLiveExecution && this.executionHandler) {
@@ -413,14 +557,25 @@ class BPRGbpjpyBearishStrategy {
 
         this.executionHandler(orderPayload).then(success => {
           if (success) {
-            console.log(`🚀 [BPR GBPJPY ${tfKey}] Orden SELL despachada a MT5 con éxito.`);
+            console.log(`🚀 [BPR GBPJPY ${tfKey}] Orden SELL despachada a MT5 con éxito. Notificando Telegram...`);
+            sendNotify();
+          } else {
+            console.log(`⚠️ [BPR GBPJPY ${tfKey}] Orden rechazada por puente MT5 / Gestión de Riesgo. Retirando de activeTrades.`);
+            this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+            this.saveState();
           }
         }).catch(err => {
           console.error(`❌ [BPR GBPJPY ${tfKey}] Error en executionHandler:`, err.message);
+          this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+          this.saveState();
         });
       } catch (err) {
         console.error(`❌ [BPR GBPJPY ${tfKey}] Fallo despachando a MT5:`, err.message);
+        this.activeTrades = this.activeTrades.filter(t => t.id !== trade.id);
+        this.saveState();
       }
+    } else {
+      sendNotify();
     }
 
     this.saveState();
@@ -514,7 +669,7 @@ class BPRGbpjpyBearishStrategy {
 
       if (openTrade) {
         result[tfKey] = {
-          score: '4/4',
+          score: '5/5',
           scorePercent: 100,
           activeType: 'BEARISH (VENTAS)',
           statusLabel: 'EN MERCADO (ORDEN VIVA)',
@@ -523,6 +678,7 @@ class BPRGbpjpyBearishStrategy {
           rules: [
             { name: 'Bearish BPR Activo', ok: true, detail: `Entrada: ${openTrade.entryPrice}` },
             { name: 'Horario Institucional', ok: true, detail: `Operación activa en ${openTrade.type}` },
+            { name: 'Ruptura Estructura (BOS)', ok: true, detail: 'BOS Bajista confirmado previo a entrada' },
             { name: 'Proximidad CE 50%', ok: true, detail: `SL: ${openTrade.initialSL} | TP: ${openTrade.tpPrice}` },
             { name: 'Rango Mínimo Vela', ok: true, detail: `SL Pips: ${openTrade.slPips}p` }
           ]
@@ -533,7 +689,7 @@ class BPRGbpjpyBearishStrategy {
       if (recentClosedTrade) {
         const isWin = recentClosedTrade.pips > 0;
         result[tfKey] = {
-          score: '4/4',
+          score: '5/5',
           scorePercent: 100,
           activeType: 'BEARISH (VENTAS)',
           statusLabel: isWin ? `TP ALCANZADO (+${recentClosedTrade.pips}p)` : `SL CERRADO (${recentClosedTrade.pips}p)`,
@@ -542,6 +698,7 @@ class BPRGbpjpyBearishStrategy {
           rules: [
             { name: 'Bearish BPR Activo', ok: true, detail: `Entrada: ${recentClosedTrade.entryPrice}` },
             { name: 'Horario Institucional', ok: true, detail: `Cierre: ${recentClosedTrade.reason}` },
+            { name: 'Ruptura Estructura (BOS)', ok: true, detail: 'BOS Bajista confirmado previo a entrada' },
             { name: 'Proximidad CE 50%', ok: true, detail: `Resultado: ${recentClosedTrade.pips > 0 ? '+' : ''}${recentClosedTrade.pips}p` },
             { name: 'Rango Mínimo Vela', ok: true, detail: 'Completado con éxito' }
           ]
@@ -605,10 +762,20 @@ class BPRGbpjpyBearishStrategy {
         rules.push({ name: 'Horario Institucional', ok: false, detail: 'Fuera de sesión óptima' });
       }
 
-      // Regla 3: Distancia al CE 50%
-      let distStr = '0.0 pips';
+      // Regla 3: Ruptura de Estructura (BOS Bearish)
+      const bosCheck = this.checkBOS(tfObj.candles, 'SELL', { symbol: 'GBPJPY' });
+      if (bosCheck.ok) {
+        score++;
+        rules.push({ name: 'Ruptura Estructura (BOS)', ok: true, detail: bosCheck.detail });
+      } else {
+        rules.push({ name: 'Ruptura Estructura (BOS)', ok: false, detail: bosCheck.detail });
+      }
+
+      // Regla 4: Distancia al CE 50%
+      let distStr = `${tfObj.config.bufferPips.toFixed(1)} pips`;
       if (refZone && effPrice > 0) {
-        const distPips = Math.abs(refZone.consequentEncroachment - effPrice) * pipMultiplier;
+        const rawDist = Math.abs(refZone.consequentEncroachment - effPrice) * pipMultiplier;
+        const distPips = rawDist > 0 ? rawDist : tfObj.config.bufferPips;
         distStr = `${distPips.toFixed(1)} pips`;
         if (distPips <= (tfObj.config.minRange * pipMultiplier * 1.5)) {
           score++;
@@ -617,15 +784,16 @@ class BPRGbpjpyBearishStrategy {
           rules.push({ name: 'Proximidad CE 50%', ok: false, detail: `Distancia: ${distStr}` });
         }
       } else if (lastCandle && effPrice > 0) {
-        const distPips = Math.abs(lastCandle.high - effPrice) * pipMultiplier;
+        const rawDist = Math.abs(lastCandle.high - effPrice) * pipMultiplier;
+        const distPips = rawDist > 0 ? rawDist : tfObj.config.bufferPips;
         distStr = `${distPips.toFixed(1)} pips`;
         rules.push({ name: 'Proximidad CE 50%', ok: false, detail: `Buscando zona en rango (Swing: ${distStr})` });
       } else {
-        distStr = '0.0 pips';
+        distStr = `${tfObj.config.bufferPips.toFixed(1)} pips`;
         rules.push({ name: 'Proximidad CE 50%', ok: false, detail: 'Buscando zona en rango' });
       }
 
-      // Regla 4: Volatilidad y Spread
+      // Regla 5: Volatilidad y Spread
       const candleRangePips = lastCandle ? ((lastCandle.high - lastCandle.low) * pipMultiplier).toFixed(1) : 0;
       if (candleRangePips >= (tfObj.config.minRange * pipMultiplier)) {
         score++;
@@ -634,9 +802,9 @@ class BPRGbpjpyBearishStrategy {
         rules.push({ name: 'Rango Mínimo Vela', ok: false, detail: `${candleRangePips} pips (Insuficiente)` });
       }
 
-      const scorePercent = Math.round((score / 4) * 100);
+      const scorePercent = Math.round((score / 5) * 100);
       result[tfKey] = {
-        score: `${score}/4`,
+        score: `${score}/5`,
         scorePercent,
         activeType: activeZone ? 'BEARISH (VENTAS)' : 'BEARISH (MONITOR)',
         statusLabel: activeZone ? 'ZONA BEARISH' : 'BUSCANDO BPR',

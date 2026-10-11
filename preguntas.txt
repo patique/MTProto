@@ -1,0 +1,9 @@
+1. He ampliado el TP de los canales de telegram para que sean más largos los TP's pero ahora el bot genera señales distintas con profit en los distintos TPs de la señal, ¿por qué? Si es TP3 el tarjet, pues genera 3 operaciones: TP1, TP2 y TP3
+2. En cierta ocasión, el control de % de objetivo de challenge ha bloqueado el lanzar operaciones a otras cuentas
+3. No he visto operaciones de ratios largos (las últimas que incorporamos)
+4. Creo que sería eficiente crear algún sqlite como gestor de base de datos en lugar de ficheros planos que me consumen los tokens de los modelos
+5. Duda: ¿sabrías identificar el Sell side liquidity y un Buy side Liquidity?
+6. trading-bot > 🎯 [BPR XAUUSD M15 REAL MT5] Señal Detectada (Opción A: High PF):                                                      │
+│                                                        ││ trading-bot >    Temporalidad: M15 | Tipo: SELL XAUUSD @ 4162.91 | Volumen: 0.01 lotes                                               │
+│                                                        ││ trading-bot >    Stop Loss: 4167.63 (-47.1p) | Take Profit R:R 1.0: 4158.20 (+47.1p)
+¿por qué tienen RR 1:1? ¿Quedamos en aumentarlo, no?

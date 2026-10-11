@@ -1,0 +1,274 @@
+{
+  "XAUUSD": {
+    "combined": {
+      "totalTrades": 25314,
+      "wins": 7126,
+      "losses": 18188,
+      "winRate": 28.2,
+      "netPips": 259083,
+      "profitFactor": 2.01,
+      "maxDrawdownPips": 960,
+      "tradingDays": 1743
+    },
+    "byTimeframe": {
+      "M3": {
+        "totalTrades": 15189,
+        "wins": 4198,
+        "losses": 10991,
+        "winRate": 27.6,
+        "netPips": 119988,
+        "grossWon": 251880,
+        "grossLost": 131892,
+        "profitFactor": 1.91,
+        "maxDrawdownPips": 576,
+        "pipsPerTradingDay": 69,
+        "pipsPerNaturalDay": 48.7,
+        "tradingDays": 1739,
+        "naturalDays": 2464,
+        "monetary": {
+          "THE5ERS_5K": {
+            "usdProfit": 91505684.65,
+            "maxDDUsd": 719100,
+            "maxDDPercent": 34.95,
+            "dailyUsd": 37137.05,
+            "dailyPips": 48.7,
+            "tradingDays": 1739,
+            "naturalDays": 2464
+          },
+          "FTMO_100K": {
+            "usdProfit": 100177706.04,
+            "maxDDUsd": 693288,
+            "maxDDPercent": 32.97,
+            "dailyUsd": 40656.54,
+            "dailyPips": 48.7,
+            "tradingDays": 1739,
+            "naturalDays": 2464
+          }
+        },
+        "byYear": {
+          "2020": {
+            "trades": 2465,
+            "wins": 595,
+            "pips": 13260,
+            "grossWon": 35700,
+            "grossLost": 22440
+          },
+          "2021": {
+            "trades": 2081,
+            "wins": 471,
+            "pips": 8940,
+            "grossWon": 28260,
+            "grossLost": 19320
+          },
+          "2022": {
+            "trades": 2112,
+            "wins": 531,
+            "pips": 12888,
+            "grossWon": 31860,
+            "grossLost": 18972
+          },
+          "2023": {
+            "trades": 1956,
+            "wins": 450,
+            "pips": 8928,
+            "grossWon": 27000,
+            "grossLost": 18072
+          },
+          "2024": {
+            "trades": 2233,
+            "wins": 582,
+            "pips": 15108,
+            "grossWon": 34920,
+            "grossLost": 19812
+          },
+          "2025": {
+            "trades": 2437,
+            "wins": 783,
+            "pips": 27132,
+            "grossWon": 46980,
+            "grossLost": 19848
+          },
+          "2026": {
+            "trades": 1905,
+            "wins": 786,
+            "pips": 33732,
+            "grossWon": 47160,
+            "grossLost": 13428
+          }
+        }
+      },
+      "M5": {
+        "totalTrades": 7666,
+        "wins": 2180,
+        "losses": 5486,
+        "winRate": 28.4,
+        "netPips": 92110,
+        "grossWon": 174400,
+        "grossLost": 82290,
+        "profitFactor": 2.12,
+        "maxDrawdownPips": 550,
+        "pipsPerTradingDay": 54.25,
+        "pipsPerNaturalDay": 37.38,
+        "tradingDays": 1698,
+        "naturalDays": 2464,
+        "monetary": {
+          "THE5ERS_5K": {
+            "usdProfit": 71283845.94,
+            "maxDDUsd": 682500,
+            "maxDDPercent": 26.01,
+            "dailyUsd": 28930.13,
+            "dailyPips": 37.38,
+            "tradingDays": 1698,
+            "naturalDays": 2464
+          },
+          "FTMO_100K": {
+            "usdProfit": 79385012.31,
+            "maxDDUsd": 658600,
+            "maxDDPercent": 25.38,
+            "dailyUsd": 32217.94,
+            "dailyPips": 37.38,
+            "tradingDays": 1698,
+            "naturalDays": 2464
+          }
+        },
+        "byYear": {
+          "2020": {
+            "trades": 1129,
+            "wins": 285,
+            "pips": 10140,
+            "grossWon": 22800,
+            "grossLost": 12660
+          },
+          "2021": {
+            "trades": 996,
+            "wins": 262,
+            "pips": 9950,
+            "grossWon": 20960,
+            "grossLost": 11010
+          },
+          "2022": {
+            "trades": 1053,
+            "wins": 256,
+            "pips": 8525,
+            "grossWon": 20480,
+            "grossLost": 11955
+          },
+          "2023": {
+            "trades": 903,
+            "wins": 208,
+            "pips": 6215,
+            "grossWon": 16640,
+            "grossLost": 10425
+          },
+          "2024": {
+            "trades": 1117,
+            "wins": 306,
+            "pips": 12315,
+            "grossWon": 24480,
+            "grossLost": 12165
+          },
+          "2025": {
+            "trades": 1340,
+            "wins": 434,
+            "pips": 21130,
+            "grossWon": 34720,
+            "grossLost": 13590
+          },
+          "2026": {
+            "trades": 1128,
+            "wins": 429,
+            "pips": 23835,
+            "grossWon": 34320,
+            "grossLost": 10485
+          }
+        }
+      },
+      "M15": {
+        "totalTrades": 2459,
+        "wins": 748,
+        "losses": 1711,
+        "winRate": 30.4,
+        "netPips": 46985,
+        "grossWon": 89760,
+        "grossLost": 42775,
+        "profitFactor": 2.1,
+        "maxDrawdownPips": 1165,
+        "pipsPerTradingDay": 38.2,
+        "pipsPerNaturalDay": 19.07,
+        "tradingDays": 1230,
+        "naturalDays": 2464,
+        "monetary": {
+          "THE5ERS_5K": {
+            "usdProfit": 24274337.31,
+            "maxDDUsd": 330129.61,
+            "maxDDPercent": 32.57,
+            "dailyUsd": 9851.6,
+            "dailyPips": 19.07,
+            "tradingDays": 1230,
+            "naturalDays": 2464
+          },
+          "FTMO_100K": {
+            "usdProfit": 35156420.7,
+            "maxDDUsd": 1200903.97,
+            "maxDDPercent": 31.16,
+            "dailyUsd": 14268.03,
+            "dailyPips": 19.07,
+            "tradingDays": 1230,
+            "naturalDays": 2464
+          }
+        },
+        "byYear": {
+          "2020": {
+            "trades": 316,
+            "wins": 82,
+            "pips": 3990,
+            "grossWon": 9840,
+            "grossLost": 5850
+          },
+          "2021": {
+            "trades": 309,
+            "wins": 81,
+            "pips": 4020,
+            "grossWon": 9720,
+            "grossLost": 5700
+          },
+          "2022": {
+            "trades": 338,
+            "wins": 89,
+            "pips": 4455,
+            "grossWon": 10680,
+            "grossLost": 6225
+          },
+          "2023": {
+            "trades": 287,
+            "wins": 61,
+            "pips": 1670,
+            "grossWon": 7320,
+            "grossLost": 5650
+          },
+          "2024": {
+            "trades": 365,
+            "wins": 121,
+            "pips": 8420,
+            "grossWon": 14520,
+            "grossLost": 6100
+          },
+          "2025": {
+            "trades": 463,
+            "wins": 159,
+            "pips": 11480,
+            "grossWon": 19080,
+            "grossLost": 7600
+          },
+          "2026": {
+            "trades": 381,
+            "wins": 155,
+            "pips": 12950,
+            "grossWon": 18600,
+            "grossLost": 5650
+          }
+        }
+      }
+    }
+  }
+}

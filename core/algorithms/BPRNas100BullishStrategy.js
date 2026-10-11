@@ -21,10 +21,10 @@ const SHADOW_NAS100_FILE = path.join(__dirname, '..', '..', 'proprietary_bpr_nas
 const CANDLE_CACHE_FILE = path.join(__dirname, '..', '..', 'bpr_nas100_candle_cache.json');
 
 const NAS100_CONFIG = {
-  M2:  { tfMinutes: 2,  minFvgGap: 3.5,  minOverlap: 2.0,  minRange: 5.0,  bufferPts: 3.5,  slMinPts: 5.0,  slMaxPts: 40.0,  rrRatio: 1.0, lookback: 25 },
-  M3:  { tfMinutes: 3,  minFvgGap: 5.0,  minOverlap: 3.0,  minRange: 7.0,  bufferPts: 4.5,  slMinPts: 7.0,  slMaxPts: 50.0,  rrRatio: 1.0, lookback: 25 },
-  M5:  { tfMinutes: 5,  minFvgGap: 7.0,  minOverlap: 4.0,  minRange: 9.0,  bufferPts: 6.0,  slMinPts: 10.0, slMaxPts: 70.0,  rrRatio: 1.0, lookback: 25 },
-  M15: { tfMinutes: 15, minFvgGap: 12.0, minOverlap: 7.0,  minRange: 15.0, bufferPts: 8.0,  slMinPts: 15.0, slMaxPts: 100.0, rrRatio: 1.0, lookback: 25 }
+  M2:  { tfMinutes: 2,  minFvgGap: 4.0,  minOverlap: 2.5,  minRange: 6.0,  bufferPts: 6.0,  slMinPts: 8.0,  slMaxPts: 50.0,  rrRatio: 2.5, lookback: 25 },
+  M3:  { tfMinutes: 3,  minFvgGap: 5.5,  minOverlap: 3.5,  minRange: 8.0,  bufferPts: 7.0,  slMinPts: 10.0, slMaxPts: 60.0,  rrRatio: 2.5, lookback: 25 },
+  M5:  { tfMinutes: 5,  minFvgGap: 8.0,  minOverlap: 5.0,  minRange: 10.0, bufferPts: 8.0,  slMinPts: 12.0, slMaxPts: 80.0,  rrRatio: 2.5, lookback: 25 },
+  M15: { tfMinutes: 15, minFvgGap: 14.0, minOverlap: 8.0,  minRange: 16.0, bufferPts: 10.0, slMinPts: 18.0, slMaxPts: 100.0, rrRatio: 2.5, lookback: 25 }
 };
 
 class BPRNas100BullishStrategy {
@@ -217,7 +217,7 @@ class BPRNas100BullishStrategy {
     if (isBearishFVG) c0.isBearish = true;
     if (isBullishFVG) c0.isBullish = true;
 
-    // Solo creamos zonas BULLISH para buscar compras institucionales
+    // Detectar Bullish BPR
     if (isBullishFVG) {
       for (let i = n - 2; i >= Math.max(0, n - (cfg.lookback || 25)); i--) {
         if (candles[i].isBearish) {
@@ -234,6 +234,38 @@ class BPRNas100BullishStrategy {
               id: `BPR_NAS100_${tfKey}_BULL_${Date.now()}`,
               tf: tfKey,
               type: 'BULLISH',
+              top: cHigh,
+              bottom: cLow,
+              consequentEncroachment: ce50,
+              tested: false,
+              mitigated: false,
+              createdIndex: n - 1,
+              createdTime: c0.time,
+              barIndex: n - 1
+            });
+            break;
+          }
+        }
+      }
+    }
+
+    // Detectar Bearish BPR
+    if (isBearishFVG) {
+      for (let i = n - 2; i >= Math.max(0, n - (cfg.lookback || 25)); i--) {
+        if (candles[i].isBullish) {
+          const bullTop = candles[i].low;
+          const bullBottom = candles[i - 2] ? candles[i - 2].high : candles[i].low - cfg.minFvgGap;
+          const bearTop = c2.low;
+          const bearBottom = c0.high;
+          const cLow = Math.max(bullBottom, bearBottom);
+          const cHigh = Math.min(bearTop, bullTop);
+
+          if (cHigh > cLow + cfg.minOverlap) {
+            const ce50 = (cHigh + cLow) / 2.0;
+            tfObj.bprZones.push({
+              id: `BPR_NAS100_${tfKey}_BEAR_${Date.now()}`,
+              tf: tfKey,
+              type: 'BEARISH',
               top: cHigh,
               bottom: cLow,
               consequentEncroachment: ce50,
@@ -312,6 +344,143 @@ class BPRNas100BullishStrategy {
     }
   }
 
+  checkBOS(candles, targetDirection, options = {}) {
+    const lookbackBars = options.lookbackBars || 45;
+    const pivotBars = options.pivotBars || 2;
+    const decimals = 1;
+
+    if (!candles || candles.length < (pivotBars * 2 + 5)) {
+      return { ok: false, detail: 'Insuficientes velas para BOS' };
+    }
+
+    const n = candles.length;
+    const startIdx = Math.max(pivotBars, n - lookbackBars);
+    const endIdx = n - pivotBars - 1;
+
+    const swingHighs = [];
+    const swingLows = [];
+
+    for (let i = startIdx; i <= endIdx; i++) {
+      let isHigh = true;
+      let isLow = true;
+      for (let j = 1; j <= pivotBars; j++) {
+        if (candles[i].high < candles[i - j].high || candles[i].high <= candles[i + j].high) isHigh = false;
+        if (candles[i].low > candles[i - j].low || candles[i].low >= candles[i + j].low) isLow = false;
+      }
+      if (isHigh) {
+        swingHighs.push({ price: candles[i].high, time: candles[i].time, index: i });
+      }
+      if (isLow) {
+        swingLows.push({ price: candles[i].low, time: candles[i].time, index: i });
+      }
+    }
+
+    const isBuy = targetDirection === 'BUY' || targetDirection === 'BULLISH';
+    const isSell = targetDirection === 'SELL' || targetDirection === 'BEARISH';
+
+    if (isBuy) {
+      let validBos = null;
+
+      for (let s = swingHighs.length - 1; s >= 0; s--) {
+        const sh = swingHighs[s];
+        for (let i = sh.index + 1; i < n; i++) {
+          if (candles[i].close > sh.price) {
+            const priorLows = swingLows.filter(sl => sl.index <= i && sl.index >= sh.index - 15);
+            const originLow = priorLows.length > 0 ? priorLows.reduce((min, cur) => cur.price < min.price ? cur : min, priorLows[0]) : null;
+
+            let invalidated = false;
+            if (originLow) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close < originLow.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenHigh: sh,
+                breakIndex: i,
+                originLow
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSh = swingHighs[swingHighs.length - 1];
+        return {
+          ok: false,
+          detail: lastSh ? `Pendiente BOS Alcista (Swing ${lastSh.price.toFixed(decimals)})` : 'Sin Swing High previo',
+          pivotPrice: lastSh ? lastSh.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Alcista (Rotura ${validBos.brokenHigh.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenHigh.price,
+        originLow: validBos.originLow ? validBos.originLow.price : null
+      };
+    }
+
+    if (isSell) {
+      let validBos = null;
+
+      for (let s = swingLows.length - 1; s >= 0; s--) {
+        const sl = swingLows[s];
+        for (let i = sl.index + 1; i < n; i++) {
+          if (candles[i].close < sl.price) {
+            const priorHighs = swingHighs.filter(sh => sh.index <= i && sh.index >= sl.index - 15);
+            const originHigh = priorHighs.length > 0 ? priorHighs.reduce((max, cur) => cur.price > max.price ? cur : max, priorHighs[0]) : null;
+
+            let invalidated = false;
+            if (originHigh) {
+              for (let k = i + 1; k < n; k++) {
+                if (candles[k].close > originHigh.price) {
+                  invalidated = true;
+                  break;
+                }
+              }
+            }
+
+            if (!invalidated) {
+              validBos = {
+                brokenLow: sl,
+                breakIndex: i,
+                originHigh
+              };
+              break;
+            }
+          }
+        }
+        if (validBos) break;
+      }
+
+      if (!validBos) {
+        const lastSl = swingLows[swingLows.length - 1];
+        return {
+          ok: false,
+          detail: lastSl ? `Pendiente BOS Bajista (Swing ${lastSl.price.toFixed(decimals)})` : 'Sin Swing Low previo',
+          pivotPrice: lastSl ? lastSl.price : 0
+        };
+      }
+
+      return {
+        ok: true,
+        detail: `Confirmado BOS Bajista (Rotura ${validBos.brokenLow.price.toFixed(decimals)})`,
+        pivotPrice: validBos.brokenLow.price,
+        originHigh: validBos.originHigh ? validBos.originHigh.price : null
+      };
+    }
+
+    return { ok: false, detail: 'Dirección no válida' };
+  }
+
   evaluateEntry(tfKey, tfObj, candle) {
     const date = new Date(candle.time);
     const hour = date.getUTCHours();
@@ -320,9 +489,9 @@ class BPRNas100BullishStrategy {
     // 🔴 Bloqueo estricto Rollover de índices (20:55 a 22:30 UTC)
     if (hour === 21 || (hour === 20 && min >= 55) || (hour === 22 && min <= 30)) return;
 
-    // 🟢 Sesión activa óptima: Wall Street Core (13:30 a 20:00 UTC)
+    // 🟢 Sesión activa óptima: Wall Street Cash Open (13:30 a 18:00 UTC)
     const minOfDay = hour * 60 + min;
-    if (minOfDay < 810 || minOfDay >= 1200) return;
+    if (minOfDay < 810 || minOfDay >= 1080) return;
 
     const candleRange = candle.high - candle.low;
     const cfg = tfObj.config;
@@ -332,29 +501,62 @@ class BPRNas100BullishStrategy {
       const bpr = tfObj.bprZones[z];
       if (bpr.tested) continue;
       const age = tfObj.candles.length - 1 - bpr.createdIndex;
-      if (age > 300) { bpr.tested = true; continue; }
+      if (age > 200) { bpr.tested = true; continue; }
 
-      // ENTRADA BUY INSTITUCIONAL (Retesteo a la caja Bullish BPR)
-      if (candle.low <= bpr.top && candle.low >= bpr.bottom - cfg.bufferPts) {
-        // Mecha inferior de rechazo >= 20%
-        const lowerWick = Math.min(candle.open, candle.close) - candle.low;
-        if (lowerWick / candleRange < 0.20) continue;
+      // ENTRADA BUY INSTITUCIONAL (Retesteo Bullish BPR)
+      if (bpr.type === 'BULLISH') {
+        if (candle.low <= bpr.top && candle.low >= bpr.bottom - cfg.bufferPts) {
+          const lowerWick = Math.min(candle.open, candle.close) - candle.low;
+          if ((lowerWick / candleRange) < 0.25) continue;
+          if (candle.ema100 && candle.close < candle.ema100) continue;
 
-        // Filtro tendencial EMA 100: el precio debe estar sobre la EMA 100
-        if (candle.close < candle.ema100) continue;
+          // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+          const bosCheck = this.checkBOS(tfObj.candles, 'BULLISH', { symbol: 'NAS100' });
+          if (!bosCheck.ok) {
+            continue;
+          }
 
-        bpr.tested = true;
-        const entry = candle.close; // Precio real de mercado al cierre
-        const sl = bpr.bottom - cfg.bufferPts;
-        const slDist = Math.abs(entry - sl);
+          bpr.tested = true;
+          const entry = candle.close;
+          const sl = bpr.bottom - cfg.bufferPts;
+          const slDist = Math.abs(entry - sl);
 
-        if (slDist < cfg.slMinPts || slDist > cfg.slMaxPts) continue;
+          if (slDist < cfg.slMinPts || slDist > cfg.slMaxPts) continue;
 
-        const tpDist = slDist * cfg.rrRatio;
-        const tp = entry + tpDist;
+          const tpDist = slDist * cfg.rrRatio;
+          const tp = entry + tpDist;
 
-        this.openTrade(tfKey, 'BUY', entry, sl, tp, slDist, candle.time);
-        break;
+          this.openTrade(tfKey, 'BUY', entry, sl, tp, slDist, candle.time);
+          break;
+        }
+      }
+
+      // ENTRADA SELL INSTITUCIONAL (Retesteo Bearish BPR)
+      if (bpr.type === 'BEARISH') {
+        if (candle.high >= bpr.bottom && candle.high <= bpr.top + cfg.bufferPts) {
+          const upperWick = candle.high - Math.max(candle.open, candle.close);
+          if ((upperWick / candleRange) < 0.25) continue;
+          if (candle.ema100 && candle.close > candle.ema100) continue;
+
+          // 🛡️ CONTROL BOS INSTITUCIONAL PREVIO A ENTRAR EN BPR
+          const bosCheck = this.checkBOS(tfObj.candles, 'BEARISH', { symbol: 'NAS100' });
+          if (!bosCheck.ok) {
+            continue;
+          }
+
+          bpr.tested = true;
+          const entry = candle.close;
+          const sl = bpr.top + cfg.bufferPts;
+          const slDist = Math.abs(sl - entry);
+
+          if (slDist < cfg.slMinPts || slDist > cfg.slMaxPts) continue;
+
+          const tpDist = slDist * cfg.rrRatio;
+          const tp = entry - tpDist;
+
+          this.openTrade(tfKey, 'SELL', entry, sl, tp, slDist, candle.time);
+          break;
+        }
       }
     }
   }
@@ -362,13 +564,13 @@ class BPRNas100BullishStrategy {
   openTrade(tfKey, type, entryPrice, stopLoss, takeProfit, slPts, timeMs) {
     if (this.cooldownUntil && Date.now() < this.cooldownUntil) {
       const remainMin = Math.ceil((this.cooldownUntil - Date.now()) / 60000);
-      console.log(`\n🛑 [BPR NAS100 Cooldown] Señal BUY en ${tfKey} BLOQUEADA por racha de SL. Enfriamiento activo (${remainMin} min restantes).`);
+      console.log(`\n🛑 [BPR NAS100 Cooldown] Señal ${type} en ${tfKey} BLOQUEADA por racha de SL. Enfriamiento activo (${remainMin} min restantes).`);
       return;
     }
 
     const hasAnyActiveTrade = this.activeTrades.some(t => (t.symbol === 'NAS100' || t.symbol === 'US100') && t.status === 'OPEN');
     if (hasAnyActiveTrade) {
-      console.log(`\n⚠️ [BPR NAS100 Anti-Stacking] Señal BUY en ${tfKey} OMITIDA: Ya existe una operación activa en NAS100.`);
+      console.log(`\n⚠️ [BPR NAS100 Anti-Stacking] Señal ${type} en ${tfKey} OMITIDA: Ya existe una operación activa en NAS100.`);
       return;
     }
 
@@ -379,7 +581,7 @@ class BPRNas100BullishStrategy {
       id: tradeId,
       timeframe: tfKey,
       symbol: 'NAS100',
-      type: 'BUY',
+      type: type,
       entryPrice: parseFloat(entryPrice.toFixed(2)),
       initialSL: parseFloat(stopLoss.toFixed(2)),
       currentSL: parseFloat(stopLoss.toFixed(2)),
@@ -391,14 +593,14 @@ class BPRNas100BullishStrategy {
     };
 
     this.activeTrades.push(trade);
-    console.log(`\n🎯 [BPR NAS100 ${tfKey}] SEÑAL LONG DETECTADA: BUY @ ${trade.entryPrice} | SL: ${trade.initialSL} (${trade.slPoints} pts) | TP: ${trade.tpPrice} (${trade.tpPoints} pts)`);
+    console.log(`\n🎯 [BPR NAS100 ${tfKey}] SEÑAL ${type} DETECTADA: ${type} @ ${trade.entryPrice} | SL: ${trade.initialSL} (${trade.slPoints} pts) | TP: ${trade.tpPrice} (${trade.tpPoints} pts) | R:R 1:${this.timeframes[tfKey].config.rrRatio}`);
 
     // Despacho a MT5 si el executionHandler está activo
     if (this.isLiveExecution && this.executionHandler) {
       try {
         const orderPayload = {
           valid: true,
-          action: 'BUY',
+          action: type,
           symbol: 'NAS100',
           entryPrice: trade.entryPrice,
           slPrice: trade.initialSL,
@@ -412,7 +614,7 @@ class BPRNas100BullishStrategy {
 
         this.executionHandler(orderPayload).then(success => {
           if (success) {
-            console.log(`🚀 [BPR NAS100 ${tfKey}] Orden BUY despachada a MT5 con éxito.`);
+            console.log(`🚀 [BPR NAS100 ${tfKey}] Orden ${type} despachada a MT5 con éxito.`);
           }
         }).catch(err => {
           console.error(`❌ [BPR NAS100 ${tfKey}] Error en executionHandler:`, err.message);
@@ -435,15 +637,26 @@ class BPRNas100BullishStrategy {
       let outcome = null;
       let points = 0;
 
-      // Trade es BUY
-      if (currentPrice >= trade.tpPrice) {
-        closed = true;
-        outcome = 'WIN';
-        points = trade.tpPoints;
-      } else if (currentPrice <= trade.currentSL) {
-        closed = true;
-        outcome = 'LOSS';
-        points = -trade.slPoints;
+      if (trade.type === 'BUY') {
+        if (currentPrice >= trade.tpPrice) {
+          closed = true;
+          outcome = 'WIN';
+          points = trade.tpPoints;
+        } else if (currentPrice <= trade.currentSL) {
+          closed = true;
+          outcome = 'LOSS';
+          points = -trade.slPoints;
+        }
+      } else { // SELL
+        if (currentPrice <= trade.tpPrice) {
+          closed = true;
+          outcome = 'WIN';
+          points = trade.tpPoints;
+        } else if (currentPrice >= trade.currentSL) {
+          closed = true;
+          outcome = 'LOSS';
+          points = -trade.slPoints;
+        }
       }
 
       if (closed) {
@@ -508,7 +721,7 @@ class BPRNas100BullishStrategy {
 
       if (openTrade) {
         result[tfKey] = {
-          score: '4/4',
+          score: '5/5',
           scorePercent: 100,
           activeType: 'BULLISH (COMPRAS)',
           statusLabel: 'EN MERCADO (ORDEN VIVA)',
@@ -517,6 +730,7 @@ class BPRNas100BullishStrategy {
           rules: [
             { name: 'Bullish BPR Activo', ok: true, detail: `Entrada: ${openTrade.entryPrice}` },
             { name: 'Horario Institucional', ok: true, detail: `Operación activa en ${openTrade.type}` },
+            { name: 'Ruptura Estructura (BOS)', ok: true, detail: 'BOS Alcista confirmado previo a entrada' },
             { name: 'Tendencia EMA 100', ok: true, detail: 'Alcista confirmada' },
             { name: 'Proximidad CE 50%', ok: true, detail: `SL: ${openTrade.initialSL} | TP: ${openTrade.tpPrice}` }
           ]
@@ -527,7 +741,7 @@ class BPRNas100BullishStrategy {
       if (recentClosedTrade) {
         const isWin = recentClosedTrade.pips > 0;
         result[tfKey] = {
-          score: '4/4',
+          score: '5/5',
           scorePercent: 100,
           activeType: 'BULLISH (COMPRAS)',
           statusLabel: isWin ? `TP ALCANZADO (+${recentClosedTrade.pips} pts)` : `SL CERRADO (${recentClosedTrade.pips} pts)`,
@@ -536,6 +750,7 @@ class BPRNas100BullishStrategy {
           rules: [
             { name: 'Bullish BPR Activo', ok: true, detail: `Entrada: ${recentClosedTrade.entryPrice}` },
             { name: 'Horario Institucional', ok: true, detail: `Cierre: ${recentClosedTrade.reason}` },
+            { name: 'Ruptura Estructura (BOS)', ok: true, detail: 'BOS Alcista confirmado previo a entrada' },
             { name: 'Tendencia EMA 100', ok: true, detail: 'Operación ejecutada' },
             { name: 'Proximidad CE 50%', ok: true, detail: `Resultado: ${recentClosedTrade.pips > 0 ? '+' : ''}${recentClosedTrade.pips} pts` }
           ]
@@ -597,7 +812,17 @@ class BPRNas100BullishStrategy {
         rules.push({ name: 'Horario Institucional', ok: false, detail: 'Fuera de sesión Wall Street' });
       }
 
-      // Regla 3: Tendencia EMA 100
+      // Regla 3: Ruptura de Estructura (BOS)
+      const targetDir = (activeZone && activeZone.type === 'BEARISH') ? 'BEARISH' : 'BULLISH';
+      const bosCheck = this.checkBOS(tfObj.candles, targetDir, { symbol: 'NAS100' });
+      if (bosCheck.ok) {
+        score++;
+        rules.push({ name: 'Ruptura Estructura (BOS)', ok: true, detail: bosCheck.detail });
+      } else {
+        rules.push({ name: 'Ruptura Estructura (BOS)', ok: false, detail: bosCheck.detail });
+      }
+
+      // Regla 4: Tendencia EMA 100
       const isAboveEma = lastCandle && lastCandle.close > lastCandle.ema100;
       if (isAboveEma) {
         score++;
@@ -606,7 +831,7 @@ class BPRNas100BullishStrategy {
         rules.push({ name: 'Tendencia EMA 100', ok: false, detail: `Bajista o neutral` });
       }
 
-      // Regla 4: Proximidad CE 50%
+      // Regla 5: Proximidad CE 50%
       let distStr = '0.0 pts';
       if (refZone && effPrice > 0) {
         const distPts = Math.abs(refZone.consequentEncroachment - effPrice);
@@ -626,9 +851,9 @@ class BPRNas100BullishStrategy {
         rules.push({ name: 'Proximidad CE 50%', ok: false, detail: 'Buscando zona en rango' });
       }
 
-      const scorePercent = Math.round((score / 4) * 100);
+      const scorePercent = Math.round((score / 5) * 100);
       result[tfKey] = {
-        score: `${score}/4`,
+        score: `${score}/5`,
         scorePercent,
         activeType: activeZone ? 'BULLISH (COMPRAS)' : 'BULLISH (MONITOR)',
         statusLabel: activeZone ? 'ZONA BULLISH' : 'BUSCANDO BPR',

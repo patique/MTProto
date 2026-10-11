@@ -14,178 +14,20 @@ input string   InpServerUrl = "http://127.0.0.1:3000/orders"; // URL del servido
 input int      InpPollInterval = 250;                        // Intervalo de consulta (ms)
 input double   InpDefaultSlippage = 10;                      // Deslizamiento máximo en puntos
 input bool     InpAllowHedging = true;                       // Permitir Hedging (true: Capital Propio | false: Prop Firms)
+input string   InpSymbolsToMonitor = "XAUUSD,EURUSD,GBPJPY,USDCAD,GBPUSD,AUDUSD,USDJPY,NAS100"; // Símbolos a alimentar a Node.js (separados por coma)
 
-// 🛡️ PARÁMETROS AUTO BREAK-EVEN & TRAILING STOP DINÁMICO (RESPETO DE R:R INSTITUCIONAL)
-input bool     InpEnableAutoBE          = false; // Desactivado por defecto: permite a las operaciones respirar hacia TP (R:R 1.0)
-input double   InpBETriggerPips         = 18.0;  // Pips de recorrido para activar BE institucional (Oro: 1.80 USD | EURUSD: 18 pips)
-input double   InpBEOffsetPips          = 3.0;   // Colchón de beneficio neto por encima de entrada (cubre spread y comisiones)
+// 🛡️ PARÁMETROS AUTO BREAK-EVEN & TRAILING STOP DINÁMICO (DESACTIVADO: GESTIÓN PURA POR RATIOS EN NODE.JS)
+input bool     InpEnableAutoBE          = false; // DESACTIVADO: Evita mover a BE por pips fijos arbitrarios
+input double   InpBETriggerPips         = 0.0;   // Inactivo
+input double   InpBEOffsetPips          = 0.0;   // Inactivo
 
-input bool     InpEnableTrailing        = false; // Desactivado por defecto (Solo R:R 1.0 institucional)
-input double   InpTrailingTriggerPips   = 25.0;  // Pips de beneficio para ACTIVAR Trailing Stop
-input double   InpTrailingDistance      = 15.0;  // Distancia de persecución tras el precio
-input double   InpTrailingStep          = 5.0;   // Paso mínimo de avance [Norma Anti-Spam The5%ers]
+input bool     InpEnableTrailing        = false; // DESACTIVADO: Evita trailing stop por pips fijos arbitrarios
+input double   InpTrailingTriggerPips   = 0.0;   // Inactivo
+input double   InpTrailingDistance      = 0.0;   // Inactivo
+input double   InpTrailingStep          = 0.0;   // Inactivo
 
 CTrade         trade;
 datetime       lastCheckTime = 0;
-
-//+------------------------------------------------------------------+
-//| Estructura para registrar deals en memoria                       |
-//+------------------------------------------------------------------+
-struct DealRecord
-{
-   ulong    ticket;
-   ulong    posId;
-   ulong    order;
-   datetime time;
-   int      type;
-   int      entry;
-   string   sym;
-   double   vol;
-   double   price;
-   double   profit;
-   double   comm;
-   double   swap;
-   double   fee;
-   string   comment;
-};
-
-//+------------------------------------------------------------------+
-//| Exportar Historial Completo a Archivos CSV en Carpeta Comun     |
-//+------------------------------------------------------------------+
-void ExportFullHistory()
-{
-   ResetLastError();
-   if(!HistorySelect(0, TimeCurrent()))
-   {
-      Print("⚠️ [MT5 History] Error seleccionando historial: ", GetLastError());
-      return;
-   }
-
-   long login = AccountInfoInteger(ACCOUNT_LOGIN);
-   int totalDeals = HistoryDealsTotal();
-   if(totalDeals <= 0)
-   {
-      Print("ℹ️ [MT5 History] Cuenta #", login, ": No hay deals en el historial.");
-      return;
-   }
-
-   DealRecord deals[];
-   ArrayResize(deals, totalDeals);
-   int count = 0;
-
-   for(int i = 0; i < totalDeals; i++)
-   {
-      ulong t = HistoryDealGetTicket(i);
-      if(t > 0)
-      {
-         deals[count].ticket  = t;
-         deals[count].posId   = HistoryDealGetInteger(t, DEAL_POSITION_ID);
-         deals[count].order   = HistoryDealGetInteger(t, DEAL_ORDER);
-         deals[count].time    = (datetime)HistoryDealGetInteger(t, DEAL_TIME);
-         deals[count].type    = (int)HistoryDealGetInteger(t, DEAL_TYPE);
-         deals[count].entry   = (int)HistoryDealGetInteger(t, DEAL_ENTRY);
-         deals[count].sym     = HistoryDealGetString(t, DEAL_SYMBOL);
-         deals[count].vol     = HistoryDealGetDouble(t, DEAL_VOLUME);
-         deals[count].price   = HistoryDealGetDouble(t, DEAL_PRICE);
-         deals[count].profit  = HistoryDealGetDouble(t, DEAL_PROFIT);
-         deals[count].comm    = HistoryDealGetDouble(t, DEAL_COMMISSION);
-         deals[count].swap    = HistoryDealGetDouble(t, DEAL_SWAP);
-         deals[count].fee     = HistoryDealGetDouble(t, DEAL_FEE);
-         deals[count].comment = HistoryDealGetString(t, DEAL_COMMENT);
-         count++;
-      }
-   }
-   ArrayResize(deals, count);
-
-   // 1. Exportar fichero de Deals detallados
-   string fnameDeals = "history_deals_" + IntegerToString(login) + ".csv";
-   int fDeals = FileOpen(fnameDeals, FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_COMMON, ",");
-   if(fDeals != INVALID_HANDLE)
-   {
-      FileWrite(fDeals, "Ticket", "PositionID", "Order", "Time", "Type", "Entry", "Symbol", "Volume", "Price", "Profit", "Commission", "Swap", "Fee", "Comment");
-      for(int i = 0; i < count; i++)
-      {
-         string sType = (deals[i].type == DEAL_TYPE_BUY ? "BUY" : (deals[i].type == DEAL_TYPE_SELL ? "SELL" : (deals[i].type == DEAL_TYPE_BALANCE ? "BALANCE" : "OTHER")));
-         string sEntry = (deals[i].entry == DEAL_ENTRY_IN ? "IN" : (deals[i].entry == DEAL_ENTRY_OUT ? "OUT" : (deals[i].entry == DEAL_ENTRY_INOUT ? "INOUT" : "STATE")));
-
-         FileWrite(fDeals, IntegerToString(deals[i].ticket), IntegerToString(deals[i].posId), IntegerToString(deals[i].order),
-                   TimeToString(deals[i].time, TIME_DATE|TIME_SECONDS), sType, sEntry, deals[i].sym,
-                   DoubleToString(deals[i].vol, 2), DoubleToString(deals[i].price, 5), DoubleToString(deals[i].profit, 2),
-                   DoubleToString(deals[i].comm, 2), DoubleToString(deals[i].swap, 2), DoubleToString(deals[i].fee, 2),
-                   deals[i].comment);
-      }
-      FileClose(fDeals);
-   }
-
-   // 2. Exportar fichero de Posiciones cerradas (Round-Trip)
-   string fnamePos = "history_positions_" + IntegerToString(login) + ".csv";
-   int fPos = FileOpen(fnamePos, FILE_WRITE|FILE_CSV|FILE_ANSI|FILE_COMMON, ",");
-   if(fPos != INVALID_HANDLE)
-   {
-      FileWrite(fPos, "PositionID", "Symbol", "Type", "Volume", "OpenTime", "OpenPrice", "CloseTime", "ClosePrice", "GrossProfit", "Commission", "Swap", "NetProfit", "Pips", "CloseComment");
-
-      for(int i = 0; i < count; i++)
-      {
-         if(deals[i].entry == DEAL_ENTRY_OUT || deals[i].entry == DEAL_ENTRY_INOUT)
-         {
-            ulong pId = deals[i].posId;
-            if(pId <= 0) continue;
-
-            datetime openTime = 0;
-            double openPrice = 0.0;
-            string inTypeStr = "BUY";
-            double totalComm = deals[i].comm;
-
-            for(int j = 0; j < count; j++)
-            {
-               if(deals[j].posId == pId && deals[j].entry == DEAL_ENTRY_IN)
-               {
-                  openTime = deals[j].time;
-                  openPrice = deals[j].price;
-                  inTypeStr = (deals[j].type == DEAL_TYPE_BUY ? "BUY" : "SELL");
-                  totalComm += deals[j].comm;
-                  break;
-               }
-            }
-
-            double netProfit = deals[i].profit + totalComm + deals[i].swap;
-            double pips = 0.0;
-            string sym = deals[i].sym;
-            int digs = (int)SymbolInfoInteger(sym, SYMBOL_DIGITS);
-            if(digs <= 0) digs = 2;
-            double pt = SymbolInfoDouble(sym, SYMBOL_POINT);
-            if(pt > 0 && openPrice > 0)
-            {
-               double diff = (inTypeStr == "BUY") ? (deals[i].price - openPrice) : (openPrice - deals[i].price);
-               double mult = (digs == 3 || digs == 5) ? 10.0 : 1.0;
-               pips = (diff / pt) / mult;
-            }
-
-            FileWrite(fPos, IntegerToString(pId), sym, inTypeStr, DoubleToString(deals[i].vol, 2),
-                      TimeToString(openTime, TIME_DATE|TIME_SECONDS), DoubleToString(openPrice, digs),
-                      TimeToString(deals[i].time, TIME_DATE|TIME_SECONDS), DoubleToString(deals[i].price, digs),
-                      DoubleToString(deals[i].profit, 2), DoubleToString(totalComm, 2), DoubleToString(deals[i].swap, 2),
-                      DoubleToString(netProfit, 2), DoubleToString(pips, 1), deals[i].comment);
-         }
-      }
-      FileClose(fPos);
-   }
-
-   Print("📁 [MT5 History] Exportacion completada para Cuenta #", login, " (", count, " deals). Ficheros guardados en Carpeta Comun.");
-}
-
-//+------------------------------------------------------------------+
-//| Factor de Escala de Pips exacto por Símbolo                      |
-//+------------------------------------------------------------------+
-double GetPipScale(string sym)
-{
-   if(StringFind(sym, "XAU") >= 0 || StringFind(sym, "GOLD") >= 0) return 0.10; // 1 pip en Oro = 0.10 USD (10 puntos)
-   if(StringFind(sym, "JPY") >= 0) return 0.01;                                // 1 pip en JPY = 0.01 JPY
-   if(StringFind(sym, "NAS") >= 0 || StringFind(sym, "US100") >= 0 || StringFind(sym, "USTEC") >= 0 || StringFind(sym, "NDX") >= 0) return 1.0; // 1 pt en NAS
-   int digits = (int)SymbolInfoInteger(sym, SYMBOL_DIGITS);
-   if(digits >= 4) return 0.0001; // Forex regular (EURUSD: 1 pip = 0.00010)
-   return SymbolInfoDouble(sym, SYMBOL_POINT) * 10.0;
-}
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -193,10 +35,7 @@ double GetPipScale(string sym)
 int OnInit()
 {
    EventSetMillisecondTimer(InpPollInterval);
-   string eSym = ResolveSymbol("EURUSD");
-   if(eSym != "") SymbolSelect(eSym, true);
-   Print("✅ TelegramMT5Copier iniciado. Conectando a ", InpServerUrl);
-   ExportFullHistory();
+   Print("✅ TelegramMT5Copier iniciado. Auto-BE=OFF | Trailing=OFF (Gestión R:R pura). Conectando a ", InpServerUrl);
    return(INIT_SUCCEEDED);
 }
 
@@ -210,87 +49,38 @@ void OnDeinit(const int reason)
 }
 
 //+------------------------------------------------------------------+
-//| Gestor de Auto Break-Even y Trailing Stop Dinámico (The5%ers Safe)|
+//| Gestor de Auto Break-Even y Trailing Stop (DESACTIVADO)           |
 //+------------------------------------------------------------------+
 void AutoBreakEvenManager()
 {
-   if(!InpEnableAutoBE && !InpEnableTrailing) return;
+   // Desactivado: El bot no modifica SL por pips fijos para no cortar operaciones prematuramente
+   return;
+}
 
-   int total = PositionsTotal();
-   for(int i = total - 1; i >= 0; i--)
-   {
-      ulong ticket = PositionGetTicket(i);
-      if(ticket > 0)
-      {
-         string posSym = PositionGetString(POSITION_SYMBOL);
-         double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
-         double currentSL = PositionGetDouble(POSITION_SL);
-         double currentTP = PositionGetDouble(POSITION_TP);
-         ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-
-         int digits = (int)SymbolInfoInteger(posSym, SYMBOL_DIGITS);
-         if(digits <= 0) digits = 2;
-
-         double bid = SymbolInfoDouble(posSym, SYMBOL_BID);
-         double ask = SymbolInfoDouble(posSym, SYMBOL_ASK);
-
-         double pipScale = GetPipScale(posSym);
-         double beTriggerVal = InpBETriggerPips * pipScale;
-         double beOffsetVal = InpBEOffsetPips * pipScale;
-         double trailTriggerVal = InpTrailingTriggerPips * pipScale;
-         double trailDistVal = InpTrailingDistance * pipScale;
-         double trailStepVal = InpTrailingStep * pipScale;
-
-         if(posType == POSITION_TYPE_BUY)
-         {
-            double bePrice = NormalizeDouble(openPrice + beOffsetVal, digits);
-
-            // 1. Auto Break-Even inicial
-            if(InpEnableAutoBE && bid >= openPrice + beTriggerVal && (currentSL < bePrice || currentSL <= 0))
-            {
-               Print("🛡️ [AUTO BREAK-EVEN] BUY #", ticket, " (", posSym, ") en beneficio. Moviendo SL a BE: ", bePrice);
-               trade.PositionModify(ticket, bePrice, currentTP);
-               currentSL = bePrice;
-            }
-
-            // 2. Trailing Stop Dinámico continuo (solo tras superar InpTrailingTriggerPips)
-            if(InpEnableTrailing && bid >= openPrice + trailTriggerVal)
-            {
-               double desiredSL = NormalizeDouble(bid - trailDistVal, digits);
-               // Filtro Anti-Spam: Solo enviar modificación si avanza al menos trailStepVal y está por encima del SL actual
-               if(desiredSL >= currentSL + trailStepVal && desiredSL >= bePrice)
-               {
-                  Print("🚀 [TRAILING STOP BUY] Posición #", ticket, " (", posSym, ") -> Avanzando SL de ", currentSL, " a ", desiredSL, " (Bid: ", bid, ")");
-                  trade.PositionModify(ticket, desiredSL, currentTP);
-               }
-            }
-         }
-         else if(posType == POSITION_TYPE_SELL)
-         {
-            double bePrice = NormalizeDouble(openPrice - beOffsetVal, digits);
-
-            // 1. Auto Break-Even inicial
-            if(InpEnableAutoBE && ask <= openPrice - beTriggerVal && (currentSL > bePrice || currentSL <= 0))
-            {
-               Print("🛡️ [AUTO BREAK-EVEN] SELL #", ticket, " (", posSym, ") en beneficio. Moviendo SL a BE: ", bePrice);
-               trade.PositionModify(ticket, bePrice, currentTP);
-               currentSL = bePrice;
-            }
-
-            // 2. Trailing Stop Dinámico continuo (solo tras superar InpTrailingTriggerPips)
-            if(InpEnableTrailing && ask <= openPrice - trailTriggerVal)
-            {
-               double desiredSL = NormalizeDouble(ask + trailDistVal, digits);
-               // Filtro Anti-Spam: Solo enviar modificación si avanza al menos trailStepVal y está por debajo del SL actual
-               if((currentSL <= 0 || desiredSL <= currentSL - trailStepVal) && desiredSL <= bePrice)
-               {
-                  Print("🚀 [TRAILING STOP SELL] Posición #", ticket, " (", posSym, ") -> Avanzando SL de ", currentSL, " a ", desiredSL, " (Ask: ", ask, ")");
-                  trade.PositionModify(ticket, desiredSL, currentTP);
-               }
-            }
-         }
-      }
-   }
+//+------------------------------------------------------------------+
+//| Vigilante de Emergencia: Garantizar que NINGUNA posicion quede  |
+//| sin Stop Loss (SL) ni Take Profit (TP).                          |
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//| Helper: Distancia de emergencia adaptativa por activo            |
+//+------------------------------------------------------------------+
+double GetDefaultEmergencyDistance(string sym)
+{
+   string s = sym;
+   StringToUpper(s);
+   int digits = (int)SymbolInfoInteger(sym, SYMBOL_DIGITS);
+   double point = SymbolInfoDouble(sym, SYMBOL_POINT);
+   
+   if(StringFind(s, "XAU") >= 0 || StringFind(s, "GOLD") >= 0) return 3.5;
+   if(StringFind(s, "XAG") >= 0 || StringFind(s, "SILVER") >= 0) return 0.35;
+   if(StringFind(s, "BTC") >= 0) return 250.0;
+   if(StringFind(s, "ETH") >= 0) return 20.0;
+   if(StringFind(s, "SOL") >= 0) return 2.5;
+   if(StringFind(s, "NAS") >= 0 || StringFind(s, "100") >= 0 || StringFind(s, "US30") >= 0 || StringFind(s, "DJ") >= 0 || StringFind(s, "SPX") >= 0)
+      return 25.0;
+   if(digits == 3 || digits == 5) return 250 * point; // 25 pips
+   if(digits == 2 || digits == 4) return 25 * point;  // 25 pips
+   return 50 * (point > 0 ? point : 0.0001);
 }
 
 //+------------------------------------------------------------------+
@@ -322,12 +112,10 @@ void EnforceSafetyStopLoss()
 
                int digits = (int)SymbolInfoInteger(posSym, SYMBOL_DIGITS);
                if(digits <= 0) digits = 2;
-               double point = SymbolInfoDouble(posSym, SYMBOL_POINT);
-               double defaultStopDistance = 3.0;
-               if(digits >= 4) defaultStopDistance = 300 * point; // 30 pips de emergencia en Forex
 
-               double normSL = (sl > 0) ? sl : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice - defaultStopDistance, digits) : NormalizeDouble(openPrice + defaultStopDistance, digits));
-               double normTP = (tp > 0) ? tp : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice + defaultStopDistance, digits) : NormalizeDouble(openPrice - defaultStopDistance, digits));
+               double emDist = GetDefaultEmergencyDistance(posSym);
+               double normSL = (sl > 0) ? sl : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice - emDist, digits) : NormalizeDouble(openPrice + emDist, digits));
+               double normTP = (tp > 0) ? tp : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice + emDist, digits) : NormalizeDouble(openPrice - emDist, digits));
 
                bool ok = trade.PositionModify(ticket, normSL, normTP);
 
@@ -348,14 +136,80 @@ void EnforceSafetyStopLoss()
 }
 
 //+------------------------------------------------------------------+
+//| Helper para empaquetar ticks de todos los símbolos monitoreados  |
+//+------------------------------------------------------------------+
+string BuildMultiSymbolTicksQuery()
+{
+   string monitorList = InpSymbolsToMonitor;
+   if(monitorList == "") monitorList = "XAUUSD,EURUSD,GBPJPY,USDCAD,GBPUSD,AUDUSD,USDJPY,NAS100,XAGUSD,EURJPY,BTCUSD,ETHUSD";
+   if(StringFind(monitorList, "NAS100") < 0) monitorList += ",NAS100";
+   if(StringFind(monitorList, "USDCAD") < 0) monitorList += ",USDCAD";
+   if(StringFind(monitorList, "GBPUSD") < 0) monitorList += ",GBPUSD";
+   if(StringFind(monitorList, "AUDUSD") < 0) monitorList += ",AUDUSD";
+   if(StringFind(monitorList, "USDJPY") < 0) monitorList += ",USDJPY";
+   if(StringFind(monitorList, "GBPJPY") < 0) monitorList += ",GBPJPY";
+   if(StringFind(monitorList, "EURUSD") < 0) monitorList += ",EURUSD";
+   if(StringFind(monitorList, "XAUUSD") < 0) monitorList += ",XAUUSD";
+   if(StringFind(monitorList, "XAGUSD") < 0) monitorList += ",XAGUSD";
+   if(StringFind(monitorList, "EURJPY") < 0) monitorList += ",EURJPY";
+   if(StringFind(monitorList, "BTCUSD") < 0) monitorList += ",BTCUSD";
+   if(StringFind(monitorList, "ETHUSD") < 0) monitorList += ",ETHUSD";
+
+   string symbols[];
+   int count = StringSplit(monitorList, ',', symbols);
+   if(count <= 0) return "";
+
+   string result = "";
+   for(int i = 0; i < count; i++)
+   {
+      string rawSym = symbols[i];
+      StringTrimLeft(rawSym);
+      StringTrimRight(rawSym);
+      if(rawSym == "") continue;
+
+      string resolved = ResolveSymbol(rawSym);
+      SymbolSelect(resolved, true);
+
+      MqlTick tick;
+      double b = 0.0, a = 0.0;
+      if(SymbolInfoTick(resolved, tick) && tick.bid > 0 && tick.ask > 0)
+      {
+         b = tick.bid;
+         a = tick.ask;
+      }
+      else
+      {
+         b = SymbolInfoDouble(resolved, SYMBOL_BID);
+         a = SymbolInfoDouble(resolved, SYMBOL_ASK);
+      }
+
+      int dig = (int)SymbolInfoInteger(resolved, SYMBOL_DIGITS);
+      if(dig <= 0) dig = 2;
+
+      MqlRates d1Rates[];
+      ArraySetAsSeries(d1Rates, true);
+      double symPDH = 0.0, symPDL = 0.0;
+      if(CopyRates(resolved, PERIOD_D1, 1, 1, d1Rates) >= 1)
+      {
+         symPDH = d1Rates[0].high;
+         symPDL = d1Rates[0].low;
+      }
+
+      if(b > 0 && a > 0)
+      {
+         if(result != "") result += "|";
+         result += rawSym + ":" + DoubleToString(b, dig) + ":" + DoubleToString(a, dig) + ":" + DoubleToString(symPDH, dig) + ":" + DoubleToString(symPDL, dig);
+      }
+   }
+   return result;
+}
+
+//+------------------------------------------------------------------+
 //| Timer function (Consultar servidor local Node.js en ms)          |
 //+------------------------------------------------------------------+
 void OnTimer()
 {
-   // 1. Ejecutar gestor de Auto Break-Even para proteger ganancias al avanzar hacia TP1
-   AutoBreakEvenManager();
-
-   // 2. Ejecutar vigilante de seguridad de Stop Loss en cada pulso (250 ms)
+   // 1. Ejecutar vigilante de seguridad de Stop Loss en cada pulso (250 ms)
    EnforceSafetyStopLoss();
 
    string cookie=NULL, headers;
@@ -368,69 +222,65 @@ void OnTimer()
    string company = AccountInfoString(ACCOUNT_COMPANY);
    double balance = AccountInfoDouble(ACCOUNT_BALANCE);
    double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   string curr = AccountInfoString(ACCOUNT_CURRENCY);
    double liveBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double liveAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int openPosCount = PositionsTotal();
-   int openBuy = 0, openSell = 0;
+
+   // Conteo de posiciones con RIESGO ACTIVO (cuyo Stop Loss no esté en Break-Even)
+   int riskPosCount = 0;
    for(int p = 0; p < openPosCount; p++)
    {
       ulong t = PositionGetTicket(p);
       if(t > 0)
       {
-         ENUM_POSITION_TYPE pt = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         if(pt == POSITION_TYPE_BUY) openBuy++;
-         else if(pt == POSITION_TYPE_SELL) openSell++;
+         double opPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+         double posSL   = PositionGetDouble(POSITION_SL);
+         ENUM_POSITION_TYPE pType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+         bool isAtBE = false;
+         if(posSL > 0)
+         {
+            if(pType == POSITION_TYPE_BUY && posSL >= opPrice - 0.0001) isAtBE = true;
+            if(pType == POSITION_TYPE_SELL && posSL <= opPrice + 0.0001) isAtBE = true;
+         }
+         if(!isAtBE) riskPosCount++;
       }
    }
-   int symDigits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
-   if(symDigits <= 0) symDigits = 2;
+
+   MqlRates chartD1[];
+   ArraySetAsSeries(chartD1, true);
+   double chartPDH = 0.0, chartPDL = 0.0;
+   if(CopyRates(_Symbol, PERIOD_D1, 1, 1, chartD1) >= 1)
+   {
+      chartPDH = chartD1[0].high;
+      chartPDL = chartD1[0].low;
+   }
+
+   string multiTicks = BuildMultiSymbolTicksQuery();
+   static datetime lastTicksPrint = 0;
+   if(TimeCurrent() - lastTicksPrint >= 30)
+   {
+      lastTicksPrint = TimeCurrent();
+      Print("📊 [Multi-Tick Monitor] ", multiTicks);
+   }
+
+   int chartDig = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   if(chartDig <= 0) chartDig = 2;
 
    string url = InpServerUrl + "?account=" + IntegerToString(login) + 
+                "&symbol=" + _Symbol +
                 "&balance=" + DoubleToString(balance, 2) + 
                 "&equity=" + DoubleToString(equity, 2) + 
+                "&currency=" + curr +
                 "&broker=" + company + 
-                "&symbol=" + _Symbol + 
-                "&bid=" + DoubleToString(liveBid, symDigits) + 
-                "&ask=" + DoubleToString(liveAsk, symDigits) + 
-                "&openPositions=" + IntegerToString(openPosCount) + 
-                "&openBuy=" + IntegerToString(openBuy) + 
-                "&openSell=" + IntegerToString(openSell);
+                "&bid=" + DoubleToString(liveBid, chartDig) + 
+                "&ask=" + DoubleToString(liveAsk, chartDig) + 
+                "&pdh=" + DoubleToString(chartPDH, chartDig) + 
+                "&pdl=" + DoubleToString(chartPDL, chartDig) + 
+                "&openPositions=" + IntegerToString(openPosCount) +
+                "&riskPositions=" + IntegerToString(riskPosCount);
 
-   // Enviar precios en tiempo real de EURUSD si existe en Market Watch
-   static string cachedEUR = "";
-   if(cachedEUR == "") cachedEUR = ResolveSymbol("EURUSD");
-   double eBid = 0, eAsk = 0;
-   if(cachedEUR != "" && GetSymbolPrices(cachedEUR, eBid, eAsk))
-   {
-      url += "&eurusdBid=" + DoubleToString(eBid, 5) + "&eurusdAsk=" + DoubleToString(eAsk, 5);
-   }
-
-   // Enviar precios en tiempo real de GBPJPY si existe en Market Watch
-   static string cachedGBP = "";
-   if(cachedGBP == "") cachedGBP = ResolveSymbol("GBPJPY");
-   double gBid = 0, gAsk = 0;
-   if(cachedGBP != "" && GetSymbolPrices(cachedGBP, gBid, gAsk))
-   {
-      url += "&gbpjpyBid=" + DoubleToString(gBid, 3) + "&gbpjpyAsk=" + DoubleToString(gAsk, 3);
-   }
-
-   // Enviar precios en tiempo real de NAS100 si existe en Market Watch
-   static string cachedNAS = "";
-   if(cachedNAS == "")
-   {
-      cachedNAS = ResolveSymbol("NAS100");
-      if(cachedNAS == "") cachedNAS = ResolveSymbol("US100");
-      if(cachedNAS == "") cachedNAS = ResolveSymbol("USTEC");
-      if(cachedNAS == "") cachedNAS = ResolveSymbol("NDX");
-      if(cachedNAS == "") cachedNAS = ResolveSymbol("NAS");
-   }
-   double nBid = 0, nAsk = 0;
-   if(cachedNAS != "" && GetSymbolPrices(cachedNAS, nBid, nAsk))
-   {
-      int nDigits = (int)SymbolInfoInteger(cachedNAS, SYMBOL_DIGITS);
-      if(nDigits <= 0) nDigits = 2;
-      url += "&nas100Bid=" + DoubleToString(nBid, nDigits) + "&nas100Ask=" + DoubleToString(nAsk, nDigits);
-   }
+   if(multiTicks != "") url += "&ticks=" + multiTicks;
 
    int res = WebRequest("GET", url, cookie, NULL, timeout, post, 0, result, result_headers);
 
@@ -446,83 +296,74 @@ void OnTimer()
 }
 
 //+------------------------------------------------------------------+
-//| Obtener precios actuales (Bid/Ask) con fallbacks robustos        |
+//| Helper para verificar si un símbolo es operable en el broker     |
 //+------------------------------------------------------------------+
-bool GetSymbolPrices(string sym, double &bid, double &ask)
+bool IsTradableSymbol(string sym)
 {
-   bid = 0; ask = 0;
-   if(sym == "") return false;
-   
-   MqlTick tick;
-   if(SymbolInfoTick(sym, tick) && tick.bid > 0 && tick.ask > 0)
-   {
-      bid = tick.bid;
-      ask = tick.ask;
-      return true;
-   }
-   
-   bid = SymbolInfoDouble(sym, SYMBOL_BID);
-   ask = SymbolInfoDouble(sym, SYMBOL_ASK);
-   if(bid > 0 && ask > 0) return true;
-   
-   double last = SymbolInfoDouble(sym, SYMBOL_LAST);
-   if(last > 0)
-   {
-      bid = last;
-      ask = last;
-      return true;
-   }
-   
-   return false;
-}
-
-//+------------------------------------------------------------------+
-//| Helper para verificar si un símbolo permite trading real en este broker |
-//+------------------------------------------------------------------+
-bool IsSymbolTradable(string sym)
-{
-   if(sym == "") return false;
+   if(!SymbolSelect(sym, true)) return false;
    long mode = SymbolInfoInteger(sym, SYMBOL_TRADE_MODE);
    return (mode != SYMBOL_TRADE_MODE_DISABLED);
 }
 
 //+------------------------------------------------------------------+
-//| Helper para resolver sufijos del broker (ej. XAUUSD-VIP, US100)  |
+//| Helper para resolver sufijos del broker (ej. XAUUSD-VIP, XAUUSD.m)|
 //+------------------------------------------------------------------+
 string ResolveSymbol(string reqSymbol)
 {
-   if(reqSymbol == "") return "";
-
-   // 0. Si coincide con el gráfico donde corre el EA y es operable
-   if((StringFind(_Symbol, reqSymbol) >= 0 || (reqSymbol == "GOLD" && StringFind(_Symbol, "XAU") >= 0)) && IsSymbolTradable(_Symbol))
-      return _Symbol;
-
-   // 1. Si el símbolo exacto ya existe, está seleccionado en Market Watch Y ES OPERABLE
-   if(SymbolInfoInteger(reqSymbol, SYMBOL_SELECT) && IsSymbolTradable(reqSymbol))
+   // 1. Si el símbolo exacto existe y es operable, usarlo directamente
+   if(IsTradableSymbol(reqSymbol))
       return reqSymbol;
 
-   // 2. Buscar primero entre los símbolos ya visibles en Market Watch que sean operables
+   // 1.1 Aliases especiales para Índices (ej. NAS100 -> US100.cash en FTMO)
+   if(reqSymbol == "NAS100" || reqSymbol == "US100" || reqSymbol == "USTEC")
+   {
+      string nasVariants[] = {"US100.cash", "US100", "NAS100", "NAS100.cash", "USTEC", "NDX", "US100-VIP"};
+      for(int v = 0; v < ArraySize(nasVariants); v++)
+      {
+         if(IsTradableSymbol(nasVariants[v])) return nasVariants[v];
+      }
+   }
+
+   // 2. Probar variantes comunes con sufijo (ej. -VIP para VT Markets, .m, .pro)
+   string vipSuffix = reqSymbol + "-VIP";
+   if(IsTradableSymbol(vipSuffix))
+      return vipSuffix;
+
+   string mSuffix = reqSymbol + ".m";
+   if(IsTradableSymbol(mSuffix))
+      return mSuffix;
+
+   string proSuffix = reqSymbol + ".pro";
+   if(IsTradableSymbol(proSuffix))
+      return proSuffix;
+
+   // 3. Probar primero con el símbolo del gráfico actual donde está el EA si es operable
+   if(IsTradableSymbol(_Symbol) && (StringFind(_Symbol, reqSymbol) >= 0 || (reqSymbol == "GOLD" && StringFind(_Symbol, "XAU") >= 0)))
+      return _Symbol;
+
+   // 4. Buscar en Market Watch (selected = true) un símbolo que contenga el nombre y sea operable
    int totalSelected = SymbolsTotal(true);
    for(int i = 0; i < totalSelected; i++)
    {
       string name = SymbolName(i, true);
-      if(StringFind(name, reqSymbol) >= 0 && IsSymbolTradable(name))
-         return name;
-   }
-
-   // 3. Buscar en el catálogo completo del broker y agregarlo a Market Watch (solo si es operable)
-   int totalAll = SymbolsTotal(false);
-   for(int i = 0; i < totalAll; i++)
-   {
-      string name = SymbolName(i, false);
-      if(StringFind(name, reqSymbol) >= 0 && IsSymbolTradable(name))
+      if(StringFind(name, reqSymbol) >= 0 && IsTradableSymbol(name))
       {
-         SymbolSelect(name, true);
          return name;
       }
    }
 
-   return "";
+   // 5. Buscar en el catálogo completo del broker (selected = false)
+   int totalAll = SymbolsTotal(false);
+   for(int i = 0; i < totalAll; i++)
+   {
+      string name = SymbolName(i, false);
+      if(StringFind(name, reqSymbol) >= 0 && IsTradableSymbol(name))
+      {
+         return name;
+      }
+   }
+
+   return reqSymbol;
 }
 
 //+------------------------------------------------------------------+
@@ -564,17 +405,7 @@ void SetBestFillingType(string sym)
 //+------------------------------------------------------------------+
 bool HasOppositePosition(string sym, ENUM_POSITION_TYPE requestedType)
 {
-   // Detección automática estricta de cuentas de Fondeo (Prop Firms)
-   string company = AccountInfoString(ACCOUNT_COMPANY);
-   double bal = AccountInfoDouble(ACCOUNT_BALANCE);
-   bool isPropFirm = (StringFind(company, "FTMO") >= 0 || 
-                      StringFind(company, "Five Percent") >= 0 || 
-                      StringFind(company, "The5") >= 0 || 
-                      bal >= 4000.0);
-
-   // Si es cuenta personal (Capital Propio) y el usuario permite Hedging, no se bloquea
-   // En cuentas de Fondeo (Prop Firms), el Anti-Hedging es OBLIGATORIO E INQUEBRANTABLE (Regla 1)
-   if(InpAllowHedging && !isPropFirm) return false;
+   if(InpAllowHedging) return false; // En cuenta personal con capital propio el hedging está 100% permitido
 
    int total = PositionsTotal();
    for(int i = 0; i < total; i++)
@@ -584,16 +415,7 @@ bool HasOppositePosition(string sym, ENUM_POSITION_TYPE requestedType)
       {
          string posSym = PositionGetString(POSITION_SYMBOL);
          ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-         
-         // Normalizar símbolos para emparejar con o sin sufijos (ej. XAUUSD vs XAUUSD-VIP)
-         bool sameSymbol = (posSym == sym || 
-                           (StringFind(sym, "XAU") >= 0 && StringFind(posSym, "XAU") >= 0) ||
-                           (StringFind(sym, "EURUSD") >= 0 && StringFind(posSym, "EURUSD") >= 0) ||
-                           (StringFind(sym, "GBPJPY") >= 0 && StringFind(posSym, "GBPJPY") >= 0) ||
-                           (StringFind(sym, "NAS") >= 0 && StringFind(posSym, "NAS") >= 0) ||
-                           (StringFind(sym, "US100") >= 0 && StringFind(posSym, "US100") >= 0));
-
-         if(sameSymbol && posType != requestedType)
+         if(posSym == sym && posType != requestedType)
          {
             return true;
          }
@@ -737,107 +559,30 @@ bool ModifySinglePositionByTicket(ulong ticket, double sl, double tp)
    return ok;
 }
 
-// Helper para normalizar identificadores (quitar espacios, guiones y mayúsculas)
-string NormalizeTag(string s)
-{
-   string res = "";
-   StringToUpper(s);
-   int len = StringLen(s);
-   for(int i = 0; i < len; i++)
-   {
-      ushort ch = StringGetCharacter(s, i);
-      if(ch != ' ' && ch != '_' && ch != '-')
-      {
-         res += ShortToString(ch);
-      }
-   }
-   return res;
-}
-
-// Detectar si dos tags pertenecen a temporalidades o estrategias en conflicto (ej: M1 vs M2)
-bool IsTimeframeConflict(string tag1, string tag2)
-{
-   string tfs[] = {"M1", "M2", "M3", "M5", "M15", "M30", "H1", "H4"};
-   string norm1 = NormalizeTag(tag1);
-   string norm2 = NormalizeTag(tag2);
-   
-   for(int i = 0; i < ArraySize(tfs); i++)
-   {
-      if(StringFind(norm1, tfs[i]) >= 0)
-      {
-         for(int j = 0; j < ArraySize(tfs); j++)
-         {
-            if(i != j && StringFind(norm2, tfs[j]) >= 0)
-            {
-               // Conflicto directo entre temporalidades distintas (ej: M1 vs M2)
-               return true;
-            }
-         }
-      }
-   }
-   return false;
-}
-
 //+------------------------------------------------------------------+
-//| Modificar posicion por canal estricto o proximidad segura        |
+//| Modificar posicion por coincidencia de precio de entrada (Seguro)|
 //+------------------------------------------------------------------+
-void ModifyPositionByProximity(string symbol, double targetEntry, double sl, double tp, string comment = "", string channelId = "")
+void ModifyPositionByProximity(string symbol, double targetEntry, double sl, double tp, string comment = "")
 {
    int total = PositionsTotal();
    ulong bestTicket = 0;
    double minDiff = 999999.0;
-   string searchTag = comment != "" ? comment : channelId;
-   string normSearch = NormalizeTag(searchTag);
    
-   // 1. Paso 1: Búsqueda estricta por coincidencia de Canal / Estrategia
-   if(normSearch != "")
+   for(int i = 0; i < total; i++)
    {
-      for(int i = 0; i < total; i++)
+      ulong t = PositionGetTicket(i);
+      if(t > 0 && PositionGetString(POSITION_SYMBOL) == symbol)
       {
-         ulong t = PositionGetTicket(i);
-         if(t > 0 && PositionGetString(POSITION_SYMBOL) == symbol)
+         string posComment = PositionGetString(POSITION_COMMENT);
+         if(comment != "" && (StringFind(posComment, comment) >= 0 || StringFind(comment, posComment) >= 0))
          {
-            string posComment = PositionGetString(POSITION_COMMENT);
-            string normPos = NormalizeTag(posComment);
-            
-            // Si el tag actual de la posición está en conflicto directo de TF con el buscador, descartar
-            if(IsTimeframeConflict(normSearch, normPos))
-               continue;
-
-            // Coincidencia exacta o parcial normalizada
-            if(StringFind(normPos, normSearch) >= 0 || StringFind(normSearch, normPos) >= 0)
-            {
-               bestTicket = t;
-               minDiff = 0.0;
-               break;
-            }
+            bestTicket = t;
+            minDiff = 0.0;
+            break;
          }
-      }
-      
-      // Si se especificó un canal concreto y NO se encontró esa posición,
-      // NUNCA debemos alterar otra posición que pertenezca a otro canal/temporalidad.
-      if(bestTicket == 0)
-      {
-         Print("⚠️ [MT5 EA] No se encontro posicion activa para '", searchTag, "'. Modificacion OMITIDA para proteger otras ordenes.");
-         return;
-      }
-   }
-   
-   // 2. Paso 2: Si no había tag específico de canal, buscar por proximidad de precio pero bloqueando conflictos de TF
-   if(bestTicket == 0 && targetEntry > 0)
-   {
-      for(int i = 0; i < total; i++)
-      {
-         ulong t = PositionGetTicket(i);
-         if(t > 0 && PositionGetString(POSITION_SYMBOL) == symbol)
+         double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+         if(targetEntry > 0)
          {
-            string posComment = PositionGetString(POSITION_COMMENT);
-            if(searchTag != "" && IsTimeframeConflict(searchTag, posComment))
-            {
-               continue; // Bloqueo de seguridad: Evitar tocar posiciones de otro timeframe
-            }
-            
-            double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
             double diff = MathAbs(openPrice - targetEntry);
             if(diff < minDiff)
             {
@@ -845,18 +590,22 @@ void ModifyPositionByProximity(string symbol, double targetEntry, double sl, dou
                bestTicket = t;
             }
          }
+         else
+         {
+            bestTicket = t; // Tomar la única abierta si no se especificó precio
+         }
       }
    }
    
-   // Modificar si coincide por comentario o por proximidad razonable (máx 5.0)
-   if(bestTicket > 0 && (normSearch != "" || minDiff <= 5.0))
+   // Modificar si coincide por comentario o por proximidad razonable (hasta 15.0 / 150 pips)
+   if(bestTicket > 0 && (targetEntry <= 0 || minDiff <= 15.0))
    {
-      Print("🎯 [MT5 EA] Modificando posicion: Ticket #", bestTicket, " (Filtro: ", searchTag, " | Dif: ", DoubleToString(minDiff, 2), ")");
+      Print("🎯 [MT5 EA] Modificando posicion por canal/proximidad: Ticket #", bestTicket, " (Diferencia: ", DoubleToString(minDiff, 2), ")");
       ModifySinglePositionByTicket(bestTicket, sl, tp);
    }
    else
    {
-      Print("⚠️ [MT5 EA] No se encontro posicion coincidente con entrada ", targetEntry, " / comentario ", searchTag, ". Modificacion omitida.");
+      Print("⚠️ [MT5 EA] No se encontro posicion coincidente con entrada ", targetEntry, " / comentario ", comment, ". Modificacion omitida.");
    }
 }
 
@@ -881,18 +630,114 @@ void ExecuteSingleOrder(string json)
    int digits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
    if(digits <= 0) digits = 2;
 
-   if(actionStr == "EXPORT_HISTORY")
+   if(actionStr == "EXPORT_BARS" || actionStr == "EXPORT_M5" || actionStr == "EXPORT_M2")
    {
-      ExportFullHistory();
+      string exportSymbols[] = {"XAUUSD", "EURUSD", "GBPJPY", "USDCAD", "GBPUSD", "AUDUSD", "USDJPY"};
+      Print("📊 [MT5 EA] Iniciando exportacion de barras M5 y M2 para backtest...");
+      for(int s = 0; s < ArraySize(exportSymbols); s++)
+      {
+         string rawSym = exportSymbols[s];
+         string expSym = ResolveSymbol(rawSym);
+         
+         // 1. Export M5
+         MqlRates rates[];
+         ArraySetAsSeries(rates, false);
+         int copied = CopyRates(expSym, PERIOD_M5, 0, 3000, rates);
+         if(copied > 0)
+         {
+            string fileName = "M5_" + rawSym + "_THIS_WEEK.csv";
+            int handle = FileOpen(fileName, FILE_WRITE|FILE_CSV|FILE_COMMON, '\t');
+            if(handle != INVALID_HANDLE)
+            {
+               FileWriteString(handle, "<DATE>\t<TIME>\t<OPEN>\t<HIGH>\t<LOW>\t<CLOSE>\t<TICKVOL>\t<VOL>\t<SPREAD>\n");
+               for(int r = 0; r < copied; r++)
+               {
+                  MqlDateTime dt;
+                  TimeToStruct(rates[r].time, dt);
+                  string dStr = StringFormat("%04d.%02d.%02d", dt.year, dt.mon, dt.day);
+                  string tStr = StringFormat("%02d:%02d:00", dt.hour, dt.min);
+                  string line = StringFormat("%s\t%s\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%d\t%d\n",
+                     dStr, tStr, rates[r].open, rates[r].high, rates[r].low, rates[r].close,
+                     (int)rates[r].tick_volume, (int)rates[r].real_volume, (int)rates[r].spread);
+                  FileWriteString(handle, line);
+               }
+               FileClose(handle);
+               Print("✅ [MT5 EA] Exportadas ", copied, " barras M5 para ", rawSym, " (simbolo broker: ", expSym, ") en Common/Files/", fileName);
+            }
+         }
+         else
+         {
+            Print("⚠️ [MT5 EA] Error al copiar M5 para ", expSym, " (Error: ", GetLastError(), ")");
+         }
+         
+         // 2. Export M2
+         MqlRates ratesM2[];
+         ArraySetAsSeries(ratesM2, false);
+         int copiedM2 = CopyRates(expSym, PERIOD_M2, 0, 5000, ratesM2);
+         if(copiedM2 > 0)
+         {
+            string fileNameM2 = "M2_" + rawSym + "_THIS_WEEK.csv";
+            int handleM2 = FileOpen(fileNameM2, FILE_WRITE|FILE_CSV|FILE_COMMON, '\t');
+            if(handleM2 != INVALID_HANDLE)
+            {
+               FileWriteString(handleM2, "<DATE>\t<TIME>\t<OPEN>\t<HIGH>\t<LOW>\t<CLOSE>\t<TICKVOL>\t<VOL>\t<SPREAD>\n");
+               for(int r = 0; r < copiedM2; r++)
+               {
+                  MqlDateTime dt;
+                  TimeToStruct(ratesM2[r].time, dt);
+                  string dStr = StringFormat("%04d.%02d.%02d", dt.year, dt.mon, dt.day);
+                  string tStr = StringFormat("%02d:%02d:00", dt.hour, dt.min);
+                  string line = StringFormat("%s\t%s\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%d\t%d\n",
+                     dStr, tStr, ratesM2[r].open, ratesM2[r].high, ratesM2[r].low, ratesM2[r].close,
+                     (int)ratesM2[r].tick_volume, (int)ratesM2[r].real_volume, (int)ratesM2[r].spread);
+                  FileWriteString(handleM2, line);
+               }
+               FileClose(handleM2);
+               Print("✅ [MT5 EA] Exportadas ", copiedM2, " barras M2 para ", rawSym, " (simbolo broker: ", expSym, ") en Common/Files/", fileNameM2);
+            }
+         }
+         else
+         {
+            Print("⚠️ [MT5 EA] Error al copiar M2 para ", expSym, " (Error: ", GetLastError(), ")");
+         }
+
+         // 3. Export M3
+         MqlRates ratesM3[];
+         ArraySetAsSeries(ratesM3, false);
+         int copiedM3 = CopyRates(expSym, PERIOD_M3, 0, 5000, ratesM3);
+         if(copiedM3 > 0)
+         {
+            string fileNameM3 = "M3_" + rawSym + "_THIS_WEEK.csv";
+            int handleM3 = FileOpen(fileNameM3, FILE_WRITE|FILE_CSV|FILE_COMMON, '\t');
+            if(handleM3 != INVALID_HANDLE)
+            {
+               FileWriteString(handleM3, "<DATE>\t<TIME>\t<OPEN>\t<HIGH>\t<LOW>\t<CLOSE>\t<TICKVOL>\t<VOL>\t<SPREAD>\n");
+               for(int r = 0; r < copiedM3; r++)
+               {
+                  MqlDateTime dt;
+                  TimeToStruct(ratesM3[r].time, dt);
+                  string dStr = StringFormat("%04d.%02d.%02d", dt.year, dt.mon, dt.day);
+                  string tStr = StringFormat("%02d:%02d:00", dt.hour, dt.min);
+                  string line = StringFormat("%s\t%s\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%d\t%d\n",
+                     dStr, tStr, ratesM3[r].open, ratesM3[r].high, ratesM3[r].low, ratesM3[r].close,
+                     (int)ratesM3[r].tick_volume, (int)ratesM3[r].real_volume, (int)ratesM3[r].spread);
+                  FileWriteString(handleM3, line);
+               }
+               FileClose(handleM3);
+               Print("✅ [MT5 EA] Exportadas ", copiedM3, " barras M3 para ", rawSym, " (simbolo broker: ", expSym, ") en Common/Files/", fileNameM3);
+            }
+         }
+         else
+         {
+            Print("⚠️ [MT5 EA] Error al copiar M3 para ", expSym, " (Error: ", GetLastError(), ")");
+         }
+      }
       return;
    }
 
-   if(actionStr == "CLOSE_ALL" || actionStr == "CLOSE_ALL_MARKET" || actionStr == "CLOSE_ALL_POSITIONS" || actionStr == "CLOSE_CHANNEL" || actionStr == "CLOSE_SPECIFIC")
+   if(actionStr == "CLOSE_ALL" || actionStr == "CLOSE_ALL_MARKET" || actionStr == "CLOSE_ALL_POSITIONS")
    {
-      string targetChannel = ExtractJsonString(json, "channelId");
-      if(targetChannel == "") targetChannel = ExtractJsonString(json, "comment");
-
-      Print("🚨 [MT5 EA] Comando de CIERRE (", actionStr, ") recibido para ", targetChannel != "" ? targetChannel : (symbol == "" ? "TODOS LOS PARES" : symbol), "...");
+      Print("🚨 [MT5 EA] Comando de EMERGENCIA CLOSE_ALL recibido para ", symbol == "" ? "TODOS LOS PARES" : symbol, "...");
       int totalPos = PositionsTotal();
       for(int p = totalPos - 1; p >= 0; p--)
       {
@@ -900,25 +745,10 @@ void ExecuteSingleOrder(string json)
          if(pTicket > 0)
          {
             string posSym = PositionGetString(POSITION_SYMBOL);
-            string posComment = PositionGetString(POSITION_COMMENT);
-            bool match = false;
-            if(actionStr == "CLOSE_CHANNEL" || actionStr == "CLOSE_SPECIFIC")
-            {
-               if(targetChannel != "" && (StringFind(posComment, targetChannel) >= 0 || StringFind(targetChannel, posComment) >= 0))
-                  match = true;
-               else if(symbol != "" && posSym == symbol && targetChannel == "")
-                  match = true;
-            }
-            else
-            {
-               if(symbol == "" || symbol == "ALL" || posSym == symbol)
-                  match = true;
-            }
-
-            if(match)
+            if(symbol == "" || symbol == "ALL" || posSym == symbol)
             {
                trade.PositionClose(pTicket);
-               Print("🛑 [MT5 EA] Posicion #", pTicket, " (", posSym, " - ", posComment, ") cerrada por comando ", actionStr);
+               Print("🛑 [MT5 EA] Posicion #", pTicket, " (", posSym, ") cerrada de emergencia.");
             }
          }
       }
@@ -982,8 +812,7 @@ void ExecuteSingleOrder(string json)
       {
          double targetEntry = ExtractJsonDouble(json, "entryPrice");
          if(targetEntry <= 0) targetEntry = ExtractJsonDouble(json, "entry");
-         string channelId = ExtractJsonString(json, "channelId");
-         ModifyPositionByProximity(symbol, targetEntry, sl, tp, comment, channelId);
+         ModifyPositionByProximity(symbol, targetEntry, sl, tp, comment);
       }
    }
    else if(actionStr == "BUY_LIMIT")
@@ -1034,12 +863,9 @@ void ExecuteSingleOrder(string json)
       if(ask <= 0) ask = SymbolInfoDouble(symbol, SYMBOL_LAST);
 
       // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inmediatos
-      double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-      if(point <= 0) point = (digits == 5 || digits == 3) ? 0.00001 : 0.01;
-      double defaultStopDist = (StringFind(symbol, "XAU") >= 0 || StringFind(symbol, "GOLD") >= 0) ? 3.5 : (300.0 * point);
-      double defaultTpDist = (StringFind(symbol, "XAU") >= 0 || StringFind(symbol, "GOLD") >= 0) ? 3.0 : (300.0 * point);
-      if(sl <= 0) sl = NormalizeDouble(ask - defaultStopDist, digits);
-      if(tp <= 0) tp = NormalizeDouble(ask + defaultTpDist, digits);
+      double emDist = GetDefaultEmergencyDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(ask - emDist, digits);
+      if(tp <= 0) tp = NormalizeDouble(ask + emDist, digits);
       
       // 1. Intentar abrir con SL/TP directo en un solo paso
       bool res = trade.Buy(volume > 0 ? volume : 0.01, symbol, ask, sl, tp, comment);
@@ -1095,12 +921,9 @@ void ExecuteSingleOrder(string json)
       if(bid <= 0) bid = SymbolInfoDouble(symbol, SYMBOL_LAST);
 
       // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inmediatos
-      double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
-      if(point <= 0) point = (digits == 5 || digits == 3) ? 0.00001 : 0.01;
-      double defaultStopDist = (StringFind(symbol, "XAU") >= 0 || StringFind(symbol, "GOLD") >= 0) ? 3.5 : (300.0 * point);
-      double defaultTpDist = (StringFind(symbol, "XAU") >= 0 || StringFind(symbol, "GOLD") >= 0) ? 3.0 : (300.0 * point);
-      if(sl <= 0) sl = NormalizeDouble(bid + defaultStopDist, digits);
-      if(tp <= 0) tp = NormalizeDouble(bid - defaultTpDist, digits);
+      double emDist = GetDefaultEmergencyDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(bid + emDist, digits);
+      if(tp <= 0) tp = NormalizeDouble(bid - emDist, digits);
 
       // 1. Intentar abrir con SL/TP directo en un solo paso
       bool res = trade.Sell(volume > 0 ? volume : 0.01, symbol, bid, sl, tp, comment);
@@ -1190,7 +1013,7 @@ string ExtractJsonString(string json, string key)
 //+------------------------------------------------------------------+
 //| Notificar cierre de posicion al servidor Node.js (Feedback Loop)|
 //+------------------------------------------------------------------+
-void NotifyTradeClosed(ulong dealTicket, ulong posTicket, string sym, double profit, double price, string comment, double pips = 0.0, double volume = 0.01)
+void NotifyTradeClosed(ulong dealTicket, ulong posTicket, string sym, double profit, double price, string comment)
 {
    string cookie=NULL, headers = "Content-Type: application/json\r\n";
    char post[], result[];
@@ -1201,9 +1024,10 @@ void NotifyTradeClosed(ulong dealTicket, ulong posTicket, string sym, double pro
    string company = AccountInfoString(ACCOUNT_COMPANY);
    double liveBal = AccountInfoDouble(ACCOUNT_BALANCE);
    double liveEq = AccountInfoDouble(ACCOUNT_EQUITY);
+   string curr = AccountInfoString(ACCOUNT_CURRENCY);
    
-   string payload = StringFormat("{\"account\":\"%I64u\",\"broker\":\"%s\",\"ticket\":%I64u,\"position\":%I64u,\"symbol\":\"%s\",\"profit\":%.2f,\"price\":%.2f,\"outcome\":\"%s\",\"comment\":\"%s\",\"balance\":%.2f,\"equity\":%.2f,\"pips\":%.1f,\"volume\":%.2f}",
-                                 login, company, dealTicket, posTicket, sym, profit, price, (profit >= 0 ? "WIN" : "LOSS"), comment, liveBal, liveEq, pips, volume);
+   string payload = StringFormat("{\"account\":\"%I64u\",\"broker\":\"%s\",\"ticket\":%I64u,\"position\":%I64u,\"symbol\":\"%s\",\"profit\":%.2f,\"price\":%.2f,\"outcome\":\"%s\",\"comment\":\"%s\",\"balance\":%.2f,\"equity\":%.2f,\"currency\":\"%s\"}",
+                                 login, company, dealTicket, posTicket, sym, profit, price, (profit >= 0 ? "WIN" : "LOSS"), comment, liveBal, liveEq, curr);
    
    StringToCharArray(payload, post, 0, WHOLE_ARRAY, CP_UTF8);
    ArrayResize(post, ArraySize(post) - 1);
@@ -1212,7 +1036,7 @@ void NotifyTradeClosed(ulong dealTicket, ulong posTicket, string sym, double pro
    int res = WebRequest("POST", url, cookie, headers, timeout, post, ArraySize(post), result, result_headers);
    if(res == 200)
    {
-      Print("📊 [FEEDBACK LOOP MT5] Notificado cierre de trade #", posTicket, " al AnalyticsEngine (Profit: $", DoubleToString(profit, 2), " | Pips: ", DoubleToString(pips, 1), ")");
+      Print("📊 [FEEDBACK LOOP MT5] Notificado cierre de trade #", posTicket, " al AnalyticsEngine (Profit: $", DoubleToString(profit, 2), ")");
    }
 }
 
@@ -1236,12 +1060,9 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
             string dealSym = HistoryDealGetString(dealTicket, DEAL_SYMBOL);
             string dealComment = HistoryDealGetString(dealTicket, DEAL_COMMENT);
             ulong posTicket = HistoryDealGetInteger(dealTicket, DEAL_POSITION_ID);
-            double dealVol = HistoryDealGetDouble(dealTicket, DEAL_VOLUME);
-            double openPrice = 0.0;
-            ENUM_DEAL_TYPE inDealType = DEAL_TYPE_BUY;
             
             // Si el dealComment es [tp] o [sl], recuperar el canal del deal de entrada original
-            if(posTicket > 0)
+            if(posTicket > 0 && (dealComment == "" || StringFind(dealComment, "[") >= 0))
             {
                if(HistorySelectByPosition(posTicket))
                {
@@ -1251,31 +1072,16 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
                      ulong dTicket = HistoryDealGetTicket(d);
                      if(dTicket > 0 && (ENUM_DEAL_ENTRY)HistoryDealGetInteger(dTicket, DEAL_ENTRY) == DEAL_ENTRY_IN)
                      {
-                        openPrice = HistoryDealGetDouble(dTicket, DEAL_PRICE);
-                        inDealType = (ENUM_DEAL_TYPE)HistoryDealGetInteger(dTicket, DEAL_TYPE);
                         string origComment = HistoryDealGetString(dTicket, DEAL_COMMENT);
-                        if(origComment != "" && (dealComment == "" || StringFind(dealComment, "[") >= 0)) dealComment = origComment;
+                        if(origComment != "") dealComment = origComment;
                         break;
                      }
                   }
                }
             }
-
-            double realPips = 0.0;
-            if(openPrice > 0.0)
-            {
-               if(inDealType == DEAL_TYPE_BUY) realPips = (closePrice - openPrice) * 10.0;
-               else realPips = (openPrice - closePrice) * 10.0;
-            }
-            else if(dealVol > 0.0)
-            {
-               realPips = profit / (dealVol * 10.0);
-            }
             
-            NotifyTradeClosed(dealTicket, posTicket, dealSym, profit, closePrice, dealComment, realPips, dealVol);
-            ExportFullHistory();
+            NotifyTradeClosed(dealTicket, posTicket, dealSym, profit, closePrice, dealComment);
          }
       }
    }
 }
-

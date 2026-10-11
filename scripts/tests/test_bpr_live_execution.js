@@ -10,6 +10,7 @@ assert.strictEqual(bpr.isLiveExecution, true, 'Por defecto debe tener la ejecuci
 
 // Aislar el estado de test para no persistir en disco
 bpr.activeTrades = [];
+bpr.pendingTrades = [];
 bpr.saveState = () => {};
 
 // 2. Mock del ExecutionHandler
@@ -35,37 +36,51 @@ const expectedLot = riskEngine.calculateLotSize(entryPrice, stopLoss, 'XAUUSD');
 console.log(`📊 Parámetros: Entrada=${entryPrice}, SL=${stopLoss}, Lote calculado=${expectedLot}`);
 assert(expectedLot > 0, 'El lote debe ser superior a 0');
 
-bpr.openTrade('M3', 'BUY', entryPrice, stopLoss, cfgM3, Date.now());
+bpr.openTrade('M3', 'BUY', entryPrice, stopLoss, cfgM3, Date.now(), { currentPrice: 4180.50 });
 
 // 4. Verificar que el plan enviado a MT5 sea correcto
 assert.strictEqual(dispatchedPlans.length, 1, 'Debe haber despachado exactamente 1 plan');
 const plan = dispatchedPlans[0];
 assert.strictEqual(plan.valid, true);
-assert.strictEqual(plan.action, 'BUY');
+assert.strictEqual(plan.action, 'BUY_LIMIT');
+assert.strictEqual(plan.orderType, 'BUY_LIMIT');
+assert.strictEqual(plan.isPendingOrder, true);
 assert.strictEqual(plan.symbol, 'XAUUSD');
 assert.strictEqual(plan.totalLotSize, expectedLot);
-assert.strictEqual(plan.orders.length, 1);
 assert.strictEqual(plan.orders[0].volume, expectedLot);
+assert.strictEqual(plan.orders[0].action, 'BUY_LIMIT');
+assert.strictEqual(plan.orders[0].entryPrice, entryPrice);
 assert.strictEqual(plan.orders[0].sl, stopLoss);
-assert.strictEqual(plan.orders[0].tp, 4186.00, 'TP2 debe ser 4186.00');
 assert.strictEqual(plan.orders[0].comment, 'BPR M3');
+assert.strictEqual(plan.ttlMinutes, 9);
 assert.strictEqual(plan.channelId, 'PROPRIETARY_BPR_M3');
 assert.strictEqual(plan.channelName, 'BPR Institutional M3');
-console.log('✅ Plan de entrada a mercado generado y validado con éxito para MT5.');
+assert.strictEqual(bpr.activeTrades.length, 0, 'Una limit pendiente no debe marcarse como operación abierta interna');
+assert.strictEqual(bpr.pendingTrades.length, 1, 'Debe registrar 1 orden pendiente interna');
+console.log('✅ Plan BUY_LIMIT generado y validado con éxito para MT5.');
 
-// 5. Verificar activación de Auto-BE en gestión de operaciones
-// El precio avanza +21 pips (4182.10)
+// 4.5. Verificar limite de 2 operaciones simultaneas contando pendientes
+bpr.openTrade('M5', 'BUY', entryPrice + 0.10, stopLoss + 0.10, cfgM3, Date.now(), { currentPrice: 4180.80 });
+assert.strictEqual(dispatchedPlans.length, 2, 'Debe permitir una segunda orden pendiente');
+assert.strictEqual(bpr.pendingTrades.length, 2, 'Debe haber 2 órdenes pendientes');
+bpr.openTrade('M15', 'BUY', entryPrice + 0.20, stopLoss + 0.20, cfgM3, Date.now(), { currentPrice: 4181.00 });
+assert.strictEqual(dispatchedPlans.length, 2, 'No debe despachar una tercera orden');
+assert.strictEqual(bpr.pendingTrades.length, 2, 'Debe mantener el límite de 2 pendientes/activas');
+console.log('✅ Límite de concurrencia validado: 2 órdenes pendientes/activas máximo.');
+
+// 5. Verificar que NO se activa Auto-BE en gestion shadow de operaciones abiertas
+bpr.setLiveExecution(false);
+bpr.activeTrades = [];
+bpr.pendingTrades = [];
+bpr.openTrade('M3', 'BUY', entryPrice, stopLoss, cfgM3, Date.now());
+// El precio avanza +21 pips (4182.10), pero la politica actual es sin BE/trailing.
 bpr.manageActiveTrades(4182.10, 1.5);
-assert.strictEqual(dispatchedPlans.length, 2, 'Debe haber despachado la orden MODIFY de Auto-BE');
-const bePlan = dispatchedPlans[1];
-assert.strictEqual(bePlan.action, 'MODIFY');
-assert.strictEqual(bePlan.comment, 'BPR M3');
-assert.strictEqual(bePlan.modifyOrder.modifyType, 'UPDATE_PARAMS');
-assert.strictEqual(bePlan.modifyOrder.sl, 4180.20, 'SL debe estar ajustado a entrada + 0.20');
-console.log('✅ Comando MODIFY de Auto-BE generado y validado con éxito para MT5.');
+assert.strictEqual(dispatchedPlans.length, 2, 'No debe despachar MODIFY de Auto-BE');
+assert.strictEqual(bpr.activeTrades[0].currentSL, stopLoss, 'El SL interno debe mantenerse fijo');
+console.log('✅ Sin Auto-BE ni trailing: no se generó MODIFY y el SL permanece fijo.');
 
-// 6. Verificar cierre por TP2 (+60 pips = 4186.00)
-bpr.manageActiveTrades(4186.05, 1.5);
+// 6. Verificar cierre por TP2 (+60 pips desde ambas entradas)
+bpr.manageActiveTrades(4186.15, 1.5);
 assert.strictEqual(bpr.activeTrades.length, 0, 'La operación debe estar cerrada');
 assert.strictEqual(bpr.history[bpr.history.length - 1].reason, 'TP2_FULL_WIN');
 console.log('✅ Cierre y cálculo de métricas validado.');

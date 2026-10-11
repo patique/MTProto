@@ -12,7 +12,7 @@ class AttaullahStrategy extends BaseStrategy {
   constructor(config = {}) {
     super({
       ...config,
-      preferredTP: 'TP2',
+      preferredTP: config.preferredTP || 'TP3',
       allowGrid: false, // ¡GRID DESACTIVADA!
       pendingOrderTTLMinutes: config.pendingOrderTTLMinutes || 30
     });
@@ -95,14 +95,16 @@ class AttaullahStrategy extends BaseStrategy {
     }
 
     // 6. Extracción de Take Profits multi-línea (Takeprofit 1..5)
-    let tp1 = null, tp2 = null, tp3 = null;
+    let tp1 = null, tp2 = null, tp3 = null, tp4 = null;
     const tp1Match = rawText.match(/(?:TAKEPROFIT\s*1|TP\s*1)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
     const tp2Match = rawText.match(/(?:TAKEPROFIT\s*2|TP\s*2)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
     const tp3Match = rawText.match(/(?:TAKEPROFIT\s*3|TP\s*3)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
+    const tp4Match = rawText.match(/(?:TAKEPROFIT\s*4|TP\s*4)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
 
     if (tp1Match) tp1 = parseFloat(tp1Match[1]);
     if (tp2Match) tp2 = parseFloat(tp2Match[1]);
     if (tp3Match) tp3 = parseFloat(tp3Match[1]);
+    if (tp4Match) tp4 = parseFloat(tp4Match[1]);
 
     if (!tp1) {
       // Fallback a regex general de TPs
@@ -110,6 +112,7 @@ class AttaullahStrategy extends BaseStrategy {
       if (generalTPs.length > 0) tp1 = parseFloat(generalTPs[0][1]);
       if (generalTPs.length > 1) tp2 = parseFloat(generalTPs[1][1]);
       if (generalTPs.length > 2) tp3 = parseFloat(generalTPs[2][1]);
+      if (generalTPs.length > 3) tp4 = parseFloat(generalTPs[3][1]);
     }
 
     return new SignalData({
@@ -124,6 +127,7 @@ class AttaullahStrategy extends BaseStrategy {
       tp1,
       tp2,
       tp3,
+      tp4,
       rawText
     });
   }

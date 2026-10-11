@@ -3,20 +3,22 @@
  */
 
 const CHANNELS_CONFIG = {
-  // 1. G.S Market Analysis (Estrategia Rejilla / Grid con TP1 prioritario)
+  // 1. G.S Market Analysis (Estrategia Rejilla / Grid adaptada a TP3 con BE en TP2)
   '-1003102563197': {
     name: 'G.S Market Analysis',
     username: '@GSmarketanalysis',
     strategy: 'GSMarketStrategy',
-    enabled: false, // Deshabilitado por filtro de rendimiento (0% WR / pérdidas netas)
-    preferredTP: 'TP1',
+    enabled: false, // Desactivado por solicitud: canal de rejilla enfocado en TP1/TP2 donde casi nunca toca TP3 (0% hit rate)
+    preferredTP: 'TP3',
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
     defaultSLPips: 100,
     defaultTP1Pips: 100,
-    defaultTP2Pips: 300,
+    defaultTP2Pips: 200,
     maxSlippagePips: 6.0,
-    allowGrid: true,
+    allowGrid: false,
     gridStepPips: 1.0,
-    pendingOrderTTLMinutes: 45 // Auto-cancelar órdenes pendientes de rejilla tras 45 minutos si no se activan
+    pendingOrderTTLMinutes: 45
   },
 
   // 2. Attaullah Trading Zone (Zonas de Entrada sin Grid, ejecución limpia a mercado/orden)
@@ -24,13 +26,16 @@ const CHANNELS_CONFIG = {
     name: 'Attaullah Trading Zone',
     username: '@tradewithattaullah',
     strategy: 'AttaullahStrategy',
-    enabled: false, // Reactivado: 79.4% WR y PF 7.37 con nuevo modelo 50% parcial + trailing
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP3',
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
+    minRiskReward: 1.3,
     defaultSLPips: 80,
     defaultTP1Pips: 30,
     defaultTP2Pips: 70,
     maxSlippagePips: 8.0,
-    allowGrid: false, // ¡GRID DESACTIVADA EXPRESAMENTE! Solo una orden por señal
+    allowGrid: false,
     pendingOrderTTLMinutes: 30
   },
 
@@ -39,8 +44,8 @@ const CHANNELS_CONFIG = {
     name: 'Williams tradershub',
     username: 'N/A',
     strategy: 'WilliamsStrategy',
-    enabled: false, // Desactivado por racha destructiva de 6 SLs en contratendencia (30/09/2026)
-    preferredTP: 'TP2',
+    enabled: false, // Desactivado: reemplazado por Craig Percoco (mayor consistencia y winrate)
+    preferredTP: 'TP3',
     defaultSLPips: 100,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -54,8 +59,11 @@ const CHANNELS_CONFIG = {
     name: 'MARCO TRADING HUB',
     username: '@Marcotradinghubb',
     strategy: 'MarcoStrategy',
-    enabled: false, // Desactivado tras racha de 6 SLs y riesgo desfasado
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP3',
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
+    minRiskReward: 1.3,
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -84,8 +92,8 @@ const CHANNELS_CONFIG = {
     name: 'Candle Logic Lab',
     username: '@CandleLogicLab1',
     strategy: 'DefaultStrategy',
-    enabled: false, // Deshabilitado por filtro de rendimiento (0% WR / pérdidas netas)
-    preferredTP: 'TP2',
+    enabled: false, // Deshabilitado: filtrado para evitar sobre-operativa y drawdown
+    preferredTP: 'TP3',
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -99,8 +107,11 @@ const CHANNELS_CONFIG = {
     name: 'Craig Percoco Daily Trades',
     username: '@Craig_James_percoco1',
     strategy: 'DefaultStrategy',
-    enabled: false,
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP3',
+    requireTP3: true,
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -114,8 +125,10 @@ const CHANNELS_CONFIG = {
     name: 'EXNESS GOLD TRADER',
     username: '@Exness_Gold_EducationHub',
     strategy: 'DefaultStrategy',
-    enabled: false, // Reactivado por auditoría real: 85.7% TP1 / 76.2% TP2 (+987 pips)
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP3',
+    requireTP3: true,
+    breakEvenTrigger: 'TP2',
     defaultSLPips: 80,
     defaultTP1Pips: 50,
     defaultTP2Pips: 100,
@@ -129,8 +142,10 @@ const CHANNELS_CONFIG = {
     name: 'GOLD PRO SIGNAL',
     username: '@Gold_pro_s11',
     strategy: 'DefaultStrategy',
-    enabled: false, // Reactivado por auditoría real: 80.7% TP1 / 76.1% TP2 (+1890 pips)
-    preferredTP: 'TP2',
+    enabled: true, // Activado: Estrategia de recorrido a TP3 (47.7% TP3 Hit Rate auditado, 76.1% TP2 BE Trigger, 100% WR reciente)
+    preferredTP: 'TP3',
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
     defaultSLPips: 100,
     defaultTP1Pips: 30,
     defaultTP2Pips: 60,
@@ -144,8 +159,8 @@ const CHANNELS_CONFIG = {
     name: 'META TRADER 5 OFFICIALL',
     username: '@metrader5oficiall',
     strategy: 'DefaultStrategy',
-    enabled: false, // Desactivado: racha de 8 SL consecutivos y 33.7% SL histórico
-    preferredTP: 'TP2',
+    enabled: false, // Deshabilitado para evitar sobre-operativa
+    preferredTP: 'TP3',
     defaultSLPips: 90,
     defaultTP1Pips: 30,
     defaultTP2Pips: 60,
@@ -175,7 +190,7 @@ const CHANNELS_CONFIG = {
     username: '@Smartpipsalrets71',
     strategy: 'DefaultStrategy',
     enabled: false, // Deshabilitado por filtro de rendimiento (0% WR / pérdidas netas)
-    preferredTP: 'TP2',
+    preferredTP: 'TP3',
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -189,8 +204,10 @@ const CHANNELS_CONFIG = {
     name: 'XAUUSD FOREX TRADING',
     username: '@kingFxGoldTeam786',
     strategy: 'DefaultStrategy',
-    enabled: false,
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP3',
+    breakEvenTrigger: 'TP2',
+    allowSplit: false,
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -204,8 +221,8 @@ const CHANNELS_CONFIG = {
     name: 'GOLD BTC TRADER',
     username: '@Gold_Btctrader21',
     strategy: 'DefaultStrategy',
-    enabled: false, // Deshabilitado por filtro de rentabilidad
-    preferredTP: 'TP2',
+    enabled: true,
+    preferredTP: 'TP4',
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,
@@ -219,8 +236,8 @@ const CHANNELS_CONFIG = {
     name: 'Risk Management-revealed',
     username: '@Risk_Management_revealed',
     strategy: 'DefaultStrategy',
-    enabled: false, // Deshabilitado por sobre-operativa (7 trades en una mañana) y drawdown
-    preferredTP: 'TP2',
+    enabled: false, // Desactivado: Solo la estrategia Institucional BPR opera en LIVE
+    preferredTP: 'TP3',
     defaultSLPips: 90,
     defaultTP1Pips: 40,
     defaultTP2Pips: 80,

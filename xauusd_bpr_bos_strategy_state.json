@@ -1,0 +1,113 @@
+{
+  "symbol": "XAUUSD",
+  "currentBosState": "BEARISH",
+  "activeZones": [
+    {
+      "id": "XAU_BPR_SELL_1791381600067",
+      "type": "SELL",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4098.655,
+      "slPrice": 4100.695982142857,
+      "active": false,
+      "createdAt": "2026-10-07T14:00:00.067Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791381900066",
+      "type": "SELL",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4098.655,
+      "slPrice": 4100.501964285714,
+      "active": false,
+      "createdAt": "2026-10-07T14:05:00.066Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791382500056",
+      "type": "SELL",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4098.655,
+      "slPrice": 4100.355267857142,
+      "active": false,
+      "createdAt": "2026-10-07T14:15:00.056Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791382800047",
+      "type": "SELL",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4098.655,
+      "slPrice": 4100.3881249999995,
+      "active": false,
+      "createdAt": "2026-10-07T14:20:00.047Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791383100058",
+      "type": "SELL",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4098.655,
+      "slPrice": 4100.331964285714,
+      "active": false,
+      "createdAt": "2026-10-07T14:25:00.058Z"
+    },
+    {
+      "id": "XAU_BPR_BUY_1791383400038",
+      "type": "BUY",
+      "top": 4092.95,
+      "bottom": 4090.76,
+      "swingOrigin": 4082.29,
+      "slPrice": 4080.6120535714285,
+      "active": true,
+      "createdAt": "2026-10-07T14:30:00.038Z"
+    },
+    {
+      "id": "XAU_BPR_BUY_1791392400203",
+      "type": "BUY",
+      "top": 4107.155,
+      "bottom": 4106.17,
+      "swingOrigin": 4101.915,
+      "slPrice": 4100.948035714286,
+      "active": false,
+      "createdAt": "2026-10-07T17:00:00.203Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791399900017",
+      "type": "SELL",
+      "top": 4111.905000000001,
+      "bottom": 4110.79,
+      "swingOrigin": 4120.21,
+      "slPrice": 4121.145714285714,
+      "active": true,
+      "createdAt": "2026-10-07T19:05:00.017Z"
+    },
+    {
+      "id": "XAU_BPR_SELL_1791399900042",
+      "type": "SELL",
+      "top": 4118.105,
+      "bottom": 4116.969999999999,
+      "swingOrigin": 4120.21,
+      "slPrice": 4121.145714285714,
+      "active": true,
+      "createdAt": "2026-10-07T19:05:00.042Z"
+    }
+  ],
+  "activeTrades": [],
+  "pendingTrades": [
+    {
+      "id": "XAU_BPR_BOS_1791398326259",
+      "symbol": "XAUUSD",
+      "type": "BUY",
+      "entryPrice": 4107.44,
+      "stopLoss": 4100.948035714286,
+      "takeProfit": 4133.407857142855,
+      "rrRatio": 4,
+      "lotSize": 0.03,
+      "status": "PENDING",
+      "openTime": "2026-10-07T18:38:46.259Z"
+    }
+  ],
+  "history": [],
+  "lastUpdated": "2026-10-07T19:05:00.042Z"
+}

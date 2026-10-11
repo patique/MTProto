@@ -10,10 +10,13 @@ class BaseStrategy {
     this.config = config;
     this.channelName = config.name || 'Canal';
     this.channelId = config.id || '';
-    this.preferredTP = config.preferredTP || 'TP2';
+    this.preferredTP = config.preferredTP || 'TP3';
+    this.allowSplit = !!config.allowSplit; // Por defecto desactivado: orden única limpia al TP preferido
     this.allowGrid = !!config.allowGrid;
     this.pendingOrderTTLMinutes = config.pendingOrderTTLMinutes || 30;
     this.maxSlippagePips = config.maxSlippagePips || 5.0;
+    this.minRiskReward = typeof config.minRiskReward === 'number' ? config.minRiskReward : 1.3;
+    this.requireTP3 = !!config.requireTP3;
   }
 
   /**
@@ -183,13 +186,14 @@ class BaseStrategy {
 
     // 6. Extracción de TPs
     const textWithoutSL = rawText.replace(/(?:STOP LOSS|STOPLOSS|\bSL\b)[\s:\.@]*[\d\.]+/gi, '');
-    let cleanTP1 = null, cleanTP2 = null, cleanTP3 = null;
+    let cleanTP1 = null, cleanTP2 = null, cleanTP3 = null, cleanTP4 = null;
 
     const tpRegex = /(?:TAKE\s*PROFIT\s*\d*|TAKEPROFIT\s*\d*|TARGETS?\s*\d*|\bTP\s*[1-9]?#?|[✅🎯↳→]\s*(?:TP\s*\d*)?)[\s:\.=\-\|→]*([0-9]{4}(?:\.[0-9]+)?)/gi;
     const tpMatches = [...textWithoutSL.matchAll(tpRegex)];
     cleanTP1 = (tpMatches.length > 0) ? parseFloat(tpMatches[0][1]) : null;
     cleanTP2 = (tpMatches.length > 1) ? parseFloat(tpMatches[1][1]) : null;
     cleanTP3 = (tpMatches.length > 2) ? parseFloat(tpMatches[2][1]) : null;
+    cleanTP4 = (tpMatches.length > 3) ? parseFloat(tpMatches[3][1]) : null;
 
     // 7. Auto-corrección de Dirección Incoherente
     if (cleanSL && cleanTP1) {
@@ -218,6 +222,7 @@ class BaseStrategy {
       tp1: cleanTP1,
       tp2: cleanTP2,
       tp3: cleanTP3,
+      tp4: cleanTP4,
       rawText
     });
   }
@@ -226,14 +231,17 @@ class BaseStrategy {
    * Resuelve el Take Profit según la preferencia del canal
    */
   resolveTargetTP(signal) {
+    if (this.requireTP3 || this.config?.requireTP3) {
+      return signal.tp3 || null;
+    }
     if (this.preferredTP === 'TP1') {
       return signal.tp1 || signal.tp2 || signal.tp3;
     }
-    if (this.preferredTP === 'TP3') {
-      return signal.tp3 || signal.tp2 || signal.tp1;
+    if (this.preferredTP === 'TP4') {
+      return signal.tp4 || signal.tp3 || signal.tp2 || signal.tp1;
     }
-    // Por defecto TP2
-    return signal.tp2 || signal.tp1 || signal.tp3;
+    // SIEMPRE TP3 como prioridad absoluta (o el TP más cercano disponible si no existe TP3)
+    return signal.tp3 || signal.tp2 || signal.tp1;
   }
 
   /**
@@ -268,6 +276,15 @@ class BaseStrategy {
           symbol: signal.symbol || 'XAUUSD',
           comment: `BE by ${this.channelName}`
         }]
+      });
+    }
+
+    // 🎯 FILTRO ESTRICTO DE TP3: Si el canal está configurado con TP3 obligatorio, descartar si no hay TP3
+    if ((this.requireTP3 || this.config?.requireTP3) && !signal.tp3) {
+      console.log(`⚠️ [Filtro TP3 Obligatorio] "${this.channelName}": Señal descartada porque no incluye TP3 explícito.`);
+      return new ExecutionPlan({
+        valid: false,
+        reason: 'Señal sin TP3 explícito (el canal exige TP3 obligatorio).'
       });
     }
 
@@ -383,9 +400,28 @@ class BaseStrategy {
     }
 
     const chosenTP = this.resolveTargetTP(signal);
+
+    // ⚖️ FILTRO DE RATIO RIESGO / BENEFICIO MÍNIMO (Mínimo 1:1.3 o configurable por canal):
+    // Descarta automáticamente operaciones donde el riesgo supere o no compense el potencial beneficio
+    const orderEntryPrice = signal.entry || currentPrice;
+    if (signal.sl && chosenTP && orderEntryPrice) {
+      const riskDistance = Math.abs(orderEntryPrice - signal.sl);
+      const rewardDistance = Math.abs(chosenTP - orderEntryPrice);
+      if (riskDistance > 0) {
+        const currentRR = rewardDistance / riskDistance;
+        if (currentRR < this.minRiskReward) {
+          console.log(`⚠️ [Filtro R:R Rechazado] "${this.channelName}": Ratio 1:${currentRR.toFixed(2)} es inferior al mínimo exigido (1:${this.minRiskReward}). Riesgo: ${riskDistance.toFixed(2)} pts | Recompensa: ${rewardDistance.toFixed(2)} pts. Señal descartada.`);
+          return new ExecutionPlan({
+            valid: false,
+            reason: `Ratio R:R proyectado (1:${currentRR.toFixed(2)}) es inferior al mínimo exigido (1:${this.minRiskReward}).`
+          });
+        }
+      }
+    }
+
     const targetTP1 = signal.tp1;
-    const targetTP2 = signal.tp2 || chosenTP;
-    const canSplitOrders = targetTP1 && targetTP2 && targetTP1 !== targetTP2;
+    const targetTP2 = (chosenTP && chosenTP !== targetTP1) ? chosenTP : (signal.tp2 || chosenTP);
+    const canSplitOrders = this.allowSplit && targetTP1 && targetTP2 && targetTP1 !== targetTP2;
 
     const isExplicitPending = signal.action.includes('LIMIT') || signal.action.includes('STOP') ||
       (signal.rawText && /\b(BUY\s+LIMIT|SELL\s+LIMIT|BUY\s+STOP|SELL\s+STOP|LIMIT|STOP)\b/i.test(signal.rawText.replace(/(?:STOP\s*LOSS|STOPLOSS|\bSL\b)[^\n]*/gi, '')));
@@ -404,17 +440,17 @@ class BaseStrategy {
       const lotSize = riskEngine.calculateLotSize(orderEntry, signal.sl, signal.symbol);
       let pendingOrders = [];
 
-      if (canSplitOrders && lotSize >= 0.02) {
-        const halfLot1 = parseFloat((Math.floor((lotSize / 2) * 100) / 100).toFixed(2));
-        const halfLot2 = parseFloat((lotSize - halfLot1).toFixed(2));
+      const leg1Lot = parseFloat(Math.max(0.01, Math.round(lotSize * 0.60 * 100) / 100).toFixed(2));
+      const leg2Lot = parseFloat((lotSize - leg1Lot).toFixed(2));
 
+      if (canSplitOrders && lotSize >= 0.02 && leg1Lot >= 0.01 && leg2Lot >= 0.01) {
         pendingOrders.push(new TradeOrder({
           symbol: signal.symbol,
           action: orderType,
           entryPrice: orderEntry,
           sl: signal.sl,
           tp: targetTP1,
-          volume: halfLot1,
+          volume: leg1Lot,
           comment: `Pending ${this.channelName} TP1`,
           ttlMinutes: this.pendingOrderTTLMinutes
         }));
@@ -425,12 +461,12 @@ class BaseStrategy {
           entryPrice: orderEntry,
           sl: signal.sl,
           tp: targetTP2,
-          volume: halfLot2,
+          volume: leg2Lot,
           comment: `Pending ${this.channelName} TP2`,
           ttlMinutes: this.pendingOrderTTLMinutes
         }));
 
-        console.log(`🎯 [Pending Split 50% TP1 + Trailing] ${orderType}: Leg 1 (${halfLot1}L @ TP1: ${targetTP1}) | Leg 2 (${halfLot2}L @ TP2: ${targetTP2})`);
+        console.log(`🎯 [Pending Split 60/40 TP1 + Trailing] ${orderType}: Leg 1 (${leg1Lot}L @ TP1: ${targetTP1}) | Leg 2 (${leg2Lot}L @ TP2: ${targetTP2})`);
       } else {
         pendingOrders.push(new TradeOrder({
           symbol: signal.symbol,
@@ -444,6 +480,11 @@ class BaseStrategy {
         }));
       }
 
+      const resolvedTP2Pending = signal.tp2 || (this.config.defaultTP2Pips
+        ? (isBuy ? parseFloat((orderEntry + this.config.defaultTP2Pips / 10).toFixed(2))
+                 : parseFloat((orderEntry - this.config.defaultTP2Pips / 10).toFixed(2)))
+        : null);
+
       return new ExecutionPlan({
         valid: true,
         channelId: this.channelId,
@@ -454,6 +495,8 @@ class BaseStrategy {
         entryPrice: orderEntry,
         slPrice: signal.sl,
         targetTP: chosenTP,
+        tp2: resolvedTP2Pending,
+        breakEvenTrigger: this.config.breakEvenTrigger || 'TP2',
         totalLotSize: lotSize,
         isPendingOrder: true,
         isGrid: false,
@@ -465,18 +508,18 @@ class BaseStrategy {
     const lotSize = riskEngine.calculateLotSize(currentPrice || signal.entry, signal.sl, signal.symbol);
     let marketOrders = [];
 
-    // 🚀 MODELO 50% PARCIAL EN TP1 + TRAILING STOP EN TP2
-    if (canSplitOrders && lotSize >= 0.02) {
-      const halfLot1 = parseFloat((Math.floor((lotSize / 2) * 100) / 100).toFixed(2));
-      const halfLot2 = parseFloat((lotSize - halfLot1).toFixed(2));
+    // 🚀 MODELO 60% PARCIAL EN TP1 (ALTA CERTEZA) + 40% RUNNER EN TP2 (O 50/50 EN LOTAJE MÍNIMO)
+    const leg1Lot = parseFloat(Math.max(0.01, Math.round(lotSize * 0.60 * 100) / 100).toFixed(2));
+    const leg2Lot = parseFloat((lotSize - leg1Lot).toFixed(2));
 
+    if (canSplitOrders && lotSize >= 0.02 && leg1Lot >= 0.01 && leg2Lot >= 0.01) {
       marketOrders.push(new TradeOrder({
         symbol: signal.symbol,
         action: isBuy ? 'BUY' : 'SELL',
         entryPrice: currentPrice || signal.entry,
         sl: signal.sl,
         tp: targetTP1,
-        volume: halfLot1,
+        volume: leg1Lot,
         comment: `Order ${this.channelName} TP1`
       }));
 
@@ -486,11 +529,11 @@ class BaseStrategy {
         entryPrice: currentPrice || signal.entry,
         sl: signal.sl,
         tp: targetTP2,
-        volume: halfLot2,
+        volume: leg2Lot,
         comment: `Order ${this.channelName} TP2`
       }));
 
-      console.log(`🎯 [Market Split 50% TP1 + Trailing] ${isBuy ? 'BUY' : 'SELL'}: Leg 1 (${halfLot1}L @ TP1: ${targetTP1}) | Leg 2 (${halfLot2}L @ TP2: ${targetTP2})`);
+      console.log(`🎯 [Market Split 60/40 TP1 + Trailing] ${isBuy ? 'BUY' : 'SELL'}: Leg 1 (${leg1Lot}L @ TP1: ${targetTP1}) | Leg 2 (${leg2Lot}L @ TP2: ${targetTP2})`);
     } else {
       marketOrders.push(new TradeOrder({
         symbol: signal.symbol,
@@ -503,6 +546,11 @@ class BaseStrategy {
       }));
     }
 
+    const resolvedTP2Market = signal.tp2 || (this.config.defaultTP2Pips
+      ? (isBuy ? parseFloat(((currentPrice || signal.entry) + this.config.defaultTP2Pips / 10).toFixed(2))
+               : parseFloat(((currentPrice || signal.entry) - this.config.defaultTP2Pips / 10).toFixed(2)))
+      : null);
+
     return new ExecutionPlan({
       valid: true,
       channelId: this.channelId,
@@ -513,6 +561,8 @@ class BaseStrategy {
       entryPrice: currentPrice || signal.entry,
       slPrice: signal.sl,
       targetTP: chosenTP,
+      tp2: resolvedTP2Market,
+      breakEvenTrigger: this.config.breakEvenTrigger || 'TP2',
       totalLotSize: lotSize,
       isPendingOrder: false,
       isProvisionalSL,

@@ -134,8 +134,19 @@ class ShadowStrategyComparator {
 
     this.saveData();
 
-    // Imprimir comparativa visual concisa
-    console.log(`📊 [Shadow] Posición #${position} [${record.channel}]: Real ${usd2 >= 0 ? '+' : ''}$${usd2.toFixed(2)} (${pips2.toFixed(1)}p) | Acumulado (${this.summary.totalTrades} trades): Real $${this.summary.option2_live5050.profitUSD.toFixed(2)} vs 100% TP2 $${this.summary.option1_morning.profitUSD.toFixed(2)}`);
+    // Imprimir comparativa visual clara en la consola
+    console.log('\n========================================================================================');
+    console.log(`📊 [SHADOW COMPARATOR] Cierre Posición #${position} [${record.channel}]`);
+    console.log('----------------------------------------------------------------------------------------');
+    console.log(`1. De la Mañana (100% TP2):    ${usd1 >= 0 ? '+' : ''}$${usd1.toFixed(2)} USD (${pips1 >= 0 ? '+' : ''}${pips1.toFixed(1)}p)`);
+    console.log(`2. EN VIVO REAL (50/50):        ${usd2 >= 0 ? '+' : ''}$${usd2.toFixed(2)} USD (${pips2 >= 0 ? '+' : ''}${pips2.toFixed(1)}p)  👉 [EJECUTADO EN TU MT5]`);
+    console.log(`3. Nueva Propuesta (70/30):     ${usd3 >= 0 ? '+' : ''}$${usd3.toFixed(2)} USD (${pips3 >= 0 ? '+' : ''}${pips3.toFixed(1)}p)`);
+    console.log('----------------------------------------------------------------------------------------');
+    console.log(`💰 BALANCE ACUMULADO COMPARATIVO (Total: ${this.summary.totalTrades} trades registrados):`);
+    console.log(`   • 1. De la Mañana:   ${this.summary.option1_morning.profitUSD >= 0 ? '+' : ''}$${this.summary.option1_morning.profitUSD.toFixed(2)} USD (${this.summary.option1_morning.pips.toFixed(1)} pips)`);
+    console.log(`   • 2. Real (50/50):   ${this.summary.option2_live5050.profitUSD >= 0 ? '+' : ''}$${this.summary.option2_live5050.profitUSD.toFixed(2)} USD (${this.summary.option2_live5050.pips.toFixed(1)} pips)  [CUENTA REAL]`);
+    console.log(`   • 3. Nueva (70/30):  ${this.summary.option3_new7030.profitUSD >= 0 ? '+' : ''}$${this.summary.option3_new7030.profitUSD.toFixed(2)} USD (${this.summary.option3_new7030.pips.toFixed(1)} pips)`);
+    console.log('========================================================================================\n');
 
     return record;
   }

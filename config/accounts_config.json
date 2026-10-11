@@ -1,17 +1,65 @@
 {
   "1514787530": {
     "mode": "PROP_FIRM",
+    "riskPercent": 0.0,
+    "maxOpenTrades": 0,
+    "enabled": false,
+    "label": "FTMO 100k (Antigua - Congelada por DD crítico)",
+    "frozenReason": "Balance en límite de Drawdown crítico ($89,999.98)"
+  },
+  "1514879094": {
+    "mode": "PROP_FIRM",
     "riskPercent": 0.75,
-    "label": "FTMO 100k"
+    "maxOpenTrades": 2,
+    "breakEvenSlotRelease": true,
+    "dailyMaxDrawdownPercent": 2.25,
+    "targetProfitBalance": 110000.0,
+    "enabled": true,
+    "primary": true,
+    "label": "FTMO 100k Challenge (Acelerador 0.75%)"
+  },
+  "26742940": {
+    "mode": "PROP_FIRM",
+    "riskPercent": 0.0,
+    "maxOpenTrades": 0,
+    "enabled": false,
+    "label": "The5ers 5k (Quemada - Inactiva)",
+    "frozenReason": "Cuenta alcanzada por límite de Drawdown"
   },
   "26727509": {
     "mode": "PROP_FIRM",
     "riskPercent": 0.75,
-    "label": "The5ers 5k"
+    "maxOpenTrades": 2,
+    "enabled": false,
+    "label": "The5ers 5k (Anterior - Inactiva)"
+  },
+  "12566162": {
+    "mode": "PERSONAL",
+    "riskPercent": 0.0,
+    "maxOpenTrades": 0,
+    "enabled": false,
+    "label": "The5ers 10k (Quemada - Inactiva)",
+    "frozenReason": "Cuenta alcanzada por límite de Drawdown"
   },
   "1290919": {
     "mode": "PERSONAL",
     "riskPercent": 2.0,
+    "enabled": true,
+    "symbolSuffix": "-VIP",
+    "symbolAliases": {
+      "GOLD": "XAUUSD-VIP",
+      "XAUUSD": "XAUUSD-VIP",
+      "EURUSD": "EURUSD-VIP",
+      "GBPJPY": "GBPJPY-VIP",
+      "USDJPY": "USDJPY-VIP",
+      "GBPUSD": "GBPUSD-VIP",
+      "USDCAD": "USDCAD-VIP",
+      "AUDUSD": "AUDUSD-VIP",
+      "XAGUSD": "XAGUSD-VIP",
+      "EURJPY": "EURJPY-VIP",
+      "BTCUSD": "BTCUSD-VIP",
+      "ETHUSD": "ETHUSD-VIP"
+    },
     "label": "VT Markets 100€ (Capital Propio)"
   }
 }

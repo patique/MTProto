@@ -1,0 +1,4 @@
+risk_pct,pct_pass,pct_burn,pct_open,median_days_to_pass
+0.2,1.8,84.3,14.0,93.0
+0.5,10.8,88.6,0.6,41.0
+1.0,19.5,80.5,0.0,13.0

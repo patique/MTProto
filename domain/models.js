@@ -16,6 +16,7 @@ class SignalData {
     tp1 = null,
     tp2 = null,
     tp3 = null,
+    tp4 = null,
     rawText = '',
     timestamp = Date.now(),
     isCancelEvent = false,
@@ -35,6 +36,7 @@ class SignalData {
     this.tp1 = typeof tp1 === 'number' ? tp1 : (tp1 ? parseFloat(tp1) : null);
     this.tp2 = typeof tp2 === 'number' ? tp2 : (tp2 ? parseFloat(tp2) : null);
     this.tp3 = typeof tp3 === 'number' ? tp3 : (tp3 ? parseFloat(tp3) : null);
+    this.tp4 = typeof tp4 === 'number' ? tp4 : (tp4 ? parseFloat(tp4) : null);
     this.rawText = rawText;
     this.timestamp = timestamp;
     this.isCancelEvent = isCancelEvent;
@@ -90,7 +92,9 @@ class ExecutionPlan {
     ttlMinutes = 30,
     isCancelAction = false,
     isProvisionalSL = false,
-    comment = ''
+    comment = '',
+    tp2 = null,
+    breakEvenTrigger = null
   }) {
     this.valid = valid;
     this.reason = reason;
@@ -104,6 +108,8 @@ class ExecutionPlan {
     this.sl = slPrice;
     this.targetTP = targetTP;
     this.tp = targetTP;
+    this.tp2 = tp2;
+    this.breakEvenTrigger = breakEvenTrigger;
     this.totalLotSize = totalLotSize;
     this.volume = totalLotSize;
     this.isPendingOrder = isPendingOrder;

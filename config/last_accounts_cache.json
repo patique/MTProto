@@ -1,0 +1,34 @@
+{
+  "1290919": {
+    "id": "1290919",
+    "broker": "VT Markets (Pty) Ltd",
+    "balance": 97.59,
+    "equity": 98.27,
+    "openPositions": 7,
+    "currency": "USD"
+  },
+  "12566162": {
+    "id": "12566162",
+    "broker": "Five Percent Online Ltd",
+    "balance": 100224.43,
+    "equity": 100224.43,
+    "openPositions": 0,
+    "currency": "USD"
+  },
+  "26742940": {
+    "id": "26742940",
+    "broker": "Five Percent Online Ltd",
+    "balance": 100224.43,
+    "equity": 100224.43,
+    "openPositions": 0,
+    "currency": "USD"
+  },
+  "1514879094": {
+    "id": "1514879094",
+    "broker": "FTMO Global Markets Ltd",
+    "balance": 100453.94,
+    "equity": 100453.94,
+    "openPositions": 0,
+    "currency": "USD"
+  }
+}

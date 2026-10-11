@@ -9,7 +9,7 @@ class DefaultStrategy extends BaseStrategy {
   constructor(config = {}) {
     super({
       ...config,
-      preferredTP: config.preferredTP || 'TP2',
+      preferredTP: config.preferredTP || 'TP3',
       allowGrid: false,
       pendingOrderTTLMinutes: config.pendingOrderTTLMinutes || 30
     });

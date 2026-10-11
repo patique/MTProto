@@ -12,8 +12,8 @@ class GSMarketStrategy extends BaseStrategy {
   constructor(config = {}) {
     super({
       ...config,
-      preferredTP: 'TP1',
-      allowGrid: true,
+      preferredTP: config.preferredTP || 'TP1',
+      allowGrid: config.allowGrid !== undefined ? config.allowGrid : true,
       pendingOrderTTLMinutes: config.pendingOrderTTLMinutes || 45
     });
   }

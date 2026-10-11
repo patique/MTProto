@@ -23,9 +23,9 @@ const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
 
-const CSV_M3  = path.join(__dirname, '..', '..', 'XAUUSD_M3_202511201233_202609291057.csv');
-const CSV_M5  = path.join(__dirname, '..', '..', 'XAUUSD_M5_202504291430_202609291055.csv');
-const CSV_M15 = path.join(__dirname, '..', '..', 'XAUUSD_M15_202401020100_202609291045.csv');
+const CSV_M3  = path.join(__dirname, '..', '..', 'XAUUSD_M3_202001020600_202610011121.csv');
+const CSV_M5  = path.join(__dirname, '..', '..', 'XAUUSD_M5_202001020600_202610011120.csv');
+const CSV_M15 = path.join(__dirname, '..', '..', 'XAUUSD_M15_202001020600_202610011115.csv');
 
 const TF_CONFIG = {
   M3:  { tfMinutes: 3,  minFvgGap: 0.20, minOverlap: 0.15, slPips: 12.0, tp1Pips: 30.0, tp2Pips: 60.0,  autoBe: 20.0, minRange: 0.25 },

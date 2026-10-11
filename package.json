@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "shadow": "node scripts/view_shadow_trades.js"
+  },
   "dependencies": {
     "input": "^1.0.1",
     "qrcode-terminal": "^0.12.0",

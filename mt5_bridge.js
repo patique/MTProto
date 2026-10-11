@@ -7,7 +7,6 @@
  */
 
 const http = require('http');
-const https = require('https');
 const urlModule = require('url');
 const fs = require('fs');
 const path = require('path');
@@ -19,6 +18,7 @@ const { CHANNELS_CONFIG, findChannelConfig } = require('./config/channels.config
 const { marketSnapshotCollector } = require('./core/MarketSnapshotCollector');
 const { notificationService } = require('./core/NotificationService');
 const { shadowStrategyComparator } = require('./core/ShadowStrategyComparator');
+const { proprietaryStrategyManager } = require('./core/ProprietaryStrategyManager');
 const { bprStrategyMultiTF } = require('./core/algorithms/BPRInstitutionalMultiTimeframeStrategy');
 const { bprStrategyEURUSD } = require('./core/algorithms/BPREurusdMultiTimeframeStrategy');
 const { bprStrategyGBPJPY } = require('./core/algorithms/BPRGbpjpyBearishStrategy');
@@ -28,134 +28,99 @@ let pendingOrders = [];
 let recentProvisionalOrders = new Map();
 let serverStarted = false;
 let latestTick = { bid: 0, ask: 0, time: 0 };
-let latestTickEURUSD = { bid: 0, ask: 0, time: 0 };
-let latestTickGBPJPY = { bid: 0, ask: 0, time: 0 };
-let latestTickNAS100 = { bid: 0, ask: 0, time: 0 };
-let lastEURUSDTickTime = 0;
-let lastGBPJPYTickTime = 0;
-let lastNAS100TickTime = 0;
+const latestTicksBySymbol = new Map();
 let evaluationTargetHalted = false;
 let primaryAccountId = null;
+const recentBridgeDispatches = new Map();
 
 // =====================================================================
 // 🏦 REGISTRO MULTI-CUENTA DE TERMINALES MT5
 // =====================================================================
 const connectedAccounts = new Map();
-const ACCOUNTS_CONFIG_FILE = path.join(__dirname, 'config', 'accounts_config.json');
-const DAILY_TRACKING_FILE = path.join(__dirname, 'daily_account_tracking.json');
+const ACCOUNTS_CONFIG_PATH = path.join(__dirname, 'config', 'accounts_config.json');
+const LAST_ACCOUNTS_CACHE_PATH = path.join(__dirname, 'config', 'last_accounts_cache.json');
 
-function loadDailyTracking() {
+function saveAccountsCache() {
   try {
-    if (fs.existsSync(DAILY_TRACKING_FILE)) {
-      const data = JSON.parse(fs.readFileSync(DAILY_TRACKING_FILE, 'utf8'));
-      const today = new Date().toISOString().split('T')[0];
-      if (data.date === today) {
-        return data;
+    const cache = {};
+    for (const [id, acc] of connectedAccounts.entries()) {
+      cache[id] = {
+        id: acc.id,
+        broker: acc.broker,
+        balance: acc.balance,
+        equity: acc.equity,
+        openPositions: acc.openPositions || 0,
+        currency: acc.currency || 'USD'
+      };
+    }
+    fs.writeFileSync(LAST_ACCOUNTS_CACHE_PATH, JSON.stringify(cache, null, 2));
+  } catch (e) {}
+}
+
+function getAccountConfig(accountId) {
+  try {
+    if (fs.existsSync(ACCOUNTS_CONFIG_PATH)) {
+      const cfg = JSON.parse(fs.readFileSync(ACCOUNTS_CONFIG_PATH, 'utf-8'));
+      if (cfg[accountId]) return cfg[accountId];
+    }
+  } catch (e) {}
+  return null;
+}
+
+function getPrimaryAccountId() {
+  try {
+    if (fs.existsSync(ACCOUNTS_CONFIG_PATH)) {
+      const cfg = JSON.parse(fs.readFileSync(ACCOUNTS_CONFIG_PATH, 'utf-8'));
+      for (const [id, accCfg] of Object.entries(cfg)) {
+        if (accCfg.enabled !== false && accCfg.primary === true) return id;
       }
     }
   } catch (e) {}
-  return { date: new Date().toISOString().split('T')[0], accounts: {} };
+  return '1514879094';
 }
 
-function saveDailyTracking(tracking) {
-  try {
-    fs.writeFileSync(DAILY_TRACKING_FILE, JSON.stringify(tracking, null, 2), 'utf8');
-  } catch (e) {}
-}
+primaryAccountId = getPrimaryAccountId();
 
-function loadAccountsConfig() {
-  try {
-    if (fs.existsSync(ACCOUNTS_CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(ACCOUNTS_CONFIG_FILE, 'utf8'));
-    }
-  } catch (e) {}
-  return {};
-}
-
-function saveAccountsConfig(cfg) {
-  try {
-    fs.writeFileSync(ACCOUNTS_CONFIG_FILE, JSON.stringify(cfg, null, 2), 'utf8');
-  } catch (e) {}
-}
-
-function getOrCreateAccount(accountId, broker = 'Unknown', balance = null, equity = null, openPositions = 0, openBuy = 0, openSell = 0) {
+function getOrCreateAccount(accountId, broker = 'Unknown', balance = null, equity = null, openPositions = 0, currency = 'USD') {
   const id = String(accountId || 'default').trim();
   let acc = connectedAccounts.get(id);
   const now = Date.now();
-
-  const cfg = loadAccountsConfig();
-  const accCustom = cfg[id] || {};
-
-  // Modo de cuenta: 'PERSONAL' (Capital Propio) o 'PROP_FIRM' (Fondeo)
-  let resolvedMode = accCustom.mode;
-  if (!resolvedMode) {
-    const brokerLower = (broker || '').toLowerCase();
-    if (brokerLower.includes('ftmo') || brokerLower.includes('five percent') || (balance && balance >= 4000)) {
-      resolvedMode = 'PROP_FIRM';
-    } else {
-      resolvedMode = 'PERSONAL'; // Brokers de capital propio o cuentas pequeñas (ej. 100€)
-    }
-  }
-  const resolvedRisk = accCustom.riskPercent || (resolvedMode === 'PERSONAL' ? 2.0 : 0.75);
-
   if (!acc) {
-    const dailyData = loadDailyTracking();
-    const accTracking = dailyData.accounts[id] || {};
-    const dayStartBal = accTracking.dayStartBalance || (balance && balance > 0 ? balance : 5000);
-    const isHaltedToday = (id === '1514787530') ? true : !!accTracking.dailyHalted;
-    const haltMsg = accTracking.haltReason || (isHaltedToday ? 'Límite preventivo de 3% alcanzado. Cuenta FTMO congelada hoy.' : '');
-
     acc = {
       id,
       broker: (broker && broker !== 'Unknown') ? broker : 'MetaTrader 5',
       balance: (balance !== null && !isNaN(balance) && balance > 0) ? balance : (riskEngine.currentBalance || 5000),
       equity: (equity !== null && !isNaN(equity) && equity > 0) ? equity : (balance || riskEngine.currentBalance || 5000),
+      currency: currency || 'USD',
       openPositions: openPositions || 0,
-      openBuy: openBuy || 0,
-      openSell: openSell || 0,
-      mode: resolvedMode,
-      riskPercent: resolvedRisk,
-      label: accCustom.label || (resolvedMode === 'PERSONAL' ? 'Capital Propio' : 'Prop Firm'),
       lastSeen: now,
       evaluationTargetHalted: false,
-      dailyHalted: isHaltedToday,
-      haltReason: haltMsg,
-      dayStartBalance: dayStartBal,
       initialBalance: null,
       targetProfitBalance: null,
       pendingOrders: []
     };
     connectedAccounts.set(id, acc);
-    console.log(`🔌 [Multi-Account] Terminal MT5 vinculada: Cuenta #${id} (${acc.broker}) | Modo: ${acc.mode} (${acc.riskPercent}%) | Balance: $${acc.balance.toFixed(2)} USD${isHaltedToday ? ' [🛑 CONGELADA HOY]' : ''}`);
+    console.log(`🔌 [Multi-Account] Terminal MT5 vinculada: Cuenta #${id} (${acc.broker}) | Balance: ${acc.balance.toFixed(2)} ${acc.currency}`);
   } else {
-    const dailyData = loadDailyTracking();
-    const accTracking = dailyData.accounts[id] || {};
     if (broker && broker !== 'Unknown') acc.broker = broker;
     if (balance !== null && !isNaN(balance) && balance > 0) acc.balance = balance;
     if (equity !== null && !isNaN(equity) && equity > 0) acc.equity = equity;
+    if (currency) acc.currency = currency;
     if (openPositions !== undefined && !isNaN(openPositions)) acc.openPositions = openPositions;
-    if (openBuy !== undefined && !isNaN(openBuy)) acc.openBuy = openBuy;
-    if (openSell !== undefined && !isNaN(openSell)) acc.openSell = openSell;
-    acc.mode = resolvedMode;
-    acc.riskPercent = resolvedRisk;
-    acc.label = accCustom.label || (resolvedMode === 'PERSONAL' ? 'Capital Propio' : 'Prop Firm');
     acc.lastSeen = now;
-    if (id === '1514787530') {
-      acc.dailyHalted = true;
-      acc.haltReason = accTracking.haltReason || 'Límite preventivo de 3% alcanzado. Cuenta FTMO congelada hoy.';
-    } else if (accTracking.dailyHalted !== undefined) {
-      acc.dailyHalted = accTracking.dailyHalted;
-      acc.haltReason = accTracking.haltReason || '';
-    }
-    if (accTracking.dayStartBalance) {
-      acc.dayStartBalance = accTracking.dayStartBalance;
-    }
   }
 
-  // Detectar tramo inicial de evaluación EXCLUSIVAMENTE para cuentas de Prop Firm (Freno de Meta +10%)
-  if (acc.mode === 'PROP_FIRM') {
-    if (acc.balance > 0 && !acc.initialBalance) {
-      const b = acc.balance;
+  // Detectar configuración explícita o por heurística
+  const explicitCfg = getAccountConfig(id);
+  const isPersonal = explicitCfg ? (explicitCfg.mode === 'PERSONAL') : (id === '1290919' || /VT\s*Markets/i.test(acc.broker) || (acc.balance < 1000));
+  acc.isPersonal = isPersonal;
+  acc.maxOpenTrades = explicitCfg?.maxOpenTrades || (isPersonal ? 10 : 2);
+  acc.riskPercent = explicitCfg?.riskPercent || (isPersonal ? 2.0 : 0.75);
+
+  // Detectar tramo inicial de evaluación de Prop Firm para el Freno de Meta (+10%)
+  if (acc.balance > 0 && !acc.initialBalance) {
+    const b = acc.balance;
+    if (!isPersonal) {
       if (b >= 4000 && b <= 7000) acc.initialBalance = 5000;
       else if (b >= 8000 && b <= 14000) acc.initialBalance = 10000;
       else if (b >= 20000 && b <= 35000) acc.initialBalance = 25000;
@@ -165,15 +130,41 @@ function getOrCreateAccount(accountId, broker = 'Unknown', balance = null, equit
       else acc.initialBalance = b;
 
       acc.targetProfitBalance = Math.round(acc.initialBalance * 1.10);
+    } else {
+      acc.initialBalance = b;
+      acc.targetProfitBalance = null; // Cuentas de capital propio NO se congelan al +10%
+      acc.evaluationTargetHalted = false;
     }
-  } else {
-    // Cuenta PERSONAL (Capital Propio): sin frenos de examen (+10%), opera libre para crecimiento compuesto
-    acc.targetProfitBalance = null;
-    acc.evaluationTargetHalted = false;
   }
 
   return acc;
 }
+
+function initPreseededAccounts() {
+  try {
+    let cached = {};
+    if (fs.existsSync(LAST_ACCOUNTS_CACHE_PATH)) {
+      try { cached = JSON.parse(fs.readFileSync(LAST_ACCOUNTS_CACHE_PATH, 'utf-8')); } catch (e) {}
+    }
+    if (fs.existsSync(ACCOUNTS_CONFIG_PATH)) {
+      const cfg = JSON.parse(fs.readFileSync(ACCOUNTS_CONFIG_PATH, 'utf-8'));
+      for (const [id, accCfg] of Object.entries(cfg)) {
+        if (accCfg.enabled !== false) {
+          const c = cached[id] || {};
+          const fallbackBal = id === '1514879094' ? 101280.82 : (id === '12566162' ? 10000 : (id === '26742940' ? 5120.24 : 126.75));
+          const bal = (typeof c.balance === 'number' && c.balance > 0) ? c.balance : fallbackBal;
+          const broker = c.broker || accCfg.label || 'MetaTrader 5';
+          getOrCreateAccount(id, broker, bal, c.equity || bal, c.openPositions || 0, c.currency || 'USD');
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ [Multi-Account] Error precargando cuentas:', e.message);
+  }
+}
+
+// Pre-sembrar cuentas activas desde el arranque para evitar carreras de reconexión HTTP
+initPreseededAccounts();
 
 function getActiveAccounts(maxInactiveMs = 60000) {
   const now = Date.now();
@@ -191,8 +182,7 @@ function getActiveAccounts(maxInactiveMs = 60000) {
 
 function broadcastToAllAccounts(orderPayload) {
   pendingOrders.push({ ...orderPayload, id: Date.now() });
-  const activeTargets = getActiveAccounts();
-  for (const acc of activeTargets) {
+  for (const acc of connectedAccounts.values()) {
     acc.pendingOrders.push({
       ...orderPayload,
       id: Date.now() + Math.floor(Math.random() * 1000)
@@ -200,8 +190,131 @@ function broadcastToAllAccounts(orderPayload) {
   }
 }
 
-function getLatestTick() {
+function normalizeMarketSymbol(symbol = '') {
+  let s = String(symbol).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (s === 'GOLD' || s.startsWith('XAU')) return 'XAUUSD';
+  return s;
+}
+
+function getLatestTick(symbol = '') {
+  const normalized = normalizeMarketSymbol(symbol);
+  if (normalized) {
+    for (const [key, tick] of latestTicksBySymbol.entries()) {
+      if (key === normalized || key.includes(normalized) || normalized.includes(key)) {
+        return tick;
+      }
+    }
+  }
   return latestTick;
+}
+
+// =====================================================================
+// 🛡️ MONITOR EN TIEMPO REAL DE AUTO BREAK-EVEN EN TP2 (CANALES TELEGRAM)
+// =====================================================================
+const activeChannelTrades = [
+  // Registrar las posiciones activas abiertas de XAUUSD FOREX TRADING para Auto-BE en TP2 (4120.0)
+  {
+    id: 1791452000000,
+    channelId: '-1002493671900',
+    channelName: 'XAUUSD FOREX TRADING',
+    symbol: 'XAUUSD',
+    action: 'SELL',
+    entryPrice: 4129.75,
+    tp2: 4120.0,
+    tp3: 4115.0,
+    beTriggered: false,
+    timestamp: Date.now()
+  }
+];
+
+function registerChannelTrade(plan, originalSignal) {
+  if (!plan || !plan.channelId || String(plan.channelId).startsWith('PROPRIETARY')) return;
+  const cfg = CHANNELS_CONFIG[plan.channelId] || findChannelConfig(plan.channelId, plan.channelName);
+  if (!cfg || !cfg.enabled) return;
+
+  const beTrigger = plan.breakEvenTrigger || cfg.breakEvenTrigger;
+  if (!beTrigger) return;
+
+  const normSym = normalizeMarketSymbol(plan.symbol || 'XAUUSD');
+  const isBuy = (plan.action || plan.orderType || 'BUY').toUpperCase().includes('BUY');
+  const entryP = typeof plan.entryPrice === 'number' && plan.entryPrice > 0 ? plan.entryPrice : null;
+  const tp2P = plan.tp2 || originalSignal?.tp2 || null;
+
+  if (!tp2P) return;
+
+  // Evitar duplicados inmediatos en la misma ventana de 5 minutos
+  const existing = activeChannelTrades.find(t => 
+    t.channelId === plan.channelId && 
+    normalizeMarketSymbol(t.symbol) === normSym &&
+    !t.beTriggered &&
+    (Date.now() - t.timestamp < 300000)
+  );
+  if (existing) return;
+
+  activeChannelTrades.push({
+    id: Date.now() + Math.floor(Math.random() * 1000),
+    channelId: plan.channelId,
+    channelName: plan.channelName || cfg.name || 'Canal',
+    symbol: plan.symbol || 'XAUUSD',
+    action: isBuy ? 'BUY' : 'SELL',
+    entryPrice: entryP,
+    tp2: tp2P,
+    tp3: plan.targetTP || plan.tp || null,
+    beTriggered: false,
+    timestamp: Date.now()
+  });
+
+  console.log(`🛡️ [Auto-BE Monitor Registrado] Canal: "${plan.channelName || cfg.name}" | Par: ${plan.symbol} (${isBuy ? 'BUY' : 'SELL'}) | TP2 Trigger: ${tp2P} | Target: ${plan.targetTP || 'TP3'}`);
+}
+
+function checkChannelTradesAutoBE(tick) {
+  if (!tick || !tick.symbol || !tick.bid || !tick.ask) return;
+  const symNorm = normalizeMarketSymbol(tick.symbol);
+  const now = Date.now();
+
+  for (const trade of activeChannelTrades) {
+    if (trade.beTriggered) continue;
+    // Purgar trades de más de 48h
+    if (now - trade.timestamp > 48 * 3600 * 1000) {
+      trade.beTriggered = true;
+      continue;
+    }
+
+    if (normalizeMarketSymbol(trade.symbol) !== symNorm) continue;
+
+    let hitTP2 = false;
+    if (trade.action === 'BUY') {
+      if (trade.tp2 && tick.bid >= trade.tp2) {
+        hitTP2 = true;
+      }
+    } else if (trade.action === 'SELL') {
+      if (trade.tp2 && tick.ask <= trade.tp2) {
+        hitTP2 = true;
+      }
+    }
+
+    if (hitTP2) {
+      trade.beTriggered = true;
+      console.log(`\n======================================================`);
+      console.log(`🛡️ [AUTO-BE EN TP2 ACTIVADO] Canal "${trade.channelName}" (${trade.symbol} ${trade.action})`);
+      console.log(`   🎯 TP2 (${trade.tp2}) alcanzado con precio actual: ${trade.action === 'BUY' ? tick.bid : tick.ask}`);
+      console.log(`   🚀 Moviendo Stop Loss a Precio de Entrada (Break-Even) en todas las cuentas MT5...`);
+      console.log(`======================================================\n`);
+
+      const beModItem = {
+        id: Date.now(),
+        symbol: trade.symbol,
+        action: 'MODIFY',
+        modifyType: 'BREAK_EVEN',
+        entryPrice: trade.entryPrice || 0,
+        comment: `Auto-BE TP2 by ${trade.channelName}`,
+        timestamp: Date.now()
+      };
+      broadcastToAllAccounts(beModItem);
+
+      notificationService.notifyBreakEven(trade.symbol, trade.channelName, trade.entryPrice || 'Entrada (TP2 Hit)').catch(() => {});
+    }
+  }
 }
 
 /**
@@ -310,35 +423,6 @@ function startShieldWatchdog() {
 
 startShieldWatchdog();
 
-// 📡 Stream de Cotizaciones en Vivo para EURUSD (Garantía de actualización continua si el EA no transmite)
-
-function fetchLiveEURUSDTick() {
-  if (Date.now() - lastEURUSDTickTime < 2500) return;
-
-  const req = https.get('https://api.binance.com/api/v3/ticker/bookTicker?symbol=EURUSDT', {
-    headers: { 'User-Agent': 'Mozilla/5.0' },
-    timeout: 2000
-  }, res => {
-    let d = '';
-    res.on('data', c => d += c);
-    res.on('end', () => {
-      try {
-        const j = JSON.parse(d);
-        const bid = parseFloat(j.bidPrice);
-        const ask = parseFloat(j.askPrice);
-        if (bid > 0 && ask > 0) {
-          latestTickEURUSD = { bid, ask, time: Date.now() };
-          bprStrategyEURUSD.processTick({ bid, ask, time: Date.now(), symbol: 'EURUSD' });
-        }
-      } catch (e) {}
-    });
-  });
-  req.on('error', () => {});
-}
-
-setInterval(fetchLiveEURUSDTick, 1500);
-fetchLiveEURUSDTick();
-
 let activePort = null;
 
 /**
@@ -402,25 +486,12 @@ function startLocalServer(port = 3000) {
         balance: a.balance,
         equity: a.equity,
         openPositions: a.openPositions,
-        openBuy: a.openBuy || 0,
-        openSell: a.openSell || 0,
-        mode: a.mode || 'PROP_FIRM',
-        riskPercent: a.riskPercent || 0.75,
-        label: a.label || (a.mode === 'PERSONAL' ? 'Capital Propio' : 'Prop Firm'),
         lastSeenSecondsAgo: Math.round((Date.now() - a.lastSeen) / 1000),
         isOnline: (Date.now() - a.lastSeen) < 15000,
         targetHalted: a.evaluationTargetHalted,
         initialBalance: a.initialBalance,
         targetProfitBalance: a.targetProfitBalance,
-        dailyHalted: !!a.dailyHalted,
-        haltReason: a.haltReason || '',
-        dayStartBalance: a.dayStartBalance || a.balance,
-        dailyLossUSD: parseFloat(((a.dayStartBalance || a.balance) - a.balance).toFixed(2)),
-        dailyLossPercent: parseFloat(((((a.dayStartBalance || a.balance) - a.balance) / (a.dayStartBalance || a.balance)) * 100).toFixed(2)),
-        goldLot: riskEngine.calculateLotSize(null, null, 'XAUUSD', false, a.balance, a.mode, a.riskPercent),
-        forexLot: riskEngine.calculateLotSize(null, null, 'EURUSD', false, a.balance, a.mode, a.riskPercent),
-        gbpjpyLot: riskEngine.calculateLotSize(null, null, 'GBPJPY', false, a.balance, a.mode, a.riskPercent),
-        nas100Lot: riskEngine.calculateLotSize(null, null, 'NAS100', false, a.balance, a.mode, a.riskPercent)
+        goldLot: riskEngine.calculateLotSize(null, null, 'XAUUSD', false, a.balance)
       }));
 
       const payload = {
@@ -428,9 +499,8 @@ function startLocalServer(port = 3000) {
         mode: riskEngine.config.MODE,
         riskPercent: riskEngine.currentRiskPercent,
         tick: latestTick,
-        tickEURUSD: latestTickEURUSD,
-        tickGBPJPY: latestTickGBPJPY,
-        tickNAS100: latestTickNAS100,
+        tickEURUSD: latestTicksBySymbol.get('EURUSD') || null,
+        ticks: Object.fromEntries(latestTicksBySymbol),
         totalResolved,
         globalWinRate,
         totalPips,
@@ -440,9 +510,9 @@ function startLocalServer(port = 3000) {
         dailyMaxLossUSD: riskEngine.dailyMaxLossUSD,
         tradingPaused: riskEngine.tradingPaused,
         pauseReason: riskEngine.pauseReason,
+        channels: channelsData,
         news: upcomingNews,
-        accounts: accountsData,
-        pendingOrders: Array.from(pendingOrderManager.trackedOrders.values())
+        accounts: accountsData
       };
 
       res.writeHead(200);
@@ -488,85 +558,90 @@ function startLocalServer(port = 3000) {
       }, null, 2));
     }
 
-    // 4b. API para Estrategia Algorítmica Institucional BPR Multi-TF (M1 + M2 + M3 + M5 + M15)
+    // 4b. API para Estrategia Algorítmica Institucional BPR Multi-TF (XAUUSD)
+    // 4b. API Unificada para Radar Institucional BPR (Todos los 7 pares activos)
+    if (parsedUrl.pathname === '/api/institutional-radar' && req.method === 'GET') {
+      res.setHeader('Content-Type', 'application/json');
+      const radarPairs = proprietaryStrategyManager.entries.map(entry => {
+        const strat = entry.strategy;
+        const livePrice = latestTicksBySymbol.get(entry.symbol)?.bid || (entry.symbol === 'XAUUSD' ? (latestTick.bid || latestTick.ask) : 0);
+        const checklist = typeof strat.getConfirmationChecklist === 'function' ? strat.getConfirmationChecklist(livePrice, 'M5') : {};
+        return {
+          id: entry.id,
+          name: entry.name,
+          symbol: entry.symbol,
+          livePrice,
+          liveExecution: strat.isLiveExecution,
+          checklist,
+          activeTrades: strat.activeTrades || [],
+          activeZones: (strat.bprZones || []).filter(z => z.active),
+          metrics: typeof strat.getStatus === 'function' ? strat.getStatus().metrics : null
+        };
+      });
+      res.writeHead(200);
+      return res.end(JSON.stringify({ pairs: radarPairs }, null, 2));
+    }
+
+    // 4c. Endpoints de compatibilidad para Dashboard (Mapeados al motor institucional unificado)
     if (parsedUrl.pathname === '/api/bpr-strategy' && req.method === 'GET') {
+      const entry = proprietaryStrategyManager.entries.find(e => e.symbol === 'XAUUSD');
+      const strat = entry ? entry.strategy : bprStrategyMultiTF;
+      const livePrice = latestTicksBySymbol.get('XAUUSD')?.bid || latestTick.bid || latestTick.ask || 0;
+      const checklist = typeof strat.getConfirmationChecklist === 'function' ? strat.getConfirmationChecklist(livePrice, 'M5') : {};
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
       return res.end(JSON.stringify({
-        strategy: bprStrategyMultiTF.name,
-        symbol: bprStrategyMultiTF.symbol,
-        metrics: bprStrategyMultiTF.metrics,
-        activeTrades: bprStrategyMultiTF.activeTrades,
-        checklist: bprStrategyMultiTF.getConfirmationChecklist(latestTick.bid || latestTick.ask),
-        recentZones: {
-          M2: (bprStrategyMultiTF.timeframes.M2 ? bprStrategyMultiTF.timeframes.M2.bprZones.slice(-5) : []),
-          M3: (bprStrategyMultiTF.timeframes.M3 ? bprStrategyMultiTF.timeframes.M3.bprZones.slice(-5) : []),
-          M5: (bprStrategyMultiTF.timeframes.M5 ? bprStrategyMultiTF.timeframes.M5.bprZones.slice(-5) : []),
-          M15: (bprStrategyMultiTF.timeframes.M15 ? bprStrategyMultiTF.timeframes.M15.bprZones.slice(-5) : [])
-        },
-        history: bprStrategyMultiTF.history.slice(-30)
+        strategy: strat.name,
+        symbol: 'XAUUSD',
+        activeTrades: strat.activeTrades || [],
+        checklist,
+        history: strat.history ? strat.history.slice(-15) : []
       }, null, 2));
     }
 
-    // 4c. API para Estrategia Algorítmica Institucional BPR EURUSD Multi-TF (M2 + M3 + M5 + M15)
     if (parsedUrl.pathname === '/api/bpr-eurusd' && req.method === 'GET') {
+      const entry = proprietaryStrategyManager.entries.find(e => e.symbol === 'EURUSD');
+      const strat = entry ? entry.strategy : bprStrategyEURUSD;
+      const livePrice = latestTicksBySymbol.get('EURUSD')?.bid || 0;
+      const chk = typeof strat.getConfirmationChecklist === 'function' ? strat.getConfirmationChecklist(livePrice) : {};
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
       return res.end(JSON.stringify({
-        strategy: bprStrategyEURUSD.name,
-        symbol: bprStrategyEURUSD.symbol,
-        metrics: bprStrategyEURUSD.metrics,
-        activeTrades: bprStrategyEURUSD.activeTrades,
-        checklist: bprStrategyEURUSD.getConfirmationChecklist(latestTickEURUSD.bid || latestTickEURUSD.ask || 0),
-        recentZones: {
-          M2: bprStrategyEURUSD.timeframes.M2.bprZones.slice(-5),
-          M3: bprStrategyEURUSD.timeframes.M3.bprZones.slice(-5),
-          M5: bprStrategyEURUSD.timeframes.M5.bprZones.slice(-5),
-          M15: bprStrategyEURUSD.timeframes.M15.bprZones.slice(-5)
-        },
-        history: bprStrategyEURUSD.history.slice(-30)
+        strategy: strat.name,
+        symbol: 'EURUSD',
+        activeTrades: strat.activeTrades || [],
+        checklist: { M5: chk, M2: { ...chk, timeframe: 'M2' } },
+        history: strat.history ? strat.history.slice(-15) : []
       }, null, 2));
     }
 
-    // 4d. API para Estrategia Algorítmica Institucional BPR GBPJPY Multi-TF (M2 + M3 + M5 + M15) - SÓLO VENTAS
     if (parsedUrl.pathname === '/api/bpr-gbpjpy' && req.method === 'GET') {
+      const entry = proprietaryStrategyManager.entries.find(e => e.symbol === 'GBPJPY');
+      const strat = entry ? entry.strategy : bprStrategyGBPJPY;
+      const livePrice = latestTicksBySymbol.get('GBPJPY')?.bid || 0;
+      const chk = typeof strat.getConfirmationChecklist === 'function' ? strat.getConfirmationChecklist(livePrice) : {};
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
       return res.end(JSON.stringify({
-        strategy: bprStrategyGBPJPY.name,
-        symbol: bprStrategyGBPJPY.symbol,
-        direction: 'BEARISH_ONLY',
-        metrics: bprStrategyGBPJPY.metrics,
-        activeTrades: bprStrategyGBPJPY.activeTrades,
-        checklist: bprStrategyGBPJPY.getConfirmationChecklist(latestTickGBPJPY.bid || latestTickGBPJPY.ask || 0),
-        recentZones: {
-          M2: bprStrategyGBPJPY.timeframes.M2.bprZones.slice(-5),
-          M3: bprStrategyGBPJPY.timeframes.M3.bprZones.slice(-5),
-          M5: bprStrategyGBPJPY.timeframes.M5.bprZones.slice(-5),
-          M15: bprStrategyGBPJPY.timeframes.M15.bprZones.slice(-5)
-        },
-        history: bprStrategyGBPJPY.history.slice(-30)
+        strategy: strat.name,
+        symbol: 'GBPJPY',
+        activeTrades: strat.activeTrades || [],
+        checklist: { M5: chk, M2: { ...chk, timeframe: 'M2' } },
+        history: strat.history ? strat.history.slice(-15) : []
       }, null, 2));
     }
 
-    // 4e. API para Estrategia Algorítmica Institucional BPR NAS100 Multi-TF (M2 + M3 + M5 + M15) - SÓLO COMPRAS
     if (parsedUrl.pathname === '/api/bpr-nas100' && req.method === 'GET') {
+      const livePrice = latestTicksBySymbol.get('NAS100')?.bid || 0;
+      const chk = typeof bprStrategyNAS100.getConfirmationChecklist === 'function' ? bprStrategyNAS100.getConfirmationChecklist(livePrice) : {};
       res.setHeader('Content-Type', 'application/json');
       res.writeHead(200);
       return res.end(JSON.stringify({
         strategy: bprStrategyNAS100.name,
-        symbol: bprStrategyNAS100.symbol,
-        direction: 'BULLISH_ONLY',
-        metrics: bprStrategyNAS100.metrics,
-        activeTrades: bprStrategyNAS100.activeTrades,
-        checklist: bprStrategyNAS100.getConfirmationChecklist(latestTickNAS100.bid || latestTickNAS100.ask || 0),
-        recentZones: {
-          M2: bprStrategyNAS100.timeframes.M2.bprZones.slice(-5),
-          M3: bprStrategyNAS100.timeframes.M3.bprZones.slice(-5),
-          M5: bprStrategyNAS100.timeframes.M5.bprZones.slice(-5),
-          M15: bprStrategyNAS100.timeframes.M15.bprZones.slice(-5)
-        },
-        history: bprStrategyNAS100.history.slice(-30)
+        symbol: 'NAS100',
+        activeTrades: bprStrategyNAS100.activeTrades || [],
+        checklist: { M5: chk },
+        history: bprStrategyNAS100.history ? bprStrategyNAS100.history.slice(-15) : []
       }, null, 2));
     }
 
@@ -592,42 +667,203 @@ function startLocalServer(port = 3000) {
       return;
     }
 
-    // 4b. API para Cambiar Modo de Cuenta (PERSONAL / PROP_FIRM) desde Dashboard
-    if (parsedUrl.pathname === '/api/accounts/mode' && req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => body += chunk.toString());
-      req.on('end', () => {
-        try {
-          const { accountId, mode, riskPercent } = JSON.parse(body);
-          const id = String(accountId).trim();
-          const acc = connectedAccounts.get(id);
-          const cfg = loadAccountsConfig();
-          if (!cfg[id]) cfg[id] = {};
-          if (mode) cfg[id].mode = mode;
-          if (riskPercent) cfg[id].riskPercent = parseFloat(riskPercent);
-          saveAccountsConfig(cfg);
+    // 4c. API para Disparar Orden de Prueba Multi-Cuenta (GET /api/send-test-trade)
+    if (parsedUrl.pathname === '/api/send-test-trade' && (req.method === 'GET' || req.method === 'POST')) {
+      const ask = (latestTick && latestTick.ask) ? latestTick.ask : 2650.0;
+      const testPlan = {
+        valid: true,
+        symbol: 'XAUUSD',
+        action: 'BUY',
+        orderType: 'BUY',
+        entryPrice: ask,
+        slPrice: parseFloat((ask - 5.0).toFixed(2)),
+        targetTP: parseFloat((ask + 10.0).toFixed(2)),
+        channelName: 'TEST_ROUTING',
+        channelId: 'test_routing',
+        comment: 'TEST_MULTI_ACC',
+        bypassTimeShields: true
+      };
+      await executeTradePlan(testPlan, null, { bypassTimeShields: true });
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: true,
+        message: 'Orden de prueba Buy enviada a todas las cuentas MT5 conectadas',
+        plan: testPlan
+      }, null, 2));
+    }
 
-          if (acc) {
-            if (mode) acc.mode = mode;
-            if (riskPercent) acc.riskPercent = parseFloat(riskPercent);
-            if (acc.mode === 'PERSONAL') {
-              acc.targetProfitBalance = null;
-              acc.evaluationTargetHalted = false;
-              acc.label = cfg[id].label || 'Capital Propio';
-            } else {
-              acc.label = cfg[id].label || 'Prop Firm';
-            }
-          }
-          console.log(`🏦 [Cuenta #${id} Actualizada]: Modo -> ${mode || acc?.mode} | Riesgo -> ${(riskPercent || acc?.riskPercent)}%`);
-          res.setHeader('Content-Type', 'application/json');
-          res.writeHead(200);
-          res.end(JSON.stringify({ success: true, account: acc || cfg[id] }));
-        } catch (e) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: e.message }));
-        }
+    // 4c2. API para Forzar Envío Manual de Señal Marco (GET o POST /api/execute-marco)
+    if (parsedUrl.pathname === '/api/execute-marco' && (req.method === 'GET' || req.method === 'POST')) {
+      const bid = (latestTick && latestTick.bid) ? latestTick.bid : (latestTicksBySymbol.get('XAUUSD')?.bid || 4122.5);
+      const marcoPlan = {
+        valid: true,
+        symbol: 'XAUUSD',
+        action: 'SELL',
+        orderType: 'SELL',
+        entryPrice: bid,
+        slPrice: 4130.0,
+        targetTP: 4104.0, // TP3 preferido
+        tp1: 4112.0,
+        tp2: 4108.0,
+        breakEvenTrigger: 'TP2',
+        channelName: 'MARCO TRADING HUB',
+        channelId: '-1002157727490',
+        comment: 'MARCO_GOLD_SELL',
+        bypassTimeShields: true
+      };
+      const ok = await executeTradePlan(marcoPlan, null, { bypassTimeShields: true });
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: ok,
+        message: ok ? 'Señal de Marco SELL GOLD despachada exitosamente a todas las cuentas MT5' : 'Filtro de seguridad impidió el despacho',
+        plan: marcoPlan
+      }, null, 2));
+    }
+
+    // 4c3. API para Ejecutar Señal Exness Gold Trader (GET o POST /api/execute-exness)
+    if (parsedUrl.pathname === '/api/execute-exness' && (req.method === 'GET' || req.method === 'POST')) {
+      const mode = parsedUrl.query.mode || 'limit'; // 'limit' o 'market'
+      const ask = (latestTick && latestTick.ask) ? latestTick.ask : (latestTicksBySymbol.get('XAUUSD')?.ask || 4124.5);
+      const isLimit = mode === 'limit';
+      const entryPrice = isLimit ? 4120.0 : ask;
+
+      const exnessPlan = {
+        valid: true,
+        symbol: 'XAUUSD',
+        action: isLimit ? 'BUY LIMIT' : 'BUY',
+        orderType: isLimit ? 'BUY LIMIT' : 'BUY',
+        entryPrice: entryPrice,
+        slPrice: 4107.0,
+        targetTP: 4139.0, // TP3 oficial
+        tp1: 4123.0,
+        tp2: 4126.0,
+        breakEvenTrigger: 'TP2',
+        channelName: 'EXNESS GOLD TRADER',
+        channelId: '-1004339716486',
+        comment: isLimit ? 'EXNESS_BUY_LIMIT' : 'EXNESS_BUY_MARKET',
+        isPendingOrder: isLimit,
+        isGrid: false,
+        orders: isLimit ? [{
+          symbol: 'XAUUSD',
+          action: 'BUY LIMIT',
+          entryPrice: 4120.0,
+          sl: 4107.0,
+          tp: 4139.0,
+          volume: 0.01,
+          comment: 'Pending EXNESS TP3'
+        }] : undefined,
+        bypassTimeShields: true
+      };
+
+      const ok = await executeTradePlan(exnessPlan, null, { bypassTimeShields: true });
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: ok,
+        message: ok ? `Señal de Exness BUY GOLD (${mode.toUpperCase()}) despachada exitosamente a todas las cuentas MT5` : 'Filtro de seguridad impidió el despacho',
+        plan: exnessPlan
+      }, null, 2));
+    }
+
+    // 4c4. API para Enviar/Reintentar Orden Específica a una Cuenta Concreta (GET o POST /api/resend-to-account)
+    if (parsedUrl.pathname === '/api/resend-to-account' && (req.method === 'GET' || req.method === 'POST')) {
+      const targetAccId = parsedUrl.query.account ? String(parsedUrl.query.account).trim() : '1514879094';
+      const acc = connectedAccounts.get(targetAccId);
+      if (!acc) {
+        res.setHeader('Content-Type', 'application/json');
+        res.writeHead(404);
+        return res.end(JSON.stringify({ error: `Cuenta #${targetAccId} no encontrada en cuentas conectadas` }));
+      }
+
+      const orderType = parsedUrl.query.type || 'BUY LIMIT';
+      const price = parseFloat(parsedUrl.query.price || '4120.0');
+      const sl = parseFloat(parsedUrl.query.sl || '4107.0');
+      const tp = parseFloat(parsedUrl.query.tp || '4139.0');
+      const symbol = parsedUrl.query.symbol || 'XAUUSD';
+      const lot = riskEngine.calculateLotSize(price, sl, symbol, false, acc.balance || 100000);
+
+      const orderItem = {
+        id: Date.now(),
+        symbol: symbol,
+        action: orderType,
+        entryPrice: price,
+        sl: sl,
+        tp: tp,
+        volume: lot,
+        comment: 'RETRY EXNESS FTMO',
+        ttlMinutes: 30,
+        timestamp: Date.now()
+      };
+
+      acc.pendingOrders = acc.pendingOrders || [];
+      acc.pendingOrders.push(orderItem);
+
+      console.log(`\n🎯 [Reintento Específico] Despachando orden ${orderType} ${lot}L a Cuenta #${targetAccId} (${acc.broker}) tras activar Algo Trading...`);
+
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: true,
+        message: `Orden ${orderType} (${lot} lotes) puesta en cola exitosamente para Cuenta #${targetAccId} (${acc.broker})`,
+        order: orderItem
+      }, null, 2));
+    }
+
+    // 4c. API para Exportar Barras M5 de los 5 Pares (GET /api/export-bars)
+    if (parsedUrl.pathname === '/api/export-bars' && (req.method === 'GET' || req.method === 'POST')) {
+      broadcastToAllAccounts({
+        id: Date.now(),
+        symbol: 'ALL',
+        action: 'EXPORT_BARS',
+        timestamp: Date.now()
       });
-      return;
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: true,
+        message: 'Comando EXPORT_BARS enviado a todas las terminales MT5 conectadas'
+      }, null, 2));
+    }
+
+    // 4d. API para Cerrar Todas las Posiciones de Prueba (GET /api/close-all)
+    if (parsedUrl.pathname === '/api/close-all' && (req.method === 'GET' || req.method === 'POST')) {
+      broadcastToAllAccounts({
+        id: Date.now(),
+        symbol: 'ALL',
+        action: 'CLOSE_ALL_MARKET',
+        volume: 0,
+        sl: 0,
+        tp: 0,
+        comment: 'Manual Close All'
+      });
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: true,
+        message: 'Comando CLOSE_ALL_MARKET enviado a todas las cuentas MT5 conectadas'
+      }, null, 2));
+    }
+
+    // 4d2. API para Cerrar Posiciones de un Símbolo Específico (GET /api/close-symbol?symbol=nas100)
+    if (parsedUrl.pathname === '/api/close-symbol' && (req.method === 'GET' || req.method === 'POST')) {
+      const targetSym = parsedUrl.query.symbol || 'nas100';
+      broadcastToAllAccounts({
+        id: Date.now(),
+        symbol: targetSym,
+        action: 'CLOSE_ALL_MARKET',
+        volume: 0,
+        sl: 0,
+        tp: 0,
+        comment: `Emergency Close ${targetSym}`
+      });
+      res.setHeader('Content-Type', 'application/json');
+      res.writeHead(200);
+      return res.end(JSON.stringify({
+        success: true,
+        message: `Comando CLOSE_ALL_MARKET para símbolo ${targetSym} enviado a todas las cuentas MT5 conectadas`
+      }, null, 2));
     }
 
     // 4. Endpoint GET /orders (Consulta del EA de MT5)
@@ -639,10 +875,10 @@ function startLocalServer(port = 3000) {
       const liveBal = parsedUrl.query.balance ? parseFloat(parsedUrl.query.balance) : null;
       const liveEq = parsedUrl.query.equity ? parseFloat(parsedUrl.query.equity) : null;
       const openPos = parsedUrl.query.openPositions !== undefined ? parseInt(parsedUrl.query.openPositions, 10) : 0;
-      const openBuy = parsedUrl.query.openBuy !== undefined ? parseInt(parsedUrl.query.openBuy, 10) : 0;
-      const openSell = parsedUrl.query.openSell !== undefined ? parseInt(parsedUrl.query.openSell, 10) : 0;
+      const riskPos = parsedUrl.query.riskPositions !== undefined ? parseInt(parsedUrl.query.riskPositions, 10) : openPos;
 
-      const acc = getOrCreateAccount(accountId, broker, liveBal, liveEq, openPos, openBuy, openSell);
+      const acc = getOrCreateAccount(accountId, broker, liveBal, liveEq, openPos);
+      acc.riskPositions = riskPos;
 
       // Designar cuenta principal (la primera en conectar) para las métricas globales del Dashboard
       if (!primaryAccountId || primaryAccountId === 'default') {
@@ -655,15 +891,18 @@ function startLocalServer(port = 3000) {
       // Balance real reportado por el EA: solo la cuenta principal actualiza el balance global en riskEngine
       // para evitar colisiones de tamaño entre cuentas simultáneas (ej: 5k vs 100k)
       if (liveBal && !isNaN(liveBal) && liveBal > 0) {
-        if (accountId === primaryAccountId || !primaryAccountId) {
+        if (accountId === primaryAccountId || !primaryAccountId || accountId === 'default') {
           riskEngine.currentBalance = liveBal;
-          if (openPos !== undefined && !isNaN(openPos)) {
-            riskEngine.activePositionsCount = openPos;
-          }
+          // Si breakEvenSlotRelease está activo, solo las operaciones sin BE ocupan slot
+          const effectivePositions = (riskEngine.config.PROP_FIRM && riskEngine.config.PROP_FIRM.breakEvenSlotRelease)
+            ? riskPos
+            : openPos;
+          riskEngine.activePositionsCount = effectivePositions;
         }
+        saveAccountsCache();
 
-        // 🎯 FRENO DE META CUMPLIDA POR CUENTA (solo en cuentas PROP_FIRM de evaluación)
-        if (acc.mode === 'PROP_FIRM' && acc.targetProfitBalance && acc.balance >= acc.targetProfitBalance && !acc.evaluationTargetHalted) {
+        // 🎯 FRENO DE META CUMPLIDA POR CUENTA (10% de ganancia en cuentas de evaluación de Prop Firms)
+        if (!acc.isPersonal && acc.targetProfitBalance && acc.balance >= acc.targetProfitBalance && !acc.evaluationTargetHalted) {
           acc.evaluationTargetHalted = true;
           const msg = `🎉 [EXAMEN APROBADO] Cuenta #${acc.id} (${acc.broker}) alcanzó $${acc.balance.toFixed(2)} USD (Meta $${acc.targetProfitBalance.toFixed(2)} / +10%). Operativa congelada.`;
           console.log(`\n🎉🎉🎉 [PROP FIRM TARGET ALCANZADO]: ${msg}\n`);
@@ -697,64 +936,58 @@ function startLocalServer(port = 3000) {
       if (parsedUrl.query.bid && parsedUrl.query.ask) {
         const bid = parseFloat(parsedUrl.query.bid);
         const ask = parseFloat(parsedUrl.query.ask);
-        const sym = (parsedUrl.query.symbol || 'XAUUSD').toUpperCase();
+        const symbol = parsedUrl.query.symbol ? String(parsedUrl.query.symbol).trim() : '';
+        const pdh = parsedUrl.query.pdh ? parseFloat(parsedUrl.query.pdh) : 0;
+        const pdl = parsedUrl.query.pdl ? parseFloat(parsedUrl.query.pdl) : 0;
         if (!isNaN(bid) && bid > 0 && !isNaN(ask) && ask > 0) {
-          latestTick = { bid, ask, time: Date.now() };
+          latestTick = { 
+            bid, 
+            ask, 
+            symbol, 
+            pdh: !isNaN(pdh) ? pdh : 0, 
+            pdl: !isNaN(pdl) ? pdl : 0, 
+            time: Date.now() 
+          };
+          if (symbol) {
+            latestTicksBySymbol.set(normalizeMarketSymbol(symbol), latestTick);
+          }
+          // Alimentar motores algoritmicos propietarios por simbolo en tiempo real
           try {
-            if (sym.includes('EUR')) {
-              latestTickEURUSD = { bid, ask, time: Date.now() };
-              bprStrategyEURUSD.processTick({ bid, ask, time: Date.now(), symbol: 'EURUSD' });
-            } else if (sym.includes('GBP') || sym.includes('JPY')) {
-              latestTickGBPJPY = { bid, ask, time: Date.now() };
-              bprStrategyGBPJPY.processTick({ bid, ask, time: Date.now(), symbol: 'GBPJPY' });
-            } else if (sym.includes('NAS') || sym.includes('US100') || sym.includes('USTEC') || sym.includes('NDX')) {
-              latestTickNAS100 = { bid, ask, time: Date.now() };
-              bprStrategyNAS100.processTick({ bid, ask, time: Date.now(), symbol: 'NAS100' });
-            } else {
-              bprStrategyMultiTF.processTick(latestTick);
-            }
+            proprietaryStrategyManager.processTick(latestTick);
           } catch (e) {
             // Ignorar silenciosamente para no interrumpir el puente
           }
+          checkChannelTradesAutoBE(latestTick);
         }
       }
 
-      // Procesar tick empaquetado de EURUSD desde el EA si está activo en Market Watch
-      if (parsedUrl.query.eurusdBid && parsedUrl.query.eurusdAsk) {
-        const eBid = parseFloat(parsedUrl.query.eurusdBid);
-        const eAsk = parseFloat(parsedUrl.query.eurusdAsk);
-        if (!isNaN(eBid) && eBid > 0 && !isNaN(eAsk) && eAsk > 0) {
-          lastEURUSDTickTime = Date.now();
-          latestTickEURUSD = { bid: eBid, ask: eAsk, time: Date.now() };
-          try {
-            bprStrategyEURUSD.processTick({ bid: eBid, ask: eAsk, time: Date.now(), symbol: 'EURUSD' });
-          } catch (e) {}
-        }
-      }
-
-      // Procesar tick empaquetado de GBPJPY desde el EA si está activo en Market Watch
-      if (parsedUrl.query.gbpjpyBid && parsedUrl.query.gbpjpyAsk) {
-        const gBid = parseFloat(parsedUrl.query.gbpjpyBid);
-        const gAsk = parseFloat(parsedUrl.query.gbpjpyAsk);
-        if (!isNaN(gBid) && gBid > 0 && !isNaN(gAsk) && gAsk > 0) {
-          lastGBPJPYTickTime = Date.now();
-          latestTickGBPJPY = { bid: gBid, ask: gAsk, time: Date.now() };
-          try {
-            bprStrategyGBPJPY.processTick({ bid: gBid, ask: gAsk, time: Date.now(), symbol: 'GBPJPY' });
-          } catch (e) {}
-        }
-      }
-
-      // Procesar tick empaquetado de NAS100 desde el EA si está activo en Market Watch
-      if (parsedUrl.query.nas100Bid && parsedUrl.query.nas100Ask) {
-        const nBid = parseFloat(parsedUrl.query.nas100Bid);
-        const nAsk = parseFloat(parsedUrl.query.nas100Ask);
-        if (!isNaN(nBid) && nBid > 0 && !isNaN(nAsk) && nAsk > 0) {
-          lastNAS100TickTime = Date.now();
-          latestTickNAS100 = { bid: nBid, ask: nAsk, time: Date.now() };
-          try {
-            bprStrategyNAS100.processTick({ bid: nBid, ask: nAsk, time: Date.now(), symbol: 'NAS100' });
-          } catch (e) {}
+      // Procesar lote multi-símbolo enviado por el EA (ej. &ticks=XAUUSD:2650.1:2650.3:2660.0:2640.0|EURUSD:1.1234:1.1235:1.1300:1.1200|...)
+      if (parsedUrl.query.ticks) {
+        const tickBatches = String(parsedUrl.query.ticks).split('|');
+        for (const rawItem of tickBatches) {
+          const parts = rawItem.split(':');
+          if (parts.length >= 3) {
+            const sym = parts[0].trim();
+            const b = parseFloat(parts[1]);
+            const a = parseFloat(parts[2]);
+            const symPDH = parts.length >= 4 ? parseFloat(parts[3]) : 0;
+            const symPDL = parts.length >= 5 ? parseFloat(parts[4]) : 0;
+            if (sym && !isNaN(b) && b > 0 && !isNaN(a) && a > 0) {
+              const multiTick = { 
+                bid: b, 
+                ask: a, 
+                symbol: sym, 
+                pdh: !isNaN(symPDH) ? symPDH : 0, 
+                pdl: !isNaN(symPDL) ? symPDL : 0, 
+                time: Date.now() 
+              };
+              latestTicksBySymbol.set(normalizeMarketSymbol(sym), multiTick);
+              try {
+                proprietaryStrategyManager.processTick(multiTick);
+              } catch (e) {}
+              checkChannelTradesAutoBE(multiTick);
+            }
+          }
         }
       }
 
@@ -808,17 +1041,20 @@ function startLocalServer(port = 3000) {
             if (chCfg && chCfg.id) targetChannelId = chCfg.id;
           }
 
-          let pipsEst = 0;
-          if (typeof data.pips === 'number' && !isNaN(data.pips) && data.pips !== 0) {
-            pipsEst = parseFloat(data.pips.toFixed(1));
-          } else {
-            const vol = parseFloat(data.volume) || (matchedSnapshot?.order?.lotSize) || 0.01;
-            const pipsPerDollar = vol * 10.0;
-            pipsEst = pipsPerDollar > 0 ? parseFloat((profit / pipsPerDollar).toFixed(1)) : parseFloat(((profit || 0) * 10).toFixed(1));
-          }
+          const pipsEst = typeof data.pips === 'number' ? data.pips : Math.abs(profit || 0) * 10.0;
           // Registrar en el motor de analíticas y snapshots
           analyticsEngine.recordOutcome(targetChannelId, outcome || (profit >= 0 ? 'WIN' : 'LOSS'), pipsEst, position);
           marketSnapshotCollector.resolveSnapshot(targetChannelId, outcome || (profit >= 0 ? 'WIN' : 'LOSS'), pipsEst, profit);
+          
+          // Marcar operación en monitor Auto-BE como finalizada
+          if (comment || targetChannelId) {
+            const closedTrade = activeChannelTrades.find(t => 
+              (t.channelId === targetChannelId || t.channelName === comment) &&
+              normalizeMarketSymbol(t.symbol) === normalizeMarketSymbol(symbol) &&
+              !t.beTriggered
+            );
+            if (closedTrade) closedTrade.beTriggered = true;
+          }
           
           // Registro en la sombra: Opción 1 (Mañana 100% TP2) vs Opción 2 (Actual 50/50) vs Opción 3 (70/30)
           const matchedSnapshot = marketSnapshotCollector.snapshots.slice().reverse().find(s => s.channel && s.channel.id === targetChannelId);
@@ -833,23 +1069,27 @@ function startLocalServer(port = 3000) {
           }, matchedSnapshot);
           console.log(`\n🎉 [FEEDBACK LOOP MT5] Cuenta #${account || 'MT5'} (${broker || 'Broker'}) | Posición #${position} cerrada para canal [${targetChannelId}]: ${profit >= 0 ? 'WIN ✅' : 'LOSS ❌'} (${profit >= 0 ? '+' : ''}$${profit.toFixed(2)} USD).`);
 
-          const matchedAcc = connectedAccounts.get(String(account)) || null;
-          const brokerName = (matchedAcc && matchedAcc.broker) ? matchedAcc.broker : (broker || 'MetaTrader 5');
-          const humanChannel = findChannelConfig(targetChannelId)?.name || targetChannelId || 'Canal MT5';
+          // Notificación Push al móvil con desglose de todas las cuentas conectadas
+          const allAccSnapshot = Array.from(connectedAccounts.values()).map(a => {
+            const cfg = getAccountConfig(a.id);
+            return {
+              id: a.id,
+              broker: a.broker,
+              balance: a.balance || 0,
+              equity: a.equity || a.balance || 0,
+              label: cfg?.label || `Cuenta #${a.id} (${a.broker})`
+            };
+          });
 
-          // Notificación Push al móvil
           notificationService.notifyTradeClosed({
             position,
             symbol: symbol || 'XAUUSD',
             outcome: outcome || (profit >= 0 ? 'WIN' : 'LOSS'),
             profitUSD: profit || 0,
             pips: pipsEst,
-            balance: (matchedAcc && matchedAcc.balance) || balance || riskEngine.currentBalance,
-            accountId: account,
-            broker: brokerName,
-            channelName: humanChannel,
-            initialBalance: matchedAcc?.initialBalance,
-            targetProfitBalance: matchedAcc?.targetProfitBalance
+            balance: riskEngine.currentBalance,
+            channelName: targetChannelId,
+            allAccounts: allAccSnapshot
           }).catch(() => {});
 
           res.setHeader('Content-Type', 'application/json');
@@ -871,9 +1111,9 @@ function startLocalServer(port = 3000) {
         try {
           const newOrders = JSON.parse(body);
           if (Array.isArray(newOrders)) {
-            pendingOrders.push(...newOrders);
+            newOrders.forEach(o => broadcastToAllAccounts(o));
           } else {
-            pendingOrders.push(newOrders);
+            broadcastToAllAccounts(newOrders);
           }
           res.setHeader('Content-Type', 'application/json');
           res.writeHead(200);
@@ -926,7 +1166,10 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
 
   // 🛑 CIRCUITO DE FRENO DE EMERGENCIA & STOP TRADING
   if (!plan.isCancelAction && plan.action !== 'MODIFY') {
-    const opts = { bypassTimeShields: !!(options.bypassTimeShields || plan.bypassTimeShields || process.env.NODE_ENV === 'test') };
+    const opts = { 
+      bypassTimeShields: !!(options.bypassTimeShields || plan.bypassTimeShields || process.env.NODE_ENV === 'test'),
+      isMultiAccountManaged: true 
+    };
     const tradingCheck = riskEngine.checkTradingAllowed(new Date(), opts);
     if (!tradingCheck.allowed) {
       console.log(`🛑 [STOP TRADING ACTIVO] Operación cancelada: ${tradingCheck.reason}`);
@@ -945,6 +1188,34 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
     }
   }
 
+  // ⚖️ FILTRO UNIVERSAL DE RATIO RIESGO / BENEFICIO MÍNIMO (Mínimo 1:1.3)
+  // Aplica a TODAS las fuentes: Canales de Telegram y Estrategias Algorítmicas
+  if (!plan.isCancelAction && plan.action !== 'MODIFY') {
+    const entryP = plan.entryPrice || plan.entry;
+    const slP = plan.slPrice || plan.sl;
+    const tpP = plan.targetTP || plan.tp;
+    if (entryP && slP && tpP) {
+      const riskDist = Math.abs(entryP - slP);
+      const rewardDist = Math.abs(tpP - entryP);
+      if (riskDist > 0) {
+        const rr = rewardDist / riskDist;
+        if (rr < 1.3) {
+          console.log(`⚠️ [MT5 Bridge - FILTRO R:R UNIVERSAL BLOQUEADO] "${plan.channelName || plan.symbol}": Ratio 1:${rr.toFixed(2)} es inferior al mínimo 1:1.3. Riesgo: ${riskDist.toFixed(2)} | Recompensa: ${rewardDist.toFixed(2)}. Operación cancelada.`);
+          return false;
+        }
+      }
+    }
+  }
+
+  // 🛡️ CONTROL DE ESTRATEGIAS PROPIETARIAS (Permitir exclusivamente la nueva estrategia institucional BPR)
+  if (plan.channelId && (plan.channelId.startsWith('PROPRIETARY_') || plan.channelId.includes('PROPRIETARY'))) {
+    const isInstitutionalLive = plan.channelId.startsWith('PROPRIETARY_BPR_INSTITUTIONAL_') || plan.channelId.startsWith('PROPRIETARY_NY_SNIPER_');
+    if (!isInstitutionalLive) {
+      console.warn(`🛡️ [PROPRIETARY SHIELD] Bloqueando orden de estrategia no autorizada: "${plan.channelName || plan.channelId}". Solo las estrategias institucionales BPR y NY Sniper están autorizadas en LIVE.`);
+      return false;
+    }
+  }
+
   if (process.env.NODE_ENV !== 'test') {
     startLocalServer();
   }
@@ -956,7 +1227,23 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
   const dispChannel = plan.channelName || 'Canal';
   const dispSymbol = plan.symbol || 'XAUUSD';
 
-  const activeAccs = getActiveAccounts();
+  // 🛡️ ANTI-DUPLICADO UNIVERSAL EN EL PUENTE (Ventana de 60 segundos por canal, símbolo y dirección)
+  if (!options.forceDispatch && !plan.isCancelAction && dispAction !== 'CANCEL_ALL_PENDING' && dispAction !== 'MODIFY') {
+    const normAction = (dispAction || 'BUY').includes('BUY') ? 'BUY' : 'SELL';
+    const normSym = normalizeMarketSymbol(dispSymbol);
+    const bridgeDupKey = `${plan.channelId}:${normSym}:${normAction}`;
+    const lastBridgeExec = recentBridgeDispatches.get(bridgeDupKey);
+    if (lastBridgeExec && (Date.now() - lastBridgeExec) < 60000) {
+      console.log(`⚠️ [MT5 Bridge - ANTI-DUPLICATE GUARD] Bloqueando orden duplicada de "${dispChannel}" (${normSym} ${normAction}) emitida hace ${((Date.now() - lastBridgeExec)/1000).toFixed(1)}s.`);
+      return false;
+    }
+    recentBridgeDispatches.set(bridgeDupKey, Date.now());
+  }
+
+  let activeAccs = getActiveAccounts();
+  if (Array.isArray(options.targetAccountIds) && options.targetAccountIds.length > 0) {
+    activeAccs = activeAccs.filter(a => options.targetAccountIds.includes(a.id));
+  }
   const targetAccounts = activeAccs.length > 0 ? activeAccs : [{
     id: 'default',
     broker: 'Default MT5',
@@ -964,36 +1251,19 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
     pendingOrders
   }];
 
-  // Si todas las cuentas conectadas han completado su objetivo de evaluación (+10%), omitir nuevas operaciones
-  if (!plan.isCancelAction && dispAction !== 'CANCEL_ALL_PENDING' && dispAction !== 'MODIFY') {
-    const availableAccounts = targetAccounts.filter(acc => !acc.evaluationTargetHalted);
-    if (availableAccounts.length === 0 && targetAccounts.length > 0) {
-      console.log(`⏸️ [Multi-Account] Todas las cuentas conectadas (${targetAccounts.length}) han aprobado su evaluación (+10%). Operativa congelada.`);
-      return false;
-    }
-  }
-
-  // Sanity check de coherencia de TP para órdenes a mercado:
-  // Evita que el TP quede del lado equivocado del precio de entrada (ej: TP arriba de entry en un SELL)
-  if (!plan.isPendingOrder && typeof dispEntry === 'number' && typeof dispSL === 'number') {
-    const slDist = Math.abs(dispEntry - dispSL);
-    const decimals = dispSymbol.includes('JPY') ? 3 : (dispSymbol === 'XAUUSD' ? 2 : (dispSymbol === 'NAS100' ? 1 : 5));
-    if (dispAction === 'BUY' && plan.targetTP && plan.targetTP <= dispEntry) {
-      console.warn(`⚠️ [Sanity Guard] TP corregido en BUY: ${plan.targetTP} era menor o igual al precio de entrada ${dispEntry}. Reajustando a 1:1.0.`);
-      plan.targetTP = parseFloat((dispEntry + slDist).toFixed(decimals));
-      if (plan.orders && plan.orders[0]) plan.orders[0].tp = plan.targetTP;
-    } else if (dispAction === 'SELL' && plan.targetTP && plan.targetTP >= dispEntry) {
-      console.warn(`⚠️ [Sanity Guard] TP corregido en SELL: ${plan.targetTP} era mayor o igual al precio de entrada ${dispEntry}. Reajustando a 1:1.0.`);
-      plan.targetTP = parseFloat((dispEntry - slDist).toFixed(decimals));
-      if (plan.orders && plan.orders[0]) plan.orders[0].tp = plan.targetTP;
-    }
-  }
-
-  console.log(`\n🚀 [MT5 Despacho] ${dispAction} ${dispSymbol} @ ${dispEntry} | SL: ${dispSL} | TP: ${plan.targetTP || plan.tp || 'N/A'} (Canal: "${dispChannel}")`);
+  console.log(`\n🚀 [MT5 Bridge] DESPACHANDO A ${targetAccounts.length} TERMINAL(ES) CONECTADA(S)...`);
+  console.log(`------------------------------------------------------`);
+  console.log(`   Simbolo: ${dispSymbol} | Acción: ${dispAction}`);
+  console.log(`   Precio Entrada: ${dispEntry} | Stop Loss: ${dispSL} | TP: ${plan.targetTP || plan.tp || 'N/A'}`);
+  console.log(`   Canal: "${dispChannel}"`);
+  console.log(`------------------------------------------------------`);
 
   // Captura de fotografía técnica completa de mercado (Market Snapshot Collector)
   if (!plan.isCancelAction && dispAction !== 'CANCEL_ALL_PENDING' && dispAction !== 'MODIFY') {
-    marketSnapshotCollector.captureSnapshot(originalSignal || plan, plan, latestTick.ask || latestTick.bid).catch(() => {});
+    if (marketSnapshotCollector && typeof marketSnapshotCollector.captureSnapshot === 'function') {
+      const livePrice = (latestTick && (latestTick.ask || latestTick.bid)) ? (latestTick.ask || latestTick.bid) : (plan.entryPrice || 0);
+      marketSnapshotCollector.captureSnapshot(originalSignal || plan, plan, livePrice).catch(() => {});
+    }
   }
 
   // Caso 1: Cancelación de órdenes pendientes
@@ -1014,22 +1284,6 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
     return true;
   }
 
-  // Caso 1.5: Cierre forzado de mercado para canal o estrategia específica
-  if (dispAction === 'CLOSE_CHANNEL' || dispAction === 'CLOSE_SPECIFIC') {
-    const closeItem = {
-      id: Date.now(),
-      symbol: dispSymbol,
-      action: 'CLOSE_CHANNEL',
-      channelId: plan.channelId || '',
-      comment: plan.comment || plan.channelId || '',
-      timestamp: Date.now()
-    };
-    broadcastToAllAccounts(closeItem);
-    console.log(`   🛑 [Cierre de Seguridad] Cierre de mercado para "${dispChannel}" enviado a todas las cuentas MT5.`);
-    console.log(`======================================================\n`);
-    return true;
-  }
-
   // Caso 2: Comando MODIFY (ej: Break-Even)
   if (dispAction === 'MODIFY' || plan.action === 'MODIFY') {
     const modOrder = plan.modifyOrder || plan.orders?.[0] || {};
@@ -1041,8 +1295,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
       entryPrice: plan.entryPrice || 0,
       sl: modOrder.sl || 0,
       tp: modOrder.tp || 0,
-      comment: plan.comment || plan.channelId || `BE by ${dispChannel}`,
-      channelId: plan.channelId || '',
+      comment: plan.comment || `BE by ${dispChannel}`,
       timestamp: Date.now()
     };
     broadcastToAllAccounts(modItem);
@@ -1055,7 +1308,9 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
   }
 
   // Caso 2.5: Si ya existe una orden provisional para este canal y símbolo (llegó el mensaje con SL/TP oficiales)
-  const provKey = `${plan.channelId}:${dispSymbol}:${dispAction}`;
+  const normAction = (dispAction || 'BUY').includes('BUY') ? 'BUY' : 'SELL';
+  const normSymbol = (dispSymbol || 'XAUUSD').toUpperCase().replace('GOLD', 'XAUUSD');
+  const provKey = `${plan.channelId}:${normSymbol}:${normAction}`;
   if (!plan.isProvisionalSL && recentProvisionalOrders.has(provKey)) {
     const prevOrder = recentProvisionalOrders.get(provKey);
     if ((Date.now() - prevOrder.timestamp) < 300000) { // 5 minutos de ventana
@@ -1088,82 +1343,62 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
   }
 
   // Casos 3, 4 y 5: Generar y encolar órdenes proporcionales para CADA cuenta conectada
-  const accountAllocations = [];
   for (const acc of targetAccounts) {
+    const explicitCfg = getAccountConfig(acc.id);
+    if (explicitCfg && explicitCfg.enabled === false) {
+      console.log(`   ⛔ [Multi-Account] Cuenta #${acc.id} (${acc.broker}) omitida: ${explicitCfg.frozenReason || 'Desactivada por seguridad en configuración'}.`);
+      continue;
+    }
+
     if (acc.evaluationTargetHalted) {
       console.log(`   ⏸️ [Multi-Account] Cuenta #${acc.id} (${acc.broker}) omitida: Examen ya aprobado / Operativa congelada.`);
       continue;
     }
 
-    // 🛡️ COMPROBACIÓN PREVIA: Si la cuenta está congelada para el día de hoy por límite preventivo
-    if (acc.dailyHalted) {
-      console.warn(`   🛑 [CUENTA CONGELADA HOY] Cuenta #${acc.id} (${acc.broker}) omitida: ${acc.haltReason || 'Límite preventivo de 3% alcanzado hoy.'}`);
-      continue;
-    }
-
-    // 🛡️ REGLA 1: Anti-Hedging Estricto para cuentas PROP_FIRM (The5ers, FTMO)
-    // En Capital Propio (PERSONAL) se permite el Hedging libre si el usuario lo desea.
-    if (acc.mode === 'PROP_FIRM') {
-      const antiHedgingCheck = riskEngine.checkAntiHedging(dispSymbol, dispAction, acc.openBuy, acc.openSell, acc.mode);
-      if (!antiHedgingCheck.allowed) {
-        console.warn(`   🛑 [PROP FIRM ANTI-HEDGING] Cuenta #${acc.id} (${acc.broker}) omitida: ${antiHedgingCheck.reason}`);
-        continue;
+    // 🛡️ REGLA PROP FIRM: PROTECCIÓN DE DRAWDOWN Y MÁXIMO 2 OPERACIONES
+    const isProp = !acc.isPersonal;
+    if (isProp) {
+      // 🚨 FRENO DE DRAWDOWN MÁXIMO POR CUENTA (Protección Estricta Prop Firm)
+      if (acc.initialBalance && acc.balance) {
+        const maxDrawdownUSD = acc.initialBalance * 0.08; // 8% límite interno preventivo ante el 10% de la firma
+        const lossUSD = acc.initialBalance - acc.balance;
+        if (lossUSD >= maxDrawdownUSD) {
+          console.log(`🚨 [PROTECCIÓN MÁXIMA PROP FIRM] Cuenta #${acc.id} (${acc.broker}) CONGELADA: Pérdida acumulada -$${lossUSD.toFixed(2)} USD superó el límite de seguridad (-$${maxDrawdownUSD.toFixed(2)} USD / 8%). Aperturas bloqueadas.`);
+          continue;
+        }
       }
 
-      // 🛡️ REGLA 1.5: Anti-Stacking Estricto y Límite de Posiciones Abiertas para cuentas PROP_FIRM
-      const currentOpen = (acc.openBuy || 0) + (acc.openSell || 0);
-      if (currentOpen >= 2) {
-        console.warn(`   🛑 [PROP FIRM MAX TRADES] Cuenta #${acc.id} (${acc.broker}) omitida: Límite de 2 operaciones activas simultáneas alcanzado (${currentOpen} abiertas).`);
-        continue;
-      }
-      if (currentOpen >= 1) {
-        console.warn(`   🛑 [PROP FIRM ANTI-STACKING] Cuenta #${acc.id} (${acc.broker}) omitida: Ya existe una operación activa en mercado (${currentOpen} abierta). Prohibido apilar riesgo.`);
-        continue;
-      }
-
-      // 🛡️ REGLA 1.6: Freno de Emergencia por Pérdida Diaria Individual (3.0% drawdown preventivo)
-      const dayStart = acc.dayStartBalance || acc.balance;
-      const curLoss = dayStart - acc.balance;
-      const maxAllowedLoss = dayStart * 0.03; // 3.0% max preventivo
-      if (curLoss >= maxAllowedLoss) {
-        acc.dailyHalted = true;
-        acc.haltReason = `Pérdida diaria (-$${curLoss.toFixed(2)} USD, ${(curLoss / dayStart * 100).toFixed(2)}%) ha alcanzado el límite de seguridad de 3.0%.`;
-        const dt = loadDailyTracking();
-        dt.accounts[acc.id] = {
-          dayStartBalance: dayStart,
-          dailyLoss: curLoss,
-          dailyLossPercent: parseFloat((curLoss / dayStart * 100).toFixed(2)),
-          dailyHalted: true,
-          haltReason: acc.haltReason
-        };
-        saveDailyTracking(dt);
-        console.warn(`   🚨 [ACCOUNT DAILY LOSS LIMIT] Cuenta #${acc.id} (${acc.broker}) CONGELADA hoy: ${acc.haltReason}`);
+      const maxTrades = explicitCfg?.maxOpenTrades || acc.maxOpenTrades || 2;
+      const pendingCount = (acc.pendingOrders || []).filter(o => !o.isCancelAction && o.action !== 'MODIFY').length;
+      const useBESlotRelease = explicitCfg?.breakEvenSlotRelease ?? riskEngine.config.PROP_FIRM.breakEvenSlotRelease;
+      const basePositions = useBESlotRelease ? (acc.riskPositions !== undefined ? acc.riskPositions : (acc.openPositions || 0)) : (acc.openPositions || 0);
+      const effectivePositions = basePositions + pendingCount;
+      if (effectivePositions >= maxTrades) {
+        console.log(`   ⛔ [Multi-Account] Cuenta #${acc.id} (${acc.broker}) omitida: Límite Prop Firm alcanzado (${effectivePositions} operaciones con riesgo activo/pendientes >= ${maxTrades}). Slot de riesgo no disponible.`);
         continue;
       }
     }
 
     const accBal = acc.balance || riskEngine.currentBalance || 5000;
-    // Cálculo proporcional de lotaje por cuenta respetando su propio modo (PERSONAL vs PROP_FIRM)
+    // Cálculo proporcional de lotaje por cuenta
     const tailoredLot = riskEngine.calculateLotSize(
       dispEntry,
       dispSL,
       dispSymbol,
       plan.isReducedRisk,
       accBal,
-      acc.mode || 'PROP_FIRM',
-      acc.riskPercent
+      explicitCfg?.riskPercent
     );
 
-    accountAllocations.push({
-      id: acc.id,
-      broker: acc.broker,
-      balance: accBal,
-      mode: acc.mode || 'PROP_FIRM',
-      riskPercent: acc.riskPercent || 0.75,
-      lot: tailoredLot
-    });
+    console.log(`   👤 [Cuenta #${acc.id} (${acc.broker})] Balance: $${accBal.toFixed(2)} USD -> Volumen asignado: ${tailoredLot} lotes`);
 
-    console.log(`   👤 [Cuenta #${acc.id} (${acc.broker}) | ${acc.mode || 'PROP_FIRM'} (${acc.riskPercent || 0.75}%)] Balance: $${accBal.toFixed(2)} USD -> Volumen asignado: ${tailoredLot} lotes`);
+    // Helper para resolver sufijo o alias específico de la cuenta (ej. USDJPY -> USDJPY-VIP)
+    const resolveForAcc = (sym) => {
+      const base = sym || dispSymbol;
+      if (explicitCfg?.symbolAliases?.[base]) return explicitCfg.symbolAliases[base];
+      if (explicitCfg?.symbolSuffix && !base.endsWith(explicitCfg.symbolSuffix)) return base + explicitCfg.symbolSuffix;
+      return base;
+    };
 
     // Caso 3: Rejilla de órdenes pendientes (Grid)
     if (plan.isPendingOrder && plan.isGrid && Array.isArray(plan.orders) && plan.orders.length > 0) {
@@ -1174,7 +1409,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
         const subLot = Math.max(0.01, parseFloat(((o.volume || 0.01) * scaleRatio).toFixed(2)));
         const itemPayload = {
           id: Date.now() + i,
-          symbol: o.symbol || dispSymbol,
+          symbol: resolveForAcc(o.symbol || dispSymbol),
           action: o.action,
           entryPrice: o.entryPrice,
           entry: o.entryPrice,
@@ -1200,7 +1435,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
     else if (plan.isPendingOrder) {
       const itemPayload = {
         id: Date.now() + Math.floor(Math.random() * 1000),
-        symbol: dispSymbol,
+        symbol: resolveForAcc(dispSymbol),
         action: plan.orderType || dispAction,
         entryPrice: plan.entryPrice,
         entry: plan.entryPrice,
@@ -1238,7 +1473,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
         }
         const itemPayload = {
           id: Date.now() + i,
-          symbol: order.symbol || dispSymbol,
+          symbol: resolveForAcc(order.symbol || dispSymbol),
           action: order.action || dispAction,
           volume: subLot,
           sl: order.sl || dispSL,
@@ -1257,7 +1492,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
       const baseOrder = (plan.orders && plan.orders[0]) || {};
       const itemPayload = {
         id: Date.now() + Math.floor(Math.random() * 1000),
-        symbol: baseOrder.symbol || dispSymbol,
+        symbol: resolveForAcc(baseOrder.symbol || dispSymbol),
         action: baseOrder.action || dispAction,
         volume: tailoredLot,
         sl: baseOrder.sl || dispSL,
@@ -1276,38 +1511,21 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
   analyticsEngine.recordSignal(plan.channelId, dispChannel, plan, plan);
 
   // Enviar notificación push de ejecución
-  notificationService.notifyTradeExecuted(plan, accountAllocations).catch(() => {});
+  notificationService.notifyTradeExecuted(plan).catch(() => {});
 
+  // Registrar para monitor de Auto-BE en TP2 si aplica
+  registerChannelTrade(plan, originalSignal);
+
+  console.log(`======================================================\n`);
   return true;
 }
 
-// ⚡ Conectar Estrategia Propia BPR Multi-TF (M3 + M5 + M15) a la Ejecución REAL de MT5
-bprStrategyMultiTF.setExecutionHandler(async (plan) => {
+// Activación en LIVE de la nueva estrategia institucional unificada
+proprietaryStrategyManager.setExecutionHandler(async (plan) => {
   return await executeTradePlan(plan);
 });
-bprStrategyMultiTF.setLiveExecution(true);
-console.log('⚡ [MT5 Bridge] Estrategia Propia BPR Multi-TF (XAUUSD) vinculada a Operativa REAL en MT5.');
-
-// ⚡ Conectar Estrategia Propia BPR EURUSD (M2 + M3 + M5 + M15) a la Ejecución REAL de MT5
-bprStrategyEURUSD.setExecutionHandler(async (plan) => {
-  return await executeTradePlan(plan);
-});
-bprStrategyEURUSD.setLiveExecution(true);
-console.log('⚡ [MT5 Bridge] Estrategia Propia BPR EURUSD (M2+M3+M5+M15) vinculada a Operativa REAL en MT5.');
-
-// ⚡ Conectar Estrategia Propia BPR GBPJPY (M2 + M3 + M5 + M15) SÓLO VENTAS a la Ejecución REAL de MT5
-bprStrategyGBPJPY.setExecutionHandler(async (plan) => {
-  return await executeTradePlan(plan);
-});
-bprStrategyGBPJPY.setLiveExecution(true);
-console.log('⚡ [MT5 Bridge] Estrategia Propia BPR GBPJPY Bearish (M2+M3+M5+M15) vinculada a Operativa REAL en MT5.');
-
-// ⚡ Conectar Estrategia Propia BPR NAS100 (M2 + M3 + M5 + M15) SÓLO COMPRAS a la Ejecución REAL de MT5
-bprStrategyNAS100.setExecutionHandler(async (plan) => {
-  return await executeTradePlan(plan);
-});
-bprStrategyNAS100.setLiveExecution(true);
-console.log('⚡ [MT5 Bridge] Estrategia Propia BPR NAS100 Bullish (M2+M3+M5+M15) vinculada a Operativa REAL en MT5.');
+proprietaryStrategyManager.setLiveExecution(true);
+console.log(`🚀 [MT5 Bridge] Estrategia BPR Institucional M5 ACTIVADA EN VIVO (LIVE REAL): ${proprietaryStrategyManager.getActiveNames().join(', ')}`);
 
 module.exports = {
   initMT5Bridge,
@@ -1315,5 +1533,8 @@ module.exports = {
   getLatestTick,
   startLocalServer,
   connectedAccounts,
-  getOrCreateAccount
+  getOrCreateAccount,
+  checkChannelTradesAutoBE,
+  registerChannelTrade,
+  activeChannelTrades
 };

@@ -1,0 +1,32 @@
+{
+  "symbol": "NAS100",
+  "activeZones": [
+    {
+      "id": "NAS_OB_BUY_1791414300233",
+      "type": "BUY",
+      "high": 31227.7,
+      "low": 4105.02,
+      "meanThreshold": 17666.36,
+      "slPrice": 2356.901207142858,
+      "active": false,
+      "createdAt": "2026-10-07T23:05:00.233Z"
+    }
+  ],
+  "activeTrades": [],
+  "pendingTrades": [
+    {
+      "id": "NAS100_OB_1791414300239",
+      "symbol": "NAS100",
+      "type": "BUY",
+      "entryPrice": 4109.76,
+      "stopLoss": 2356.901207142858,
+      "takeProfit": 13575.19748142857,
+      "rrRatio": 5.4,
+      "lotSize": 0.01,
+      "status": "PENDING",
+      "openTime": "2026-10-07T23:05:00.239Z"
+    }
+  ],
+  "history": [],
+  "lastUpdated": "2026-10-07T23:05:00.239Z"
+}

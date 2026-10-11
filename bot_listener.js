@@ -7,6 +7,8 @@
  */
 
 const { TelegramClient } = require('telegram');
+const { NewMessage } = require('telegram/events');
+const { EditedMessage } = require('telegram/events/EditedMessage');
 const { StringSession } = require('telegram/sessions');
 const { findChannelConfig } = require('./config/channels.config');
 const { strategyFactory } = require('./core/StrategyFactory');
@@ -22,6 +24,8 @@ const apiHash = 'e49356f9d8dbb478b5ffc575a632ac55';
 
 const dialogsMap = new Map(); // idStr -> { title, entity }
 const processedMessageKeys = new Set();
+const executedMessageIds = new Set();
+const recentSignalDispatches = new Map();
 
 /**
  * Normaliza títulos de chat
@@ -57,6 +61,12 @@ async function preloadDialogs(client) {
       if (channelCfg && channelCfg.enabled) {
         dialogsMap.set(fullId, { title: channelCfg.name, entity: d.entity, config: channelCfg });
         dialogsMap.set(rawId, { title: channelCfg.name, entity: d.entity, config: channelCfg });
+
+        // 🛡️ Marcar el último mensaje del canal como ya procesado para evitar ejecuciones duplicadas en reinicios
+        if (d.message && d.message.id) {
+          processedMessageKeys.add(`${fullId}:${d.message.id}`);
+          processedMessageKeys.add(`${rawId}:${d.message.id}`);
+        }
       }
     }
 
@@ -97,6 +107,7 @@ function parseSignal(text, channelName = null, channelId = null) {
 }
 
 async function startListener() {
+  const botStartTime = Date.now();
   console.log('⚡ Iniciando Escuchador Modular en Tiempo Real (GramJS + Strategy Pattern)...');
   await initMT5Bridge();
 
@@ -120,9 +131,8 @@ async function startListener() {
   notificationService.setTelegramClient(client);
   console.log('✅ Cliente Telegram conectado. Escuchando eventos con detección por Peer ID...\n');
 
-  // 1. Manejador de Eventos en Tiempo Real
-  client.addEventHandler(async (event) => {
-    const message = event.message;
+  // Función común para procesar mensajes nuevos y ediciones
+  async function processTelegramMessage(message, isEdit = false) {
     if (!message || !message.message) return;
 
     try {
@@ -132,9 +142,17 @@ async function startListener() {
       // Si el canal no está en la lista de aprobados o está deshabilitado, omitir
       if (!channelCfg || !channelCfg.enabled) return;
 
-      const msgKey = `${channelId}:${message.id}`;
+      const editTag = isEdit ? `:edit:${message.editDate || Date.now()}` : '';
+      const msgKey = `${channelId}:${message.id}${editTag}`;
       if (processedMessageKeys.has(msgKey)) return;
       processedMessageKeys.add(msgKey);
+
+      const timeStr = new Date().toLocaleTimeString('es-ES');
+      const eventLabel = isEdit ? 'MENSAJE EDITADO EN TELEGRAM' : 'NUEVO EVENTO TELEGRAM';
+      console.log(`\n======================================================`);
+      console.log(`📡 [${eventLabel}] [${timeStr}] Canal: "${channelCfg.name}" (ID: ${channelId})`);
+      console.log(`💬 Contenido:\n"${message.message}"`);
+      console.log(`======================================================`);
 
       // Obtener estrategia asignada al canal
       const strategy = strategyFactory.getStrategy(channelId, channelCfg.name);
@@ -142,12 +160,30 @@ async function startListener() {
 
       if (signal) {
         if (!signal.rawText) signal.rawText = message.message;
-        const timeStr = new Date().toLocaleTimeString('es-ES');
-        console.log(`\n🎯 [SEÑAL VÁLIDA] [${timeStr}] Canal: "${channelCfg.name}"`);
-        console.log(`   ${signal.action} ${signal.symbol} | Entrada: ${signal.entry || 'MERCADO'} | SL: ${signal.sl} | TP1: ${signal.tp1} | TP2: ${signal.tp2}`);
+
+        // 🛡️ ANTI-DUPLICADOS POR EDICIÓN DE MENSAJE:
+        // Si este mensaje ya abrió una operación en su versión original, la edición no debe re-abrir otra orden
+        const executedMsgKey = `${channelId}:${message.id}`;
+        if (isEdit && executedMessageIds.has(executedMsgKey)) {
+          console.log(`ℹ️ [Anti-Duplicado] Edición de mensaje #${message.id} ya ejecutado previamente como orden. Ignorando re-apertura.`);
+          return;
+        }
+
+        // 🛡️ ANTI-DUPLICADOS POR TIEMPO (Ventana de 120s por canal, par y acción)
+        const recentKey = `${channelId}:${signal.symbol}:${signal.action}`;
+        const lastDispatched = recentSignalDispatches.get(recentKey);
+        if (lastDispatched && (Date.now() - lastDispatched) < 120000) {
+          console.log(`⚠️ [Anti-Duplicado] Señal duplicada recibida para "${channelCfg.name}" (${signal.symbol} ${signal.action}) con solo ${((Date.now() - lastDispatched)/1000).toFixed(1)}s de diferencia. Despacho omitido.`);
+          return;
+        }
+
+        executedMessageIds.add(executedMsgKey);
+        recentSignalDispatches.set(recentKey, Date.now());
+
+        console.log(`🎯 [SEÑAL VÁLIDA]: ${signal.action} ${signal.symbol} | Entrada: ${signal.entry || 'MERCADO'} | SL: ${signal.sl} | TP1: ${signal.tp1} | TP2: ${signal.tp2}`);
 
         // Obtener precio en vivo del broker
-        const liveTick = getLatestTick();
+        const liveTick = getLatestTick(signal.symbol);
         const livePrice = signal.action.includes('BUY') ? (liveTick.ask || liveTick.bid) : (liveTick.bid || liveTick.ask);
 
         // Crear plan de ejecución específico de la estrategia del canal
@@ -155,11 +191,22 @@ async function startListener() {
 
         // Despachar a MT5 con la señal original para telemetría
         await executeTradePlan(plan, signal);
+      } else {
+        console.log(`ℹ️ [Nota]: Mensaje de "${channelCfg.name}" clasificado como informativo o actualización.`);
       }
     } catch (err) {
       console.log('Error procesando evento:', err.message);
     }
-  });
+  }
+
+  // 1. Manejador de Eventos en Tiempo Real (Nuevos mensajes y Ediciones)
+  client.addEventHandler(async (event) => {
+    await processTelegramMessage(event.message, false);
+  }, new NewMessage({}));
+
+  client.addEventHandler(async (event) => {
+    await processTelegramMessage(event.message, true);
+  }, new EditedMessage({}));
 
   // 2. Malla de Seguridad Forzada (Poller de Respaldo cada 60s)
   const forcedPollerInterval = setInterval(async () => {
@@ -173,8 +220,10 @@ async function startListener() {
           for (const m of msgs) {
             if (!m || !m.message) continue;
             const msgTime = m.date * 1000;
+            // 🛡️ NUNCA re-ejecutar mensajes anteriores al arranque del bot
+            if (msgTime < botStartTime) continue;
             const ageMinutes = (now - msgTime) / 60000;
-            if (ageMinutes > 15) continue; // Descartar mensajes de más de 15 minutos
+            if (ageMinutes > 5) continue; // Descartar mensajes de más de 5 minutos
 
             const msgKey = `${config.id}:${m.id}`;
             if (processedMessageKeys.has(msgKey)) continue;
@@ -186,10 +235,11 @@ async function startListener() {
             if (signal) {
               if (!signal.rawText) signal.rawText = m.message;
               const timeStr = new Date(msgTime).toLocaleTimeString('es-ES');
-              console.log(`\n🔄 [POLLER RESPALDO] [${timeStr}] Señal recuperada de "${config.name}":`);
-              console.log(`   ${signal.action} ${signal.symbol} | Entrada: ${signal.entry || 'MERCADO'} | SL: ${signal.sl} | TP1: ${signal.tp1} | TP2: ${signal.tp2}`);
+              console.log(`\n🔄 [POLLER FORZADO 1 MIN] ¡RECUPERADA SEÑAL OMITIDA!`);
+              console.log(`📢 Canal: "${config.name}" (ID: ${config.id}) | Hora: ${timeStr}`);
+              console.log(`💬 Contenido:\n"${m.message}"`);
 
-              const liveTick = getLatestTick();
+              const liveTick = getLatestTick(signal.symbol);
               const livePrice = signal.action.includes('BUY') ? (liveTick.ask || liveTick.bid) : (liveTick.bid || liveTick.ask);
               const plan = strategy.createExecutionPlan(signal, livePrice || signal.entry, riskEngine);
               await executeTradePlan(plan, signal);
