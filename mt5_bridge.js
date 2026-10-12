@@ -423,6 +423,54 @@ function startShieldWatchdog() {
 
 startShieldWatchdog();
 
+// =====================================================================
+// ⏱️ MONITOR PERIÓDICO CADA 10 MINUTOS (OPERACIONES VIVAS CUENTA REAL)
+// =====================================================================
+const PERIODIC_REPORT_ACCOUNTS = new Set(['34614465']);
+const PERIODIC_REPORT_INTERVAL_MS = 10 * 60 * 1000; // 10 minutos
+const lastPeriodicReportTimes = new Map();
+
+function checkAndSendPeriodicAccountReport(acc) {
+  if (!acc || !acc.id) return;
+  const accCfg = getAccountConfig(acc.id);
+  const shouldReport = PERIODIC_REPORT_ACCOUNTS.has(acc.id) || (accCfg && accCfg.sendPeriodicUpdate);
+  if (!shouldReport) return;
+
+  // Solo enviar SIEMPRE que haya al menos 1 operación activa
+  const openPos = typeof acc.openPositions === 'number' ? acc.openPositions : 0;
+  if (openPos <= 0) return;
+
+  const now = Date.now();
+  const lastTime = lastPeriodicReportTimes.get(acc.id) || 0;
+  if (now - lastTime < PERIODIC_REPORT_INTERVAL_MS) return;
+
+  lastPeriodicReportTimes.set(acc.id, now);
+
+  const bal = acc.balance || 0;
+  const eq = acc.equity || bal;
+  const floating = eq - bal;
+  const floatingEmoji = floating >= 0 ? '🟢' : '🔴';
+  const floatingSign = floating >= 0 ? '+' : '';
+  const nowTimeStr = new Date().toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
+
+  const msg = [
+    `📊 *ACTUALIZACIÓN PERIÓDICA (Cuenta Real #${acc.id})*`,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `💰 *Balance:* \`$${bal.toFixed(2)} ${acc.currency}\``,
+    `📈 *Equidad:* \`$${eq.toFixed(2)} ${acc.currency}\``,
+    `${floatingEmoji} *Flotante Vivo:* \`${floatingSign}$${floating.toFixed(2)} ${acc.currency}\``,
+    `🎯 *Operaciones Vivas:* \`${openPos}\``,
+    `🏦 *Broker:* ${acc.broker}`,
+    `⏱️ *Hora:* ${nowTimeStr} CET`,
+    `━━━━━━━━━━━━━━━━━━━━`
+  ].join('\n');
+
+  console.log(`\n📢 [Reporte Periódico 10m] Enviando actualización de Cuenta #${acc.id} a Telegram...`);
+  notificationService.send(msg).catch(err => {
+    console.error(`⚠️ Error enviando reporte periódico a Telegram:`, err.message);
+  });
+}
+
 let activePort = null;
 
 /**
@@ -900,6 +948,9 @@ function startLocalServer(port = 3000) {
           riskEngine.activePositionsCount = effectivePositions;
         }
         saveAccountsCache();
+
+        // ⏱️ Reporte periódico cada 10 min de operaciones vivas a Telegram (Cuenta Real)
+        checkAndSendPeriodicAccountReport(acc);
 
         // 🎯 FRENO DE META CUMPLIDA POR CUENTA (10% de ganancia en cuentas de evaluación de Prop Firms)
         if (!acc.isPersonal && acc.targetProfitBalance && acc.balance >= acc.targetProfitBalance && !acc.evaluationTargetHalted) {

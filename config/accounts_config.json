@@ -61,5 +61,27 @@
       "ETHUSD": "ETHUSD-VIP"
     },
     "label": "VT Markets 100€ (Capital Propio)"
+  },
+  "34614465": {
+    "mode": "PERSONAL",
+    "riskPercent": 2.0,
+    "enabled": true,
+    "symbolSuffix": "-STD",
+    "symbolAliases": {
+      "GOLD": "XAUUSD-STD",
+      "XAUUSD": "XAUUSD-STD",
+      "EURUSD": "EURUSD-STD",
+      "GBPJPY": "GBPJPY-STD",
+      "USDJPY": "USDJPY-STD",
+      "GBPUSD": "GBPUSD-STD",
+      "USDCAD": "USDCAD-STD",
+      "AUDUSD": "AUDUSD-STD",
+      "XAGUSD": "XAGUSD-STD",
+      "EURJPY": "EURJPY-STD",
+      "BTCUSD": "BTCUSD-STD",
+      "ETHUSD": "ETHUSD-STD"
+    },
+    "label": "VT Markets 100€ (Cuenta Real 34614465)",
+    "sendPeriodicUpdate": true
   }
 }
