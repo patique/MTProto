@@ -65,14 +65,19 @@ input int                InpWin1StartMinES        = 0;                  // Minut
 input int                InpWin1EndHourES         = 12;                 // Fin Ventana 1 Hora España (12:30)
 input int                InpWin1EndMinES          = 30;                 // Minuto Fin Ventana 1
 
-// Ventana 2: Tarde Americana Tranquila (18:00 a 21:30 España / 19:00 a 22:30 Servidor)
+// Ventana 2: Tarde Americana Tranquila (18:00 a 20:00 España / 19:00 a 21:00 Servidor)
 input bool               InpEnableWindow2         = true;               // Activar Ventana 2 (Tarde USA Post-Europa)
 input int                InpWin2StartHourES       = 18;                 // Inicio Ventana 2 Hora España (18:00)
 input int                InpWin2StartMinES        = 0;                  // Minuto Inicio Ventana 2
-input int                InpWin2EndHourES         = 21;                 // Fin Ventana 2 Hora España (21:30)
-input int                InpWin2EndMinES          = 30;                 // Minuto Fin Ventana 2
+input int                InpWin2EndHourES         = 20;                 // Fin Ventana 2 Hora España (20:00)
+input int                InpWin2EndMinES          = 0;                  // Minuto Fin Ventana 2
 
-input group "=== 4. CIERRE NO OVERNIGHT & CIERRE DE VIERNES ===";
+input group "=== 4. FILTROS MACROECONÓMICOS (NEWS & FOMC GUARD) ===";
+input bool               InpBlockWednesdayFOMC    = true;               // Bloquear Tarde de Miércoles (Alerta FOMC 18:00 a 23:00)
+input int                InpWedBlockStartHourES   = 18;                 // Hora Inicio Bloqueo Miércoles España (18:00)
+input int                InpNoNewCyclesBeforeCloseMin = 90;             // Buffer: No abrir nuevos ciclos X min antes de Cierre Nocturno (90 min)
+
+input group "=== 5. CIERRE NO OVERNIGHT & CIERRE DE VIERNES ===";
 input bool               InpEnableNightClose      = true;               // Activar Cierre Nocturno Diario (No Overnight)
 input int                InpNightCloseHourES      = 21;                 // Hora Cierre Diario España (21:45)
 input int                InpNightCloseMinES       = 45;                 // Minuto Cierre Diario España
@@ -376,6 +381,28 @@ bool IsWithinSafeHours()
    if(spainHour < 0) spainHour += 24;
    if(spainHour >= 24) spainHour -= 24;
    int spainTimeMinutes = (spainHour * 60) + dt.min;
+
+   // 0. Bloqueo de Miércoles Tarde (FOMC Guard: 18:00 a 23:00)
+   if(InpBlockWednesdayFOMC && dt.day_of_week == 3 && spainHour >= InpWedBlockStartHourES)
+      return false;
+
+   // 0.1 Buffer de seguridad antes del Cierre Nocturno o de Viernes:
+   // No abrir nuevos ciclos si faltan menos de X minutos para la liquidación forzosa
+   if(InpNoNewCyclesBeforeCloseMin > 0)
+   {
+      if(dt.day_of_week == 5 && InpEnableFridayClose)
+      {
+         int friCloseMin = (InpFridayCloseHourES * 60) + InpFridayCloseMinES;
+         if((friCloseMin - spainTimeMinutes) <= InpNoNewCyclesBeforeCloseMin && (friCloseMin - spainTimeMinutes) >= 0)
+            return false;
+      }
+      else if(InpEnableNightClose && (dt.day_of_week >= 1 && dt.day_of_week <= 4))
+      {
+         int nightCloseMin = (InpNightCloseHourES * 60) + InpNightCloseMinES;
+         if((nightCloseMin - spainTimeMinutes) <= InpNoNewCyclesBeforeCloseMin && (nightCloseMin - spainTimeMinutes) >= 0)
+            return false;
+      }
+   }
 
    // Ventana 1 (Mañana Europa)
    if(InpEnableWindow1)
