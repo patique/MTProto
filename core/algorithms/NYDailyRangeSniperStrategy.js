@@ -104,21 +104,14 @@ class NYDailyRangeSniperStrategy {
     const price = tick.bid || tick.ask || tick.price;
     if (!price || isNaN(price) || price <= 0) return;
 
-    // Sincronizar PDH (Previous Day High) y PDL (Previous Day Low) oficiales de MT5
-    if (tick.pdh && tick.pdl && !isNaN(tick.pdh) && !isNaN(tick.pdl) && tick.pdh > 0 && tick.pdl > 0) {
-      if (Math.abs(this.pdh - tick.pdh) > 0.1 || Math.abs(this.pdl - tick.pdl) > 0.1) {
-        this.pdh = tick.pdh;
-        this.pdl = tick.pdl;
-        console.log(`🎯 [NY Sniper ${this.symbol}] Niveles D1 oficiales MT5 actualizados -> PDH (Ayer High): ${this.pdh} | PDL (Ayer Low): ${this.pdl}`);
-      }
-    }
-
     const tickTime = tick.time ? new Date(tick.time) : new Date();
     const dayStr = tickTime.toISOString().split('T')[0];
 
-    // Nuevo día detectado: reset de banderas
+    // Nuevo día detectado: reset de banderas y niveles diarios
     if (this.currentDayStr !== dayStr) {
       this.currentDayStr = dayStr;
+      this.pdh = 0.0;
+      this.pdl = 0.0;
       this.nyCandleIdentified = false;
       this.nyCandleTime = 0;
       this.nyBias = null;
@@ -126,6 +119,15 @@ class NYDailyRangeSniperStrategy {
       this.trade2TakenToday = false;
       this.sweepHigh = null;
       this.sweepLow = null;
+    }
+
+    // Sincronizar PDH (Previous Day High) y PDL (Previous Day Low) oficiales de MT5 una sola vez por día
+    if (tick.pdh && tick.pdl && !isNaN(tick.pdh) && !isNaN(tick.pdl) && tick.pdh > 0 && tick.pdl > 0) {
+      if (this.pdh === 0.0 || this.pdl === 0.0) {
+        this.pdh = tick.pdh;
+        this.pdl = tick.pdl;
+        console.log(`🎯 [NY Sniper ${this.symbol}] Niveles D1 oficiales MT5 fijados para ${dayStr} -> PDH (Ayer High): ${this.pdh} | PDL (Ayer Low): ${this.pdl}`);
+      }
     }
 
     // Actualizar vela M15 en curso

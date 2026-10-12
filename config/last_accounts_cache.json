@@ -3,24 +3,8 @@
     "id": "1290919",
     "broker": "VT Markets (Pty) Ltd",
     "balance": 97.59,
-    "equity": 97.95,
+    "equity": 97.19,
     "openPositions": 7,
-    "currency": "USD"
-  },
-  "12566162": {
-    "id": "12566162",
-    "broker": "Five Percent Online Ltd",
-    "balance": 100224.43,
-    "equity": 100224.43,
-    "openPositions": 0,
-    "currency": "USD"
-  },
-  "26742940": {
-    "id": "26742940",
-    "broker": "Five Percent Online Ltd",
-    "balance": 100224.43,
-    "equity": 100224.43,
-    "openPositions": 0,
     "currency": "USD"
   },
   "1514879094": {
