@@ -90,15 +90,44 @@ input bool               InpEnableFridayClose     = true;               // Activ
 input int                InpFridayCloseHourES     = 21;                 // Hora Cierre Viernes España (21:15)
 input int                InpFridayCloseMinES      = 15;                 // Minuto Cierre Viernes España
 
-input group "=== 7. FILTRO INSTITUCIONAL HTF ===";
+input group "=== 7. FILTRO TENDENCIAL POR CRUCE DE EMAS ===";
+input bool               InpEnableEMAFilter       = true;               // Activar Filtro Tendencial por Cruce/Pendiente de EMAs
+input ENUM_TIMEFRAMES    InpEMATimeframe          = PERIOD_M15;         // Temporalidad de las EMAs (Recomendado M15)
+input int                InpEMAFastPeriod         = 21;                 // Periodo EMA Rápida (ej: 21)
+input int                InpEMASlowPeriod         = 50;                 // Periodo EMA Lenta (ej: 50)
+input double             InpMinEMASeparation_USD  = 0.50;               // Separación Mínima entre EMAs en $ (Evita Chop)
+
+input group "=== 8. FILTRO DE VOLATILIDAD Y EXPANSIÓN ATR ===";
+input bool               InpEnableATRFilter       = true;               // Activar Filtro de Volatilidad / Expansión ATR
+input ENUM_TIMEFRAMES    InpATRTimeframe          = PERIOD_M5;          // Temporalidad del ATR (Recomendado M5)
+input int                InpATRPeriod             = 14;                 // Periodo ATR (14)
+input double             InpMinATR_USD            = 1.80;               // ATR Mínimo en $ de Oro (Evita Mercado Muerto)
+input double             InpMaxATR_USD            = 15.0;               // ATR Máximo en $ de Oro (0 = Sin límite | Filtro Choque)
+
+input group "=== 9. FILTRO DE VOLUMEN INSTITUCIONAL ===";
+input bool               InpEnableVolumeFilter    = true;               // Activar Filtro de Volumen Institucional
+input int                InpVolumeMAPeriod        = 20;                 // Periodo de Media Móvil de Volumen (20 velas M1)
+input double             InpVolumeFactor          = 1.25;               // Multiplicador sobre Media de Volumen (ej: 1.25x)
+
+input group "=== 10. FILTRO DE POC (VOLUME PROFILE POINT OF CONTROL) ===";
+input bool               InpEnablePOCFilter       = true;               // Activar Filtro de POC / Value Area
+input int                InpPOCBars               = 30;                 // Velas M1 para calcular POC y Perfil de Volumen
+input double             InpPOCBuffer_USD         = 0.80;               // Distancia Mínima en $ fuera del POC (Evita Consolidación)
+
+input group "=== 11. COOLDOWN Y CONTROL TRAS STOP LOSS ===";
+input bool               InpEnableSLCooldown      = true;               // Activar Pausa Obligatoria tras Stop Loss
+input int                InpSLCooldownMinutes     = 15;                 // Minutos de Espera tras SL antes de Nueva Entrada
+
+input group "=== 12. FILTRO INSTITUCIONAL HTF MAYOR ===";
+input bool               InpEnableHTF_Trend       = true;               // Exigir Alineación con Tendencia Mayor H1
 input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (Recomendado H1)
 input int                InpHTF_EMA_Period        = 50;                 // Periodo EMA Institucional HTF (ej: 50)
 
-input group "=== 8. PROTECCIONES Y SEGURIDAD ===";
+input group "=== 13. PROTECCIONES Y SEGURIDAD ===";
 input double             InpMaxSpreadUSD          = 0.60;               // Spread Máximo Permitido en $
 input double             InpMinMarginLevelPct     = 150.0;              // Nivel Mínimo de Margen Libre (%)
 
-input group "=== 9. IDENTIFICACIÓN & CONTROL ===";
+input group "=== 14. IDENTIFICACIÓN & CONTROL ===";
 input ulong              InpMagicNumber           = 176210;             // Magic Number
 input string             InpTradeComment          = "XAU_PosGrid_1762"; // Comentario de Trade
 input bool               InpShowDashboard         = true;               // Mostrar Panel Visual en Gráfico
@@ -123,7 +152,11 @@ datetime          m_lastOrderTime       = 0;
 int               m_currentCycleId      = 0;
 int               m_closedCyclesCount   = 0;
 double            m_closedCyclesProfit  = 0.0;
+int               m_emaFastHandle       = INVALID_HANDLE;
+int               m_emaSlowHandle       = INVALID_HANDLE;
+int               m_atrHandle           = INVALID_HANDLE;
 int               m_htfEmaHandle        = INVALID_HANDLE;
+datetime          m_lastSLTime          = 0;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -134,18 +167,24 @@ int OnInit()
    m_trade.SetMarginMode();
    m_trade.SetTypeFillingBySymbol(_Symbol);
 
-   if(InpEntryMode == ENTRY_MOMENTUM_M1_HTF)
+   if(InpEnableEMAFilter)
    {
-      m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
-      if(m_htfEmaHandle == INVALID_HANDLE)
-      {
-         Print("❌ Error al crear indicador HTF EMA");
-         return INIT_FAILED;
-      }
+      m_emaFastHandle = iMA(_Symbol, InpEMATimeframe, InpEMAFastPeriod, 0, MODE_EMA, PRICE_CLOSE);
+      m_emaSlowHandle = iMA(_Symbol, InpEMATimeframe, InpEMASlowPeriod, 0, MODE_EMA, PRICE_CLOSE);
    }
 
-   PrintFormat("🚀 [EA_XAUUSD_PositiveGrid_Scalper_1762] Inicializado | Magic: %d | Paso Pirámide: %.2f$ | Lock: %.2f$",
-               InpMagicNumber, InpPyramidStep_USD, InpLockSpread_USD);
+   if(InpEnableATRFilter)
+   {
+      m_atrHandle = iATR(_Symbol, InpATRTimeframe, InpATRPeriod);
+   }
+
+   if(InpEnableHTF_Trend || InpEntryMode == ENTRY_MOMENTUM_M1_HTF)
+   {
+      m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
+   }
+
+   PrintFormat("🚀 [EA_XAUUSD_PositiveGrid_Scalper_1762] Inicializado | Magic: %d | Filtros Direccionales Activos (EMA, ATR, Vol, POC, HTF)",
+               InpMagicNumber);
    return INIT_SUCCEEDED;
 }
 
@@ -154,10 +193,43 @@ int OnInit()
 //+------------------------------------------------------------------+
 void OnDeinit(const int reason)
 {
-   if(m_htfEmaHandle != INVALID_HANDLE)
-      IndicatorRelease(m_htfEmaHandle);
+   if(m_emaFastHandle != INVALID_HANDLE) IndicatorRelease(m_emaFastHandle);
+   if(m_emaSlowHandle != INVALID_HANDLE) IndicatorRelease(m_emaSlowHandle);
+   if(m_atrHandle != INVALID_HANDLE)     IndicatorRelease(m_atrHandle);
+   if(m_htfEmaHandle != INVALID_HANDLE)  IndicatorRelease(m_htfEmaHandle);
 
    Comment("");
+}
+
+//+------------------------------------------------------------------+
+//| Transacciones de trading: Detectar Stop Loss para Cooldown       |
+//+------------------------------------------------------------------+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+{
+   if(trans.type == TRADE_TRANSACTION_DEAL_ADD)
+   {
+      ulong dealTicket = trans.deal;
+      if(dealTicket > 0 && HistoryDealSelect(dealTicket))
+      {
+         long dealMagic = HistoryDealGetInteger(dealTicket, DEAL_MAGIC);
+         if(dealMagic == InpMagicNumber)
+         {
+            long dealEntry = HistoryDealGetInteger(dealTicket, DEAL_ENTRY);
+            if(dealEntry == DEAL_ENTRY_OUT)
+            {
+               double dealProfit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+               if(dealProfit < -0.01)
+               {
+                  m_lastSLTime = TimeCurrent();
+                  PrintFormat("⚠️ [COOLDOWN ACTIVADO] Stop Loss detectado (-$%.2f) | Pausa obligatoria de %d min",
+                              MathAbs(dealProfit), InpSLCooldownMinutes);
+               }
+            }
+         }
+      }
+   }
 }
 
 //+------------------------------------------------------------------+
@@ -413,8 +485,9 @@ void OnTick()
       }
 
       // 4.2 Evaluar Gatillo para iniciar NUEVA PIRÁMIDE (Ciclo)
+      string filterStatus = "";
       ENUM_POSITION_TYPE triggerDirection;
-      if(CheckNewEntrySignal(triggerDirection))
+      if(CheckNewEntrySignal(triggerDirection, filterStatus))
       {
          m_currentCycleId++;
          double startLot = CalculateLotSize();
@@ -431,7 +504,7 @@ void OnTick()
       }
       else
       {
-         UpdateDashboard("ZONA SEGURA: Esperando gatillo M1");
+         UpdateDashboard(filterStatus != "" ? filterStatus : "ZONA SEGURA: Esperando gatillo direccional");
       }
    }
 
@@ -599,10 +672,229 @@ bool IsCircuitBreakerTriggered(string &reason)
 }
 
 //+------------------------------------------------------------------+
+//| Calcula el Point of Control (POC) mediante Perfil de Volumen M1  |
+//+------------------------------------------------------------------+
+double CalculatePOC(int bars)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_M1, 1, bars, rates) < bars)
+      return 0.0;
+
+   double minPrice = rates[0].low;
+   double maxPrice = rates[0].high;
+   for(int i = 1; i < bars; i++)
+   {
+      if(rates[i].low < minPrice)   minPrice = rates[i].low;
+      if(rates[i].high > maxPrice) maxPrice = rates[i].high;
+   }
+
+   double range = maxPrice - minPrice;
+   if(range <= 0.001) return rates[0].close;
+
+   const int numBins = 20;
+   double binSize = range / numBins;
+   double binVolumes[20];
+   ArrayInitialize(binVolumes, 0.0);
+
+   for(int i = 0; i < bars; i++)
+   {
+      double barHigh = rates[i].high;
+      double barLow  = rates[i].low;
+      long barVol    = rates[i].tick_volume;
+      if(barVol <= 0) continue;
+
+      int startBin = (int)MathFloor((barLow - minPrice) / binSize);
+      int endBin   = (int)MathFloor((barHigh - minPrice) / binSize);
+      if(startBin < 0) startBin = 0;
+      if(endBin >= numBins) endBin = numBins - 1;
+
+      int spannedBins = endBin - startBin + 1;
+      double volPerBin = (double)barVol / spannedBins;
+      for(int b = startBin; b <= endBin; b++)
+         binVolumes[b] += volPerBin;
+   }
+
+   int pocBin = 0;
+   double maxBinVol = binVolumes[0];
+   for(int b = 1; b < numBins; b++)
+   {
+      if(binVolumes[b] > maxBinVol)
+      {
+         maxBinVol = binVolumes[b];
+         pocBin = b;
+      }
+   }
+
+   return (minPrice + (pocBin + 0.5) * binSize);
+}
+
+//+------------------------------------------------------------------+
+//| Filtros Cuantitativos Direccionales e Institucionales            |
+//+------------------------------------------------------------------+
+bool CheckDirectionalFilters(ENUM_POSITION_TYPE direction, string &reason)
+{
+   // 1. FILTRO DE COOLDOWN POST-SL
+   if(InpEnableSLCooldown && m_lastSLTime > 0)
+   {
+      datetime now = TimeCurrent();
+      int elapsedSec = (int)(now - m_lastSLTime);
+      int cooldownSec = InpSLCooldownMinutes * 60;
+      if(elapsedSec < cooldownSec)
+      {
+         int remainMin = (cooldownSec - elapsedSec) / 60 + 1;
+         reason = StringFormat("COOLDOWN POST-SL: %d min restantes", remainMin);
+         return false;
+      }
+   }
+
+   // 2. FILTRO DE VOLATILIDAD ATR (EXPANSIÓN)
+   if(InpEnableATRFilter)
+   {
+      if(m_atrHandle == INVALID_HANDLE)
+         m_atrHandle = iATR(_Symbol, InpATRTimeframe, InpATRPeriod);
+
+      double atrValues[];
+      ArraySetAsSeries(atrValues, true);
+      if(CopyBuffer(m_atrHandle, 0, 0, 1, atrValues) > 0)
+      {
+         double currentATR = atrValues[0];
+         if(currentATR < InpMinATR_USD)
+         {
+            reason = StringFormat("ATR BAJO: %.2f$ < %.2f$ (Mercado Sin Rango)", currentATR, InpMinATR_USD);
+            return false;
+         }
+         if(InpMaxATR_USD > 0.0 && currentATR > InpMaxATR_USD)
+         {
+            reason = StringFormat("ATR EXTREMO: %.2f$ > %.2f$ (Peligro Volatilidad)", currentATR, InpMaxATR_USD);
+            return false;
+         }
+      }
+   }
+
+   // 3. FILTRO TENDENCIAL DE CRUCE DE EMAS
+   if(InpEnableEMAFilter)
+   {
+      if(m_emaFastHandle == INVALID_HANDLE)
+         m_emaFastHandle = iMA(_Symbol, InpEMATimeframe, InpEMAFastPeriod, 0, MODE_EMA, PRICE_CLOSE);
+      if(m_emaSlowHandle == INVALID_HANDLE)
+         m_emaSlowHandle = iMA(_Symbol, InpEMATimeframe, InpEMASlowPeriod, 0, MODE_EMA, PRICE_CLOSE);
+
+      double fastEma[], slowEma[];
+      ArraySetAsSeries(fastEma, true);
+      ArraySetAsSeries(slowEma, true);
+
+      if(CopyBuffer(m_emaFastHandle, 0, 0, 1, fastEma) > 0 && CopyBuffer(m_emaSlowHandle, 0, 0, 1, slowEma) > 0)
+      {
+         double separation = MathAbs(fastEma[0] - slowEma[0]);
+         if(separation < InpMinEMASeparation_USD)
+         {
+            reason = StringFormat("EMAS ENTRELAZADAS: Sep %.2f$ < %.2f$ (Chop)", separation, InpMinEMASeparation_USD);
+            return false;
+         }
+
+         if(direction == POSITION_TYPE_BUY && fastEma[0] <= slowEma[0])
+         {
+            reason = "EMA FILTER: Fast EMA <= Slow EMA (Tendencia Bajista)";
+            return false;
+         }
+         else if(direction == POSITION_TYPE_SELL && fastEma[0] >= slowEma[0])
+         {
+            reason = "EMA FILTER: Fast EMA >= Slow EMA (Tendencia Alcista)";
+            return false;
+         }
+      }
+   }
+
+   // 4. FILTRO DE TENDENCIA MAYOR HTF (H1)
+   if(InpEnableHTF_Trend)
+   {
+      if(m_htfEmaHandle == INVALID_HANDLE)
+         m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
+
+      double htfEmaValues[];
+      ArraySetAsSeries(htfEmaValues, true);
+      if(CopyBuffer(m_htfEmaHandle, 0, 0, 1, htfEmaValues) > 0)
+      {
+         MqlRates htfRates[];
+         ArraySetAsSeries(htfRates, true);
+         if(CopyRates(_Symbol, InpHTFTimeframe, 0, 1, htfRates) > 0)
+         {
+            if(direction == POSITION_TYPE_BUY && htfRates[0].close < htfEmaValues[0])
+            {
+               reason = "HTF FILTER: Precio H1 < EMA H1 (Contra Tendencia)";
+               return false;
+            }
+            else if(direction == POSITION_TYPE_SELL && htfRates[0].close > htfEmaValues[0])
+            {
+               reason = "HTF FILTER: Precio H1 > EMA H1 (Contra Tendencia)";
+               return false;
+            }
+         }
+      }
+   }
+
+   // 5. FILTRO DE VOLUMEN INSTITUCIONAL
+   if(InpEnableVolumeFilter)
+   {
+      MqlRates volRates[];
+      ArraySetAsSeries(volRates, true);
+      int barsNeeded = InpVolumeMAPeriod + 2;
+      if(CopyRates(_Symbol, PERIOD_M1, 1, barsNeeded, volRates) >= barsNeeded)
+      {
+         long sumVol = 0;
+         for(int i = 1; i < 1 + InpVolumeMAPeriod; i++)
+            sumVol += volRates[i].tick_volume;
+
+         double avgVol = (double)sumVol / InpVolumeMAPeriod;
+         double minVol = avgVol * InpVolumeFactor;
+         if((double)volRates[0].tick_volume < minVol)
+         {
+            reason = StringFormat("VOLUMEN DÉBIL: %I64d < %.0f (Falta Impulso)", volRates[0].tick_volume, minVol);
+            return false;
+         }
+      }
+   }
+
+   // 6. FILTRO DE POC (VOLUME PROFILE POINT OF CONTROL)
+   if(InpEnablePOCFilter)
+   {
+      double pocPrice = CalculatePOC(InpPOCBars);
+      if(pocPrice > 0.0)
+      {
+         double currentPrice = (direction == POSITION_TYPE_BUY) ? SymbolInfoDouble(_Symbol, SYMBOL_BID) : SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         double diffFromPOC = currentPrice - pocPrice;
+
+         if(MathAbs(diffFromPOC) < InpPOCBuffer_USD)
+         {
+            reason = StringFormat("ATRAPADO EN POC: Dist %.2f$ < %.2f$ (Consolidación)", MathAbs(diffFromPOC), InpPOCBuffer_USD);
+            return false;
+         }
+
+         if(direction == POSITION_TYPE_BUY && diffFromPOC < 0.0)
+         {
+            reason = "POC FILTER: Precio por debajo de POC (Venta Institucional)";
+            return false;
+         }
+         else if(direction == POSITION_TYPE_SELL && diffFromPOC > 0.0)
+         {
+            reason = "POC FILTER: Precio por encima de POC (Compra Institucional)";
+            return false;
+         }
+      }
+   }
+
+   return true;
+}
+
+//+------------------------------------------------------------------+
 //| Evalúa señal para abrir el primer trade de un nuevo ciclo        |
 //+------------------------------------------------------------------+
-bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
+bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction, string &filterReason)
 {
+   bool hasRawTrigger = false;
+   ENUM_POSITION_TYPE candidateDir = POSITION_TYPE_BUY;
+
    if(InpEntryMode == ENTRY_RANGE_BREAKOUT)
    {
       MqlRates rates[];
@@ -623,13 +915,13 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
 
       if(currentBid >= highestHigh && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
       {
-         direction = POSITION_TYPE_BUY;
-         return true;
+         candidateDir = POSITION_TYPE_BUY;
+         hasRawTrigger = true;
       }
-      if(currentAsk <= lowestLow && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+      else if(currentAsk <= lowestLow && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
       {
-         direction = POSITION_TYPE_SELL;
-         return true;
+         candidateDir = POSITION_TYPE_SELL;
+         hasRawTrigger = true;
       }
    }
    else if(InpEntryMode == ENTRY_MOMENTUM_M1)
@@ -640,13 +932,13 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
       {
          if(rates[0].close > rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
          {
-            direction = POSITION_TYPE_BUY;
-            return true;
+            candidateDir = POSITION_TYPE_BUY;
+            hasRawTrigger = true;
          }
          else if(rates[0].close < rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
          {
-            direction = POSITION_TYPE_SELL;
-            return true;
+            candidateDir = POSITION_TYPE_SELL;
+            hasRawTrigger = true;
          }
       }
    }
@@ -675,30 +967,38 @@ bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
 
       if(htfBullish && m1Bullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
       {
-         direction = POSITION_TYPE_BUY;
-         return true;
+         candidateDir = POSITION_TYPE_BUY;
+         hasRawTrigger = true;
       }
       else if(htfBearish && m1Bearish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
       {
-         direction = POSITION_TYPE_SELL;
-         return true;
+         candidateDir = POSITION_TYPE_SELL;
+         hasRawTrigger = true;
       }
    }
    else if(InpEntryMode == ENTRY_MANUAL_DIRECTION)
    {
       if(InpAllowedDirection == DIR_BUY)
       {
-         direction = POSITION_TYPE_BUY;
-         return true;
+         candidateDir = POSITION_TYPE_BUY;
+         hasRawTrigger = true;
       }
       else if(InpAllowedDirection == DIR_SELL)
       {
-         direction = POSITION_TYPE_SELL;
-         return true;
+         candidateDir = POSITION_TYPE_SELL;
+         hasRawTrigger = true;
       }
    }
 
-   return false;
+   if(!hasRawTrigger)
+      return false;
+
+   // Pasar la dirección candidata por todos los filtros cuantitativos institucionales
+   if(!CheckDirectionalFilters(candidateDir, filterReason))
+      return false;
+
+   direction = candidateDir;
+   return true;
 }
 
 //+------------------------------------------------------------------+
