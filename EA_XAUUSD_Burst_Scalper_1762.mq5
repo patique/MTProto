@@ -44,6 +44,24 @@ input double             InpMaxDailyRangeUSD      = 100.0;              // Rango
 input bool               InpBlockMonthEndDay      = true;               // Bloquear operativa en Cierre de Mes (Día Completo)
 input int                InpMonthEndStartHourES   = 0;                  // Hora inicio bloqueo Fin de Mes España (0 = Todo el día)
 
+input group "=== 2.1 LISTA NEGRA DE NOTICIAS DE ALTO IMPACTO (NEWS GUARD) ===";
+input bool               InpEnableNewsBlacklist   = true;               // Activar Bloqueo en Días de Noticias de Alto Impacto
+input string             InpCustomNewsDates       = "2026.01.28,2026.01.29,2026.01.30,2026.02.27,2026.03.18,2026.04.23,2026.04.29,2026.04.30,2026.06.17,2026.07.17"; // Días a Bloquear (separados por coma)
+
+// Array interno de fechas críticas de alto impacto / FOMC / CPI / OPEX en 2026
+const string g_newsDates2026[] = {
+   "2026.01.28", // FOMC Rate Decision
+   "2026.01.29", // FOMC Post-reaction
+   "2026.01.30", // Month-End Rebalancing / Cisne Negro ($586)
+   "2026.02.27", // Month-End Rebalancing ($55 surge)
+   "2026.03.18", // FOMC Rate Decision & Powell
+   "2026.04.23", // US Flash PMI & Jobless Claims
+   "2026.04.29", // FOMC Rate Decision
+   "2026.04.30", // Month-End
+   "2026.06.17", // FOMC Dot Plot & Powell (-151$ crash)
+   "2026.07.17"  // OPEX / Volatilidad Julio
+};
+
 input group "=== 3. FILTRO INSTITUCIONAL HTF (GATILLO 3) ===";
 input ENUM_TIMEFRAMES    InpHTFTimeframe          = PERIOD_H1;          // Temporalidad Mayor HTF (Recomendado H1)
 input int                InpHTF_EMA_Period        = 50;                 // Periodo EMA Institucional HTF (ej: 50)
@@ -465,6 +483,36 @@ bool IsForceCloseTime(datetime time)
 //+------------------------------------------------------------------+
 bool IsCircuitBreakerTriggered(string &reason)
 {
+   // 0. Comprobar Lista Negra de Días de Noticias de Alto Impacto (FOMC, CPI, NFP, etc.)
+   if(InpEnableNewsBlacklist)
+   {
+      datetime now = TimeCurrent();
+      MqlDateTime dt;
+      TimeToStruct(now, dt);
+      string currentDayStr = StringFormat("%04d.%02d.%02d", dt.year, dt.mon, dt.day);
+
+      // Comprobar array interno predefinido
+      int totalNews = ArraySize(g_newsDates2026);
+      for(int i = 0; i < totalNews; i++)
+      {
+         if(currentDayStr == g_newsDates2026[i])
+         {
+            reason = StringFormat("FILTRO NOTICIAS: Día de Alto Impacto (%s)", currentDayStr);
+            return true;
+         }
+      }
+
+      // Comprobar lista personalizada en inputs
+      if(StringLen(InpCustomNewsDates) > 0)
+      {
+         if(StringFind(InpCustomNewsDates, currentDayStr) >= 0)
+         {
+            reason = StringFormat("FILTRO NOTICIAS: Fecha en Lista Negra (%s)", currentDayStr);
+            return true;
+         }
+      }
+   }
+
    if(!InpEnableCircuitBreaker)
       return false;
 
