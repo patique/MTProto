@@ -46,7 +46,7 @@ input int                InpMonthEndStartHourES   = 0;                  // Hora 
 
 input group "=== 2.1 LISTA NEGRA DE NOTICIAS DE ALTO IMPACTO (NEWS GUARD) ===";
 input bool               InpEnableNewsBlacklist   = true;               // Activar Bloqueo en Días de Noticias de Alto Impacto
-input string             InpCustomNewsDates       = "2026.01.28,2026.01.29,2026.01.30,2026.02.27,2026.03.18,2026.04.23,2026.04.29,2026.04.30,2026.06.17,2026.07.17"; // Días a Bloquear (separados por coma)
+input string             InpCustomNewsDates       = "2026.01.28,2026.01.29,2026.01.30,2026.02.27,2026.03.18,2026.04.07,2026.04.23,2026.04.29,2026.04.30,2026.06.17,2026.07.17"; // Días a Bloquear (separados por coma)
 
 // Array interno de fechas críticas de alto impacto / FOMC / CPI / OPEX en 2026
 const string g_newsDates2026[] = {
@@ -55,6 +55,7 @@ const string g_newsDates2026[] = {
    "2026.01.30", // Month-End Rebalancing / Cisne Negro ($586)
    "2026.02.27", // Month-End Rebalancing ($55 surge)
    "2026.03.18", // FOMC Rate Decision & Powell
+   "2026.04.07", // Reapertura Londres Post-Pascua (Flash Surge +$50)
    "2026.04.23", // US Flash PMI & Jobless Claims
    "2026.04.29", // FOMC Rate Decision
    "2026.04.30", // Month-End
