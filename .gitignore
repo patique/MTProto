@@ -5,6 +5,9 @@ npm-debug.log*
 # Large historical raw tick/candle CSV dumps (>20MB)
 *_2020*.csv
 *.log
+scripts/backtest/structural_bpr_study_results.json
+scripts/backtest/*.large.json
+
 
 # Sensitive telegram sessions
 *.session
