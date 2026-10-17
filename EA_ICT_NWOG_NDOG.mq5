@@ -6,10 +6,10 @@
 //+------------------------------------------------------------------+
 #property copyright "Antigravity Quant Lab & ICT Concepts"
 #property link      "https://github.com/telegram-mtproto"
-#property version   "1.00"
+#property version   "2.00"
 #property strict
 #property description "EA Institucional ICT: New Week Opening Gap (NWOG), New Day Opening Gap (NDOG) y EHPDA"
-#property description "Entradas confirmadas en el 50% Consequent Encroachment (CE) con RR y Riesgo Dinámico"
+#property description "Soporta Múltiples Reacciones Institucionales, Inversión S/R (Inversion Gaps) y Cooldown Anti-Spam"
 
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
@@ -40,30 +40,40 @@ enum ENUM_TRIGGER_MODE
 //--- PARÁMETROS DE ENTRADA (INPUTS) ---
 input group "=== 📊 1. CONFIGURACIÓN DE GAPS ICT (NWOG / NDOG) ===";
 input ENUM_GAP_TYPE      InpGapType              = GAP_BOTH;             // Tipo de Gaps a Detectar
-input int                InpMaxGapsToTrack       = 5;                    // Cantidad Máxima de Gaps a Monitorear
-input double             InpMinGapPoints         = 30.0;                 // Distancia Mínima de Gap en Puntos (ej. 30 pts en Oro)
+input int                InpMaxGapsToTrack       = 3;                    // Cantidad Máxima de Gaps Activos a Monitorear
+input double             InpMinGapPoints         = 150.0;                // Tamaño Mínimo de Gap en Puntos (150 pts = 1.50$ Oro)
 input bool               InpUseEHPDA             = true;                 // Calcular y Dibujar EHPDA (Event Horizon)
 
-input group "=== ⚖️ 2. GESTIÓN DE RIESGO DINÁMICO & R:R ===";
+input group "=== 🔄 2. INVERSIÓN DE ROL (S/R FLIP) Y COOLDOWN ===";
+input bool               InpEnableInversion      = true;                 // Activar Inversión de Nivel (Inversion Gaps)
+input int                InpGapCooldownBars      = 12;                   // Cooldown Anti-Spam en el Mismo Gap (Barras TF entrada)
+input int                InpMaxTradesPerGap      = 4;                    // Máximo de Reacciones Permitidas por Gap
+
+input group "=== 📈 3. FILTRO DE TENDENCIA INSTITUCIONAL (OPCIONAL) ===";
+input bool               InpUseTrendFilter       = false;                // Activar Filtro de Tendencia (Opcional para tests)
+input ENUM_TIMEFRAMES    InpTrendTF              = PERIOD_H1;            // Temporalidad de la Tendencia (H1)
+input int                InpTrendEmaPeriod       = 200;                  // Período EMA de Tendencia (200)
+
+input group "=== ⚖️ 4. GESTIÓN DE RIESGO DINÁMICO & R:R ===";
 input ENUM_RISK_MODE     InpRiskMode             = RISK_PERCENT_BALANCE; // Modo de Cálculo de Riesgo
-input double             InpRiskPercent          = 1.0;                  // Riesgo por Operación (%)
+input double             InpRiskPercent          = 2.0;                  // Riesgo por Operación (%)
 input double             InpFixedRiskUSD         = 50.0;                 // Riesgo Fijo por Operación ($ si modo USD)
 input double             InpFixedLotSize         = 0.01;                 // Lotaje Fijo (si modo Fixed Lot)
 input double             InpRiskRewardRatio      = 2.0;                  // Ratio Riesgo:Beneficio (R:R Dinámico)
 
-input group "=== 🎯 3. GATILLO DE ENTRADA & CONFIRMACIÓN ===";
-input ENUM_TIMEFRAMES    InpEntryTF              = PERIOD_M5;            // Temporalidad de Entrada y Rechazo (M5)
+input group "=== 🎯 5. GATILLO DE ENTRADA & CONFIRMACIÓN ===";
+input ENUM_TIMEFRAMES    InpEntryTF              = PERIOD_M5;            // Temporalidad de Entrada y Rechazo (M5 o M2)
 input ENUM_TRIGGER_MODE  InpTriggerMode          = TRIGGER_CE_50_REJECTION;// Modo de Gatillo Institucional
 input double             InpMinRejectionWickPct  = 25.0;                 // Mecha de Rechazo Mínima (%) para Confirmar
 input double             InpSLBufferPoints       = 15.0;                 // Holgura de SL tras el Extremo del Gap (puntos)
 input int                InpMaxActiveTrades      = 1;                    // Máximo de Operaciones Simultáneas
 
-input group "=== 🛡️ 4. AUTO BREAK-EVEN (50% DEL TP) ===";
-input bool               InpEnableAutoBE         = true;                 // Activar Auto Break-Even al 50% del TP
+input group "=== 🛡️ 6. AUTO BREAK-EVEN (50% DEL TP) ===";
+input bool               InpEnableAutoBE         = false;                // Activar Auto Break-Even al 50% del TP
 input double             InpBETriggerPercent     = 50.0;                 // Recorrido hacia el TP para Activar BE (%)
 input double             InpBEOffsetPips         = 0.5;                  // Offset de Seguridad sobre Precio Entrada (pips)
 
-input group "=== ⏱️ 5. SESIONES & KILLZONES ICT (HORA ESPAÑA/CET) ===";
+input group "=== ⏱️ 7. SESIONES & KILLZONES ICT (HORA ESPAÑA/CET) ===";
 input bool               InpUseSessionFilter     = true;                 // Operar Solo en Killzones
 input int                InpLondonStartHour      = 8;                    // Apertura Londres (08:00 CET)
 input int                InpLondonEndHour        = 12;                   // Cierre Londres (12:00 CET)
@@ -73,13 +83,13 @@ input bool               InpCloseFriday          = true;                 // Cier
 input int                InpFridayCloseHour      = 21;                   // Hora Cierre Viernes
 input int                InpFridayCloseMin       = 30;                   // Minuto Cierre Viernes
 
-input group "=== 🎨 6. IDENTIFICACIÓN Y GRÁFICO ===";
+input group "=== 🎨 8. IDENTIFICACIÓN Y GRÁFICO ===";
 input ulong              InpMagicNumber          = 889901;               // Magic Number
 input string             InpTradeComment         = "ICT_NWOG_NDOG";      // Comentario de Trade
 input bool               InpDrawVisuals          = true;                 // Dibujar Cajas de Gaps y Niveles CE
 input bool               InpShowHUD              = true;                 // Mostrar Panel HUD en Gráfico
-input color              InpBullColor            = C'91,156,246';        // Color Gap Alcista
-input color              InpBearColor            = C'186,104,200';       // Color Gap Bajista
+input color              InpBullColor            = C'91,156,246';        // Color Gap Alcista (Demanda / Azul)
+input color              InpBearColor            = C'186,104,200';       // Color Gap Bajista (Oferta / Lila)
 input color              InpEhpdaColor           = C'148,163,184';       // Color EHPDA
 
 //--- ESTRUCTURAS DE DATOS ---
@@ -88,10 +98,12 @@ struct GapData
    datetime time;
    double   top;
    double   bottom;
-   double   ce50;       // Consequent Encroachment (top + bottom) / 2
-   bool     isBullish;  // true si open > close[1]
-   bool     mitigated;
-   string   typeStr;    // "NWOG" o "NDOG"
+   double   ce50;          // Consequent Encroachment (top + bottom) / 2
+   bool     isBullish;     // true si open > close[1] (Gap Alcista)
+   bool     isFlipped;     // true si fue quebrado y ahora actúa como Inversion Gap (S/R Flip)
+   datetime lastTradeTime; // Timestamp de la última operación ejecutada en este gap
+   int      tradeCount;    // Número de veces que este gap ha sido operado
+   string   typeStr;       // "NWOG" o "NDOG"
    string   boxName;
    string   ceLineName;
 };
@@ -103,9 +115,10 @@ CAccountInfo   m_acc;
 
 GapData        m_gaps[];
 double         m_ehpdaLevels[];
-datetime       m_lastBarTime = 0;
-datetime       m_lastW1Time  = 0;
-datetime       m_lastD1Time  = 0;
+datetime       m_lastBarTime  = 0;
+datetime       m_lastW1Time   = 0;
+datetime       m_lastD1Time   = 0;
+int            m_emaTrendHandle = INVALID_HANDLE;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -119,8 +132,18 @@ int OnInit()
    ArrayResize(m_gaps, 0);
    ArrayResize(m_ehpdaLevels, 0);
 
-   PrintFormat("🚀 [EA_ICT_NWOG_NDOG] Inicializado con éxito en %s | R:R Dinámico: 1:%.2f | Riesgo: %.2f%% | Auto-BE: %s",
-               _Symbol, InpRiskRewardRatio, InpRiskPercent, InpEnableAutoBE ? "50% TP" : "OFF");
+   // Inicializar filtro de tendencia si está habilitado
+   if(InpUseTrendFilter)
+   {
+      m_emaTrendHandle = iMA(_Symbol, InpTrendTF, InpTrendEmaPeriod, 0, MODE_EMA, PRICE_CLOSE);
+      if(m_emaTrendHandle == INVALID_HANDLE)
+         Print("⚠️ [ADVERTENCIA] No se pudo crear el handle de la EMA de tendencia.");
+      else
+         PrintFormat("📈 [FILTRO TENDENCIA] EMA %d en %s activada.", InpTrendEmaPeriod, EnumToString(InpTrendTF));
+   }
+
+   PrintFormat("🚀 [EA_ICT_NWOG_NDOG v2.0] Inicializado en %s | R:R 1:%.2f | Riesgo: %.2f%% | Inversión S/R: %s | Anti-Spam: %d barras",
+               _Symbol, InpRiskRewardRatio, InpRiskPercent, InpEnableInversion ? "ON" : "OFF", InpGapCooldownBars);
 
    // Escaneo inicial de Gaps históricos
    ScanGapsHistorical();
@@ -138,6 +161,12 @@ int OnInit()
 void OnDeinit(const int reason)
 {
    EventKillTimer();
+
+   if(m_emaTrendHandle != INVALID_HANDLE)
+   {
+      IndicatorRelease(m_emaTrendHandle);
+      m_emaTrendHandle = INVALID_HANDLE;
+   }
 
    if(InpDrawVisuals)
    {
@@ -291,8 +320,9 @@ void RegisterGap(ENUM_TIMEFRAMES tf, string typeStr)
          AddGapData(rates[0].time, currOpen, prevClose, typeStr);
          CalculateEHPDA();
          RedrawAllGaps();
-         PrintFormat("💎 [ICT %s DETECTADO] Apertura: %.5f | Cierre Anterior: %.5f | Tamaño: %.1f pips",
-                     typeStr, currOpen, prevClose, gapSize / (_Point * 10));
+         PrintFormat("💎 [ICT %s DETECTADO] Apertura: %.5f | Cierre Anterior: %.5f | Tamaño: %.1f pips | Tipo: %s",
+                     typeStr, currOpen, prevClose, gapSize / (_Point * 10),
+                     (currOpen > prevClose) ? "Alcista (Demanda/Azul)" : "Bajista (Oferta/Lila)");
       }
    }
 }
@@ -303,15 +333,17 @@ void RegisterGap(ENUM_TIMEFRAMES tf, string typeStr)
 void AddGapData(datetime t, double currOpen, double prevClose, string typeStr)
 {
    GapData newGap;
-   newGap.time      = t;
-   newGap.top       = MathMax(currOpen, prevClose);
-   newGap.bottom    = MathMin(currOpen, prevClose);
-   newGap.ce50      = NormalizeDouble((newGap.top + newGap.bottom) / 2.0, _Digits);
-   newGap.isBullish = (currOpen > prevClose);
-   newGap.mitigated = false;
-   newGap.typeStr   = typeStr;
-   newGap.boxName   = StringFormat("ICT_GAP_%s_%d", typeStr, (int)t);
-   newGap.ceLineName= StringFormat("ICT_GAP_CE_%s_%d", typeStr, (int)t);
+   newGap.time          = t;
+   newGap.top           = MathMax(currOpen, prevClose);
+   newGap.bottom        = MathMin(currOpen, prevClose);
+   newGap.ce50          = NormalizeDouble((newGap.top + newGap.bottom) / 2.0, _Digits);
+   newGap.isBullish     = (currOpen > prevClose);
+   newGap.isFlipped     = false;
+   newGap.lastTradeTime = 0;
+   newGap.tradeCount    = 0;
+   newGap.typeStr       = typeStr;
+   newGap.boxName       = StringFormat("ICT_GAP_%s_%d", typeStr, (int)t);
+   newGap.ceLineName    = StringFormat("ICT_GAP_CE_%s_%d", typeStr, (int)t);
 
    int size = ArraySize(m_gaps);
    ArrayResize(m_gaps, size + 1);
@@ -320,7 +352,6 @@ void AddGapData(datetime t, double currOpen, double prevClose, string typeStr)
    // Mantener únicamente los últimos N gaps
    if(ArraySize(m_gaps) > InpMaxGapsToTrack * 2)
    {
-      // Eliminar el más antiguo
       if(InpDrawVisuals)
       {
          ObjectDelete(0, m_gaps[0].boxName);
@@ -340,7 +371,6 @@ void CalculateEHPDA()
    int count = ArraySize(m_gaps);
    if(!InpUseEHPDA || count < 2) return;
 
-   // Ordenar gaps por su CE 50%
    double sortedCE[];
    ArrayResize(sortedCE, count);
    for(int i = 0; i < count; i++)
@@ -366,6 +396,8 @@ void RedrawAllGaps()
    for(int i = 0; i < ArraySize(m_gaps); i++)
    {
       color gapColor = m_gaps[i].isBullish ? InpBullColor : InpBearColor;
+      if(m_gaps[i].isFlipped)
+         gapColor = m_gaps[i].isBullish ? InpBearColor : InpBullColor; // Invertir color si es S/R Flip
 
       // 1. Caja del Gap
       if(ObjectFind(0, m_gaps[i].boxName) < 0)
@@ -382,6 +414,8 @@ void RedrawAllGaps()
          ObjectSetDouble(0, m_gaps[i].boxName, OBJPROP_PRICE, 0, m_gaps[i].top);
          ObjectSetDouble(0, m_gaps[i].boxName, OBJPROP_PRICE, 1, m_gaps[i].bottom);
          ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_TIME, 1, chartEnd);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_COLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_BGCOLOR, gapColor);
       }
 
       // 2. Línea discontinua central CE 50%
@@ -392,6 +426,13 @@ void RedrawAllGaps()
          ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_STYLE, STYLE_DOT);
          ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_WIDTH, 1);
          ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_RAY_RIGHT, true);
+      }
+      else
+      {
+         ObjectSetDouble(0, m_gaps[i].ceLineName, OBJPROP_PRICE, 0, m_gaps[i].ce50);
+         ObjectSetDouble(0, m_gaps[i].ceLineName, OBJPROP_PRICE, 1, m_gaps[i].ce50);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_TIME, 1, chartEnd);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_COLOR, gapColor);
       }
    }
 
@@ -418,6 +459,25 @@ void RedrawAllGaps()
 }
 
 //+------------------------------------------------------------------+
+//| Comprobar si la dirección está autorizada por la EMA Tendencia   |
+//+------------------------------------------------------------------+
+bool IsTrendAllowed(bool isBuy)
+{
+   if(!InpUseTrendFilter || m_emaTrendHandle == INVALID_HANDLE)
+      return true;
+
+   double emaVal[1];
+   if(CopyBuffer(m_emaTrendHandle, 0, 0, 1, emaVal) <= 0)
+      return true;
+
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   if(isBuy)
+      return (currentBid >= emaVal[0]);
+   else
+      return (currentBid <= emaVal[0]);
+}
+
+//+------------------------------------------------------------------+
 //| Evaluación Institucional y Disparo a Mercado                     |
 //+------------------------------------------------------------------+
 void EvaluateInstitutionalEntry()
@@ -433,7 +493,7 @@ void EvaluateInstitutionalEntry()
    int gapsCount = ArraySize(m_gaps);
    if(gapsCount == 0) return;
 
-   // Obtener la vela previa cerrada de M5
+   // Obtener la vela previa cerrada en TF de entrada
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    if(CopyRates(_Symbol, InpEntryTF, 1, 1, rates) < 1) return;
@@ -444,6 +504,8 @@ void EvaluateInstitutionalEntry()
    double cLow   = rates[0].low;
    double cRange = cHigh - cLow;
    if(cRange <= 0) return;
+
+   datetime currentBarTime = rates[0].time;
 
    double lowerWick = MathMin(cOpen, cClose) - cLow;
    double upperWick = cHigh - MathMax(cOpen, cClose);
@@ -457,66 +519,126 @@ void EvaluateInstitutionalEntry()
       double bottom = m_gaps[i].bottom;
       double ce50   = m_gaps[i].ce50;
 
-      // -----------------------------------------------------------
-      // A) SETUP DE COMPRA (Soporte / Demanda en el Gap)
-      // El precio penetró en la zona del gap o testeó el CE 50%
-      // y rechazó dejando mecha inferior >= InpMinRejectionWickPct
-      // -----------------------------------------------------------
-      bool testedDemand = (cLow <= top && cLow >= bottom - (InpSLBufferPoints * _Point));
-      if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
-         testedDemand = (cLow <= ce50 && cClose > ce50);
-
-      if(testedDemand && cClose > cOpen && lowerWickPct >= InpMinRejectionWickPct)
+      // -------------------------------------------------------------
+      // 0. ACTUALIZACIÓN DINÁMICA DE INVERSIÓN (S/R FLIP CON CUERPO)
+      // -------------------------------------------------------------
+      if(InpEnableInversion)
       {
-         double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-         double sl  = NormalizeDouble(bottom - (InpSLBufferPoints * _Point), _Digits);
-         double slDist = ask - sl;
-
-         if(slDist > (InpSLBufferPoints * _Point))
+         // Si era Bajista (Resistencia) y una vela cierra con cuerpo claramente por encima del Top
+         if(!m_gaps[i].isBullish && !m_gaps[i].isFlipped && cClose > top && cOpen > top)
          {
-            double tp = NormalizeDouble(ask + (slDist * InpRiskRewardRatio), _Digits);
-            double lot = CalculateLotSize(ask, sl);
+            m_gaps[i].isFlipped = true;
+            PrintFormat("🔄 [INVERSIÓN S/R FLIP] Gap Bajista %s en %.5f roto al alza con cuerpo. Ahora actúa como SOPORTE.",
+                        m_gaps[i].typeStr, ce50);
+            RedrawAllGaps();
+         }
+         // Si era Alcista (Soporte) y una vela cierra con cuerpo claramente por debajo del Bottom
+         else if(m_gaps[i].isBullish && !m_gaps[i].isFlipped && cClose < bottom && cOpen < bottom)
+         {
+            m_gaps[i].isFlipped = true;
+            PrintFormat("🔄 [INVERSIÓN S/R FLIP] Gap Alcista %s en %.5f roto a la baja con cuerpo. Ahora actúa como RESISTENCIA.",
+                        m_gaps[i].typeStr, ce50);
+            RedrawAllGaps();
+         }
+      }
 
-            PrintFormat("🎯 [SEÑAL COMPRA ICT] Testeado %s CE 50%: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
-                        m_gaps[i].typeStr, ce50, lowerWickPct, sl, InpRiskRewardRatio, tp, lot);
+      // -------------------------------------------------------------
+      // 1. REGLA ANTI-SPAM (COOLDOWN Y TOQUES MÁXIMOS POR GAP)
+      // -------------------------------------------------------------
+      if(m_gaps[i].tradeCount >= InpMaxTradesPerGap)
+         continue;
 
-            string orderComment = StringFormat("%s_%s_BUY", InpTradeComment, m_gaps[i].typeStr);
-            if(m_trade.Buy(lot, _Symbol, ask, sl, tp, orderComment))
+      if(m_gaps[i].lastTradeTime > 0)
+      {
+         int barsSinceTrade = (int)((currentBarTime - m_gaps[i].lastTradeTime) / PeriodSeconds(InpEntryTF));
+         if(barsSinceTrade < InpGapCooldownBars)
+            continue; // Gap en periodo de enfriamiento
+      }
+
+      // Determinar si en este momento este gap funciona como Soporte o Resistencia
+      // - Gap Alcista Normal (no flipped) o Gap Bajista Flipped -> SOPORTE (Buscar Compras)
+      // - Gap Bajista Normal (no flipped) o Gap Alcista Flipped -> RESISTENCIA (Buscar Ventas)
+      bool actsAsSupport    = (m_gaps[i].isBullish && !m_gaps[i].isFlipped) || (!m_gaps[i].isBullish && m_gaps[i].isFlipped);
+      bool actsAsResistance = (!m_gaps[i].isBullish && !m_gaps[i].isFlipped) || (m_gaps[i].isBullish && m_gaps[i].isFlipped);
+
+      // -------------------------------------------------------------
+      // A) SETUP DE COMPRA (Soporte en Gap Original o Inversión)
+      // El precio baja a testear la zona / CE 50, respeta el nivel con
+      // el cuerpo cerrando por encima y deja mecha de rechazo inferior
+      // -------------------------------------------------------------
+      if(actsAsSupport && IsTrendAllowed(true))
+      {
+         bool testedSupport = false;
+         if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
+            testedSupport = (cLow <= ce50 && cClose > ce50);
+         else
+            testedSupport = (cLow <= top && cClose >= bottom);
+
+         // Validación: Cuerpo no destruido, cierre alcista/respetando y mecha de absorción
+         if(testedSupport && cClose >= bottom && lowerWickPct >= InpMinRejectionWickPct)
+         {
+            double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+            double sl  = NormalizeDouble(bottom - (InpSLBufferPoints * _Point), _Digits);
+            double slDist = ask - sl;
+
+            if(slDist > (InpSLBufferPoints * _Point))
             {
-               Print("✅ [ORDEN COMPRA EJECUTADA CON ÉXITO]");
-               return;
+               double tp = NormalizeDouble(ask + (slDist * InpRiskRewardRatio), _Digits);
+               double lot = CalculateLotSize(ask, sl);
+
+               string modeStr = m_gaps[i].isFlipped ? "INVERSIÓN SOPORTE" : "SOPORTE ORIGINAL";
+               PrintFormat("🎯 [SEÑAL COMPRA ICT] %s (%s) CE 50: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
+                           modeStr, m_gaps[i].typeStr, ce50, lowerWickPct, sl, InpRiskRewardRatio, tp, lot);
+
+               string orderComment = StringFormat("%s_%s_%s_BUY", InpTradeComment, m_gaps[i].typeStr, m_gaps[i].isFlipped ? "INV" : "DIR");
+               if(m_trade.Buy(lot, _Symbol, ask, sl, tp, orderComment))
+               {
+                  m_gaps[i].lastTradeTime = currentBarTime;
+                  m_gaps[i].tradeCount++;
+                  PrintFormat("✅ [ORDEN COMPRA EJECUTADA] Toque #%d para este Gap.", m_gaps[i].tradeCount);
+                  return;
+               }
             }
          }
       }
 
-      // -----------------------------------------------------------
-      // B) SETUP DE VENTA (Resistencia / Oferta en el Gap)
-      // El precio subió a la zona del gap o testeó el CE 50%
-      // y rechazó dejando mecha superior >= InpMinRejectionWickPct
-      // -----------------------------------------------------------
-      bool testedSupply = (cHigh >= bottom && cHigh <= top + (InpSLBufferPoints * _Point));
-      if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
-         testedSupply = (cHigh >= ce50 && cClose < ce50);
-
-      if(testedSupply && cClose < cOpen && upperWickPct >= InpMinRejectionWickPct)
+      // -------------------------------------------------------------
+      // B) SETUP DE VENTA (Resistencia en Gap Original o Inversión)
+      // El precio sube a testear la zona / CE 50, respeta el nivel con
+      // el cuerpo cerrando por debajo y deja mecha de rechazo superior
+      // -------------------------------------------------------------
+      if(actsAsResistance && IsTrendAllowed(false))
       {
-         double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-         double sl  = NormalizeDouble(top + (InpSLBufferPoints * _Point), _Digits);
-         double slDist = sl - bid;
+         bool testedResistance = false;
+         if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
+            testedResistance = (cHigh >= ce50 && cClose < ce50);
+         else
+            testedResistance = (cHigh >= bottom && cClose <= top);
 
-         if(slDist > (InpSLBufferPoints * _Point))
+         // Validación: Cuerpo no destruido, cierre bajista/respetando y mecha de absorción
+         if(testedResistance && cClose <= top && upperWickPct >= InpMinRejectionWickPct)
          {
-            double tp = NormalizeDouble(bid - (slDist * InpRiskRewardRatio), _Digits);
-            double lot = CalculateLotSize(bid, sl);
+            double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+            double sl  = NormalizeDouble(top + (InpSLBufferPoints * _Point), _Digits);
+            double slDist = sl - bid;
 
-            PrintFormat("🎯 [SEÑAL VENTA ICT] Testeado %s CE 50%: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
-                        m_gaps[i].typeStr, ce50, upperWickPct, sl, InpRiskRewardRatio, tp, lot);
-
-            string orderComment = StringFormat("%s_%s_SELL", InpTradeComment, m_gaps[i].typeStr);
-            if(m_trade.Sell(lot, _Symbol, bid, sl, tp, orderComment))
+            if(slDist > (InpSLBufferPoints * _Point))
             {
-               Print("✅ [ORDEN VENTA EJECUTADA CON ÉXITO]");
-               return;
+               double tp = NormalizeDouble(bid - (slDist * InpRiskRewardRatio), _Digits);
+               double lot = CalculateLotSize(bid, sl);
+
+               string modeStr = m_gaps[i].isFlipped ? "INVERSIÓN RESISTENCIA" : "RESISTENCIA ORIGINAL";
+               PrintFormat("🎯 [SEÑAL VENTA ICT] %s (%s) CE 50: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
+                           modeStr, m_gaps[i].typeStr, ce50, upperWickPct, sl, InpRiskRewardRatio, tp, lot);
+
+               string orderComment = StringFormat("%s_%s_%s_SELL", InpTradeComment, m_gaps[i].typeStr, m_gaps[i].isFlipped ? "INV" : "DIR");
+               if(m_trade.Sell(lot, _Symbol, bid, sl, tp, orderComment))
+               {
+                  m_gaps[i].lastTradeTime = currentBarTime;
+                  m_gaps[i].tradeCount++;
+                  PrintFormat("✅ [ORDEN VENTA EJECUTADA] Toque #%d para este Gap.", m_gaps[i].tradeCount);
+                  return;
+               }
             }
          }
       }
@@ -704,13 +826,15 @@ void CreateHUD()
    ObjectsDeleteAll(0, prefix);
 
    int x = 20, y = 30;
-   CreateLabel(prefix + "BG", " ", x, y, 260, 150, C'15,23,42', C'51,65,85');
-   CreateLabel(prefix + "TITLE", "⚡ ICT NWOG/NDOG RADAR", x + 12, y + 10, 0, 0, clrWhite, clrNONE, 10, true);
-   CreateLabel(prefix + "RR", StringFormat("R:R Dinámico: 1:%.2f", InpRiskRewardRatio), x + 12, y + 34, 0, 0, C'56,189,248', clrNONE, 9);
-   CreateLabel(prefix + "RISK", StringFormat("Riesgo: %.2f%% (%s)", InpRiskPercent, EnumToString(InpRiskMode)), x + 12, y + 54, 0, 0, C'245,158,11', clrNONE, 9);
-   CreateLabel(prefix + "GAPS", StringFormat("Gaps Monitoreados: %d", ArraySize(m_gaps)), x + 12, y + 74, 0, 0, clrLightGray, clrNONE, 9);
-   CreateLabel(prefix + "SESSION", "Sesión: Evaluando...", x + 12, y + 94, 0, 0, C'52,211,153', clrNONE, 9);
-   CreateLabel(prefix + "STATUS", "Estado: Escaneando CE 50%...", x + 12, y + 114, 0, 0, clrGold, clrNONE, 9);
+   CreateLabel(prefix + "BG", " ", x, y, 280, 175, C'15,23,42', C'51,65,85');
+   CreateLabel(prefix + "TITLE", "⚡ ICT NWOG/NDOG RADAR v2.0", x + 12, y + 10, 0, 0, clrWhite, clrNONE, 10, true);
+   CreateLabel(prefix + "RR", StringFormat("R:R Dinámico: 1:%.2f", InpRiskRewardRatio), x + 12, y + 32, 0, 0, C'56,189,248', clrNONE, 9);
+   CreateLabel(prefix + "RISK", StringFormat("Riesgo: %.2f%% (%s)", InpRiskPercent, EnumToString(InpRiskMode)), x + 12, y + 52, 0, 0, C'245,158,11', clrNONE, 9);
+   CreateLabel(prefix + "TREND", InpUseTrendFilter ? StringFormat("Tendencia: EMA %d (%s)", InpTrendEmaPeriod, EnumToString(InpTrendTF)) : "Tendencia: Filtro Desactivado", x + 12, y + 72, 0, 0, InpUseTrendFilter ? C'52,211,153' : C'148,163,184', clrNONE, 9);
+   CreateLabel(prefix + "INVERSION", StringFormat("Inversión S/R: %s | Anti-Spam: %d bar", InpEnableInversion ? "ON" : "OFF", InpGapCooldownBars), x + 12, y + 92, 0, 0, C'192,132,252', clrNONE, 9);
+   CreateLabel(prefix + "GAPS", StringFormat("Gaps Monitoreados: %d activos", ArraySize(m_gaps)), x + 12, y + 112, 0, 0, clrLightGray, clrNONE, 9);
+   CreateLabel(prefix + "SESSION", "Sesión: Evaluando...", x + 12, y + 132, 0, 0, C'52,211,153', clrNONE, 9);
+   CreateLabel(prefix + "STATUS", "Estado: Escaneando CE 50%...", x + 12, y + 152, 0, 0, clrGold, clrNONE, 9);
 }
 
 void UpdateHUD()
@@ -723,10 +847,14 @@ void UpdateHUD()
    ObjectSetString(0, prefix + "SESSION", OBJPROP_TEXT, "Sesión: " + sessStr);
    ObjectSetInteger(0, prefix + "SESSION", OBJPROP_COLOR, sessColor);
 
-   ObjectSetString(0, prefix + "GAPS", OBJPROP_TEXT, StringFormat("Gaps Monitoreados: %d activos", ArraySize(m_gaps)));
+   int flippedCount = 0;
+   for(int i = 0; i < ArraySize(m_gaps); i++)
+      if(m_gaps[i].isFlipped) flippedCount++;
+
+   ObjectSetString(0, prefix + "GAPS", OBJPROP_TEXT, StringFormat("Gaps: %d activos (%d Inversión)", ArraySize(m_gaps), flippedCount));
 
    int activePos = GetActivePositionsCount();
-   string statusStr = activePos > 0 ? StringFormat("⚡ %d OPERACIÓN ACTIVA (En Curso)", activePos) : "🎯 ESCANEANDO RECHAZO CE 50%";
+   string statusStr = activePos > 0 ? StringFormat("⚡ %d OPERACIÓN ACTIVA", activePos) : "🎯 ESCANEANDO RECHAZO CE 50%";
    color statusColor = activePos > 0 ? C'56,189,248' : clrGold;
 
    ObjectSetString(0, prefix + "STATUS", OBJPROP_TEXT, "Estado: " + statusStr);
