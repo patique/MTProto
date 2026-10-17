@@ -15,29 +15,42 @@
 //--- ENUMERACIONES ---
 enum ENUM_ENTRY_MODE
 {
-   ENTRY_BREAKOUT_M15,    // Rotura de Rango 15m (Configuración Original #1762)
-   ENTRY_MOMENTUM_M1,     // Momentum de vela M1
-   ENTRY_MOMENTUM_M1_HTF, // Gatillo 3: Momentum M1 + Filtro Institucional HTF (H1)
-   ENTRY_MANUAL_DIRECTION // Dirección manual fija
+   ENTRY_EMA20_PULLBACK,  // Inyector 1: Toque y Rechazo de EMA 20 en Tendencia
+   ENTRY_FVG_RETEST,      // Inyector 2: Retest de Fair Value Gap (FVG)
+   ENTRY_IFVG_RETEST,     // Inyector 3: Inverted FVG (Ruptura y Retest de FVG)
+   ENTRY_BPR_RETEST,      // Inyector 4: Balanced Price Range (BPR - Solape de FVGs)
+   ENTRY_CONFLUENCE_ALL,  // Inyector 5: Confluencia (FVG/BPR + EMA 20)
+   ENTRY_BREAKOUT_M15,    // Modo Clásico: Rotura de Rango 15m (#1762 Original)
+   ENTRY_MOMENTUM_M1,     // Modo Clásico: Momentum vela M1
+   ENTRY_MOMENTUM_M1_HTF, // Modo Clásico: Momentum M1 + Filtro HTF (H1)
+   ENTRY_MANUAL_DIRECTION // Modo Manual: Dirección fija
 };
 
 enum ENUM_MANUAL_DIR
 {
-   DIR_BOTH, // Ambos sentidos (según rotura)
+   DIR_BOTH, // Ambos sentidos (según inyector)
    DIR_BUY,  // Solo Compras
    DIR_SELL  // Solo Ventas
 };
 
 //--- PARÁMETROS DE ENTRADA ---
-input group "=== 1. CONFIGURACIÓN DEL CICLO ORIGINAL (#1762) ===";
-input ENUM_ENTRY_MODE    InpEntryMode             = ENTRY_MOMENTUM_M1;  // Gatillo de Entrada (Momentum M1)
-input int                InpRangeLookbackM1       = 15;                 // Periodo de Rango en M1 (minutos)
+input group "=== 1. INYECTORES INSTITUCIONALES DE ENTRADA ===";
+input ENUM_ENTRY_MODE    InpEntryMode             = ENTRY_EMA20_PULLBACK;// Inyector Gatillo de Entrada
+input ENUM_TIMEFRAMES    InpInjectorTF            = PERIOD_M1;          // Temporalidad de Inyección (M1 o M5)
+input int                InpEMA_FastPeriod        = 20;                 // Periodo EMA Rápida Inyector (ej: 20)
+input int                InpEMA_SlowPeriod        = 50;                 // Periodo EMA Lenta Tendencia (ej: 50)
+input double             InpMinFvgSizeUSD         = 0.50;               // Tamaño Mínimo de FVG en $ (0.50$ = 5 pips Oro)
+input int                InpZoneLookbackBars      = 30;                 // Barras de Búsqueda para FVG / iFVG / BPR
+input double             InpMitigationBufferUSD   = 0.25;               // Buffer de Tolerancia al Entrar a la Zona ($)
+input int                InpRangeLookbackM1       = 15;                 // Periodo Lookback Rango (Solo Modo Breakout 15m)
 input ENUM_MANUAL_DIR    InpAllowedDirection      = DIR_BOTH;           // Dirección Permitida
-input double             InpBasketTP_USD          = 2.0;                // Take Profit de Cesta en $ (2.0$ en Oro)
+
+input group "=== 2. OBJETIVOS Y RE-ENTRADAS ===";
+input double             InpBasketTP_USD          = 2.0;                // Take Profit de Inyección en $ (2$, 3$, 4$, etc.)
 input double             InpReentryStep_USD       = 3.5;                // Distancia para Re-entrada en $ (3.5$ en Oro)
 input int                InpMinReentrySeconds     = 60;                 // Tiempo mínimo entre órdenes (segundos)
 
-input group "=== 2. CORTACIRCUITOS DE VOLATILIDAD (CIRCUIT BREAKER) ===";
+input group "=== 3. CORTACIRCUITOS DE VOLATILIDAD (CIRCUIT BREAKER) ===";
 input bool               InpEnableCircuitBreaker  = true;               // Activar Cortacircuitos de Volatilidad Anormal
 input double             InpMaxPrevH1RangeUSD     = 45.0;               // Rango Máximo Permitido en última vela H1 ($45.0)
 input double             InpMaxDailyRangeUSD      = 100.0;              // Rango Diario Acumulado Máximo en D1 ($100.0)
@@ -108,8 +121,9 @@ input int                InpFridayCloseMinES      = 15;                 // Minut
 input group "=== 6. PROTECCIONES Y SEGURIDAD ===";
 input double             InpMaxSpreadUSD          = 0.60;               // Spread Máximo Permitido en $
 input double             InpMinMarginLevelPct     = 150.0;              // Nivel Mínimo de Margen Libre (%)
-input double             InpEmergencyBasketSL     = 25.0;               // SL de Emergencia en $ (25$ = Corte de protección)
-input double             InpDailyTargetUSD        = 0.0;                // Meta Diaria de Beneficio en $ (0 = Ilimitado)
+input double             InpEmergencyBasketSL     = 25.0;               // SL de Emergencia por Cesta en $ (0 = Desactivado)
+input double             InpDailyTargetUSD        = 100.0;              // PnL Diario: Meta de Ganancia Máxima en $ (+$100 = Congelar)
+input double             InpDailyMaxLossUSD       = 30.0;               // PnL Diario: Límite de Pérdida Máxima en $ (-$30 = Congelar)
 input bool               InpEnableHedgingLock     = false;              // Candado de Cobertura (Step 7 Hedging Lock) - OFF
 input double             InpHedgeStepOffsetUSD    = 3.5;                // Distancia tras Orden 6 para activar Hedge ($3.5 = Step 7)
 input double             InpHedgeReleaseHystUSD   = 0.5;                // Histéresis de rebote para liberar Hedge ($0.50)
@@ -130,7 +144,55 @@ double            m_closedCyclesProfit  = 0.0;
 double            m_dayStartBalance     = 0.0;
 datetime          m_lastDayCheck        = 0;
 int               m_htfEmaHandle        = INVALID_HANDLE;
+int               m_ema20Handle         = INVALID_HANDLE;
+int               m_ema50Handle         = INVALID_HANDLE;
+datetime          m_lastEntryBarTime    = 0;
 bool              m_hedgeActive         = false;
+bool              m_dailyHalted         = false;
+string            m_dailyHaltReason     = "";
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+//| Calcula el PnL cerrado hoy (Profit + Swap + Comm + Fee) por Magic|
+//+------------------------------------------------------------------+
+double GetDailyRealizedProfit(datetime currentTime)
+{
+   MqlDateTime dt;
+   TimeToStruct(currentTime, dt);
+   dt.hour = 0;
+   dt.min  = 0;
+   dt.sec  = 0;
+   datetime startOfDay = StructToTime(dt);
+
+   if(!HistorySelect(startOfDay, currentTime))
+      return 0.0;
+
+   double profit = 0.0;
+   int totalDeals = HistoryDealsTotal();
+   ulong hedgeMagic = InpMagicNumber + 999;
+
+   for(int i = 0; i < totalDeals; i++)
+   {
+      ulong ticket = HistoryDealGetTicket(i);
+      if(ticket > 0)
+      {
+         ulong magic = HistoryDealGetInteger(ticket, DEAL_MAGIC);
+         if(magic == InpMagicNumber || magic == hedgeMagic)
+         {
+            long entry = HistoryDealGetInteger(ticket, DEAL_ENTRY);
+            if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT || entry == DEAL_ENTRY_OUT_BY)
+            {
+               profit += HistoryDealGetDouble(ticket, DEAL_PROFIT)
+                       + HistoryDealGetDouble(ticket, DEAL_SWAP)
+                       + HistoryDealGetDouble(ticket, DEAL_COMMISSION)
+                       + HistoryDealGetDouble(ticket, DEAL_FEE);
+            }
+         }
+      }
+   }
+   return NormalizeDouble(profit, 2);
+}
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -141,8 +203,27 @@ int OnInit()
    m_trade.SetMarginMode();
    m_trade.SetTypeFillingBySymbol(_Symbol);
 
-   m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
-   m_lastDayCheck    = TimeCurrent();
+   m_dayStartBalance  = AccountInfoDouble(ACCOUNT_BALANCE);
+   m_lastDayCheck     = TimeCurrent();
+   m_dailyHalted      = false;
+   m_dailyHaltReason  = "";
+   m_lastEntryBarTime = 0;
+
+   double realizedToday = GetDailyRealizedProfit(m_lastDayCheck);
+   if(InpDailyTargetUSD > 0.0 && realizedToday >= InpDailyTargetUSD)
+   {
+      m_dailyHalted = true;
+      m_dailyHaltReason = StringFormat("CONGELADO: META DIARIA +$%.2f ALCANZADA", InpDailyTargetUSD);
+      PrintFormat("🎯 [INIT CHECK] Meta diaria ya alcanzada hoy ($%.2f >= $%.2f). Operativa congelada hasta mañana.",
+                  realizedToday, InpDailyTargetUSD);
+   }
+   else if(InpDailyMaxLossUSD > 0.0 && realizedToday <= -InpDailyMaxLossUSD)
+   {
+      m_dailyHalted = true;
+      m_dailyHaltReason = StringFormat("CONGELADO: LÍMITE PÉRDIDA -$%.2f ALCANZADO", InpDailyMaxLossUSD);
+      PrintFormat("🛑 [INIT CHECK] Pérdida máxima diaria ya alcanzada hoy ($%.2f <= -$%.2f). Operativa congelada hasta mañana.",
+                  realizedToday, InpDailyMaxLossUSD);
+   }
 
    if(InpEntryMode == ENTRY_MOMENTUM_M1_HTF)
    {
@@ -150,8 +231,16 @@ int OnInit()
       PrintFormat("📊 [Filtro HTF Activado] Temporalidad: %s | Periodo EMA: %d", EnumToString(InpHTFTimeframe), InpHTF_EMA_Period);
    }
 
-   PrintFormat("🚀 [EA_XAUUSD_Burst_Scalper_1762] Modo: %s | TP: %.2f$ | Step: %.2f$ | Mult: %.2fx",
-               EnumToString(InpEntryMode), InpBasketTP_USD, InpReentryStep_USD, InpLotMultiplier);
+   if(InpEntryMode == ENTRY_EMA20_PULLBACK || InpEntryMode == ENTRY_CONFLUENCE_ALL || InpEntryMode == ENTRY_FVG_RETEST || InpEntryMode == ENTRY_IFVG_RETEST || InpEntryMode == ENTRY_BPR_RETEST)
+   {
+      m_ema20Handle = iMA(_Symbol, InpInjectorTF, InpEMA_FastPeriod, 0, MODE_EMA, PRICE_CLOSE);
+      m_ema50Handle = iMA(_Symbol, InpInjectorTF, InpEMA_SlowPeriod, 0, MODE_EMA, PRICE_CLOSE);
+      PrintFormat("🎯 [Inyector Institucional Activado] Modo: %s | TF: %s | EMA Rápida: %d | EMA Lenta: %d",
+                  EnumToString(InpEntryMode), EnumToString(InpInjectorTF), InpEMA_FastPeriod, InpEMA_SlowPeriod);
+   }
+
+   PrintFormat("🚀 [EA_XAUUSD_Burst_Scalper_1762] Modo: %s | TP: %.2f$ | Step: %.2f$ | Mult: %.2fx | Meta: +$%.2f | MaxSL: -$%.2f",
+               EnumToString(InpEntryMode), InpBasketTP_USD, InpReentryStep_USD, InpLotMultiplier, InpDailyTargetUSD, InpDailyMaxLossUSD);
 
    if(InpShowDashboard)
       CreateDashboard();
@@ -166,6 +255,10 @@ void OnDeinit(const int reason)
 {
    if(m_htfEmaHandle != INVALID_HANDLE)
       IndicatorRelease(m_htfEmaHandle);
+   if(m_ema20Handle != INVALID_HANDLE)
+      IndicatorRelease(m_ema20Handle);
+   if(m_ema50Handle != INVALID_HANDLE)
+      IndicatorRelease(m_ema50Handle);
 
    if(InpShowDashboard)
       DestroyDashboard();
@@ -178,28 +271,58 @@ void OnTick()
 {
    datetime now = TimeCurrent();
 
-   // 1. Control de reseteo diario
+   // 1. Control de reseteo diario (medianoche del broker)
    MqlDateTime dt_now, dt_last;
    TimeToStruct(now, dt_now);
    TimeToStruct(m_lastDayCheck, dt_last);
    if(dt_now.day != dt_last.day)
    {
       m_dayStartBalance = AccountInfoDouble(ACCOUNT_BALANCE);
-      m_lastDayCheck = now;
+      m_lastDayCheck    = now;
+      m_dailyHalted     = false;
+      m_dailyHaltReason = "";
+      PrintFormat("🌅 [NUEVO DÍA %04d.%02d.%02d] Protecciones diarias reseteadas. Operativa desbloqueada.",
+                  dt_now.year, dt_now.mon, dt_now.day);
    }
 
-   // 2. Control de meta diaria si está configurada
-   if(InpDailyTargetUSD > 0.0)
+   // 2. Si la operativa ya está congelada por haber tocado meta o pérdida máxima diaria
+   if(m_dailyHalted)
    {
-      double currentDailyGain = AccountInfoDouble(ACCOUNT_BALANCE) - m_dayStartBalance;
-      if(currentDailyGain >= InpDailyTargetUSD && CountOpenOrders() == 0)
+      if(CountOpenOrders() > 0)
       {
-         UpdateDashboard("Meta diaria conseguida. Operativa en pausa.");
-         return;
+         PrintFormat("🛑 [CONGELADO DIARIO] Asegurando cierre de órdenes residuales...");
+         CloseEntireBasket();
       }
+      UpdateDashboard(m_dailyHaltReason);
+      return;
    }
 
-   // 3. CIERRE FORZOSO NOCTURNO Y DE FIN DE SEMANA (NO OVERNIGHT / NO WEEKEND HOLDING)
+   // 3. Inspeccionar PnL ya cerrado hoy (por Magic del EA) para comprobar si se tocaron límites
+   double realizedToday = GetDailyRealizedProfit(now);
+
+   if(InpDailyTargetUSD > 0.0 && realizedToday >= InpDailyTargetUSD)
+   {
+      m_dailyHalted = true;
+      m_dailyHaltReason = StringFormat("CONGELADO: META DIARIA +$%.2f ALCANZADA", InpDailyTargetUSD);
+      PrintFormat("🎯 [META DIARIA ALCANZADA] Profit cerrado hoy ($%.2f) >= Meta ($%.2f) -> Congelando hasta mañana.",
+                  realizedToday, InpDailyTargetUSD);
+      if(CountOpenOrders() > 0) CloseEntireBasket();
+      UpdateDashboard(m_dailyHaltReason);
+      return;
+   }
+
+   if(InpDailyMaxLossUSD > 0.0 && realizedToday <= -InpDailyMaxLossUSD)
+   {
+      m_dailyHalted = true;
+      m_dailyHaltReason = StringFormat("CONGELADO: LÍMITE PÉRDIDA -$%.2f ALCANZADO", InpDailyMaxLossUSD);
+      PrintFormat("🛑 [LÍMITE PÉRDIDA DIARIA] Pérdida cerrada hoy ($%.2f) <= -$%.2f -> Congelando hasta mañana.",
+                  realizedToday, InpDailyMaxLossUSD);
+      if(CountOpenOrders() > 0) CloseEntireBasket();
+      UpdateDashboard(m_dailyHaltReason);
+      return;
+   }
+
+   // 4. CIERRE FORZOSO NOCTURNO Y DE FIN DE SEMANA (NO OVERNIGHT / NO WEEKEND HOLDING)
    if(IsForceCloseTime(now))
    {
       if(CountOpenOrders() > 0)
@@ -212,7 +335,7 @@ void OnTick()
       return;
    }
 
-   // 4. Inspeccionar el estado de la cesta actual
+   // 5. Inspeccionar el estado de la cesta actual
    int openCount = 0;
    long cycleType = -1; // 0 = BUY, 1 = SELL
    double totalLots = 0.0;
@@ -222,9 +345,40 @@ void OnTick()
 
    GetBasketState(openCount, cycleType, totalLots, weightedEntry, lastOrderPrice, totalFloatingProfit);
 
-   // 4. Si hay órdenes abiertas, gestionar Take Profit de Cesta o Re-entradas
+   // 6. Si hay órdenes abiertas, gestionar cortacircuitos de flotante diario, TP o Re-entradas
    if(openCount > 0)
    {
+      // A) Comprobación de corte inmediato por flotante (Meta diaria o Límite de pérdida diaria)
+      double totalDailyPnL = realizedToday + totalFloatingProfit;
+
+      // Si la ganancia diaria total (cerrada + flotante) alcanza la meta máxima
+      if(InpDailyTargetUSD > 0.0 && totalDailyPnL >= InpDailyTargetUSD)
+      {
+         PrintFormat("🎯 [CORTE POR META DIARIA FLOTANTE] PnL Diario: $%.2f (Cerrado: $%.2f | Flotante: $%.2f | Meta: +$%.2f) -> CERRANDO CESTA Y CONGELANDO HASTA MAÑANA",
+                     totalDailyPnL, realizedToday, totalFloatingProfit, InpDailyTargetUSD);
+         CloseEntireBasket();
+         m_dailyHalted = true;
+         m_dailyHaltReason = StringFormat("CONGELADO: META DIARIA +$%.2f ALCANZADA", InpDailyTargetUSD);
+         m_closedCyclesCount++;
+         m_closedCyclesProfit += totalFloatingProfit;
+         m_lastOrderTime = TimeCurrent();
+         UpdateDashboard(m_dailyHaltReason);
+         return;
+      }
+
+      // Si la pérdida diaria total (cerrada + flotante) alcanza el límite máximo de pérdida
+      if(InpDailyMaxLossUSD > 0.0 && totalDailyPnL <= -InpDailyMaxLossUSD)
+      {
+         PrintFormat("🛑 [CORTE POR LÍMITE PÉRDIDA FLOTANTE] PnL Diario: $%.2f (Cerrado: $%.2f | Flotante: $%.2f | Límite: -$%.2f) -> CERRANDO CESTA Y CONGELANDO HASTA MAÑANA",
+                     totalDailyPnL, realizedToday, totalFloatingProfit, InpDailyMaxLossUSD);
+         CloseEntireBasket();
+         m_dailyHalted = true;
+         m_dailyHaltReason = StringFormat("CONGELADO: LÍMITE PÉRDIDA -$%.2f ALCANZADO", InpDailyMaxLossUSD);
+         m_lastOrderTime = TimeCurrent();
+         UpdateDashboard(m_dailyHaltReason);
+         return;
+      }
+
       double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       double currentSpread = currentAsk - currentBid;
@@ -254,17 +408,39 @@ void OnTick()
          m_closedCyclesCount++;
          m_closedCyclesProfit += totalFloatingProfit;
          m_lastOrderTime = TimeCurrent();
+
+         // Comprobar si al cerrar TP se alcanzó la meta diaria
+         double afterRealized = GetDailyRealizedProfit(TimeCurrent());
+         if(InpDailyTargetUSD > 0.0 && afterRealized >= InpDailyTargetUSD)
+         {
+            m_dailyHalted = true;
+            m_dailyHaltReason = StringFormat("CONGELADO: META DIARIA +$%.2f ALCANZADA", InpDailyTargetUSD);
+            UpdateDashboard(m_dailyHaltReason);
+            return;
+         }
+
          UpdateDashboard("Ciclo cerrado en TP con éxito");
          return;
       }
 
-      // Evaluar SL de emergencia si estuviera activo
+      // Evaluar SL de emergencia individual de cesta si estuviera activo
       if(InpEmergencyBasketSL > 0.0 && totalFloatingProfit <= -InpEmergencyBasketSL)
       {
          PrintFormat("🛑 [SL Emergencia Cesta] Ciclo #%d cerrado por SL | Flotante: $%.2f",
                      m_currentCycleId, totalFloatingProfit);
          CloseEntireBasket();
          m_lastOrderTime = TimeCurrent();
+
+         // Comprobar si tras SL de cesta se alcanzó el límite de pérdida diaria
+         double afterRealized = GetDailyRealizedProfit(TimeCurrent());
+         if(InpDailyMaxLossUSD > 0.0 && afterRealized <= -InpDailyMaxLossUSD)
+         {
+            m_dailyHalted = true;
+            m_dailyHaltReason = StringFormat("CONGELADO: LÍMITE PÉRDIDA -$%.2f ALCANZADO", InpDailyMaxLossUSD);
+            UpdateDashboard(m_dailyHaltReason);
+            return;
+         }
+
          UpdateDashboard("Cesta cerrada por SL de emergencia");
          return;
       }
@@ -579,111 +755,476 @@ bool IsCircuitBreakerTriggered(string &reason)
 }
 
 //+------------------------------------------------------------------+
-//| Evalúa la señal de rotura de rango (Configuración #1762)         |
+//| Estructura interna para almacenar un FVG                         |
+//+------------------------------------------------------------------+
+struct FvgZone
+{
+   bool     isBullish;
+   double   top;
+   double   bottom;
+   datetime time;
+   bool     isMitigated;
+   bool     isInverted;
+};
+
+//+------------------------------------------------------------------+
+//| Inyector 1: Toque y Rechazo de EMA 20 en Dirección de Tendencia   |
+//+------------------------------------------------------------------+
+bool CheckEma20Pullback(ENUM_POSITION_TYPE &direction)
+{
+   if(m_ema20Handle == INVALID_HANDLE)
+      m_ema20Handle = iMA(_Symbol, InpInjectorTF, InpEMA_FastPeriod, 0, MODE_EMA, PRICE_CLOSE);
+   if(m_ema50Handle == INVALID_HANDLE)
+      m_ema50Handle = iMA(_Symbol, InpInjectorTF, InpEMA_SlowPeriod, 0, MODE_EMA, PRICE_CLOSE);
+
+   double ema20[], ema50[];
+   ArraySetAsSeries(ema20, true);
+   ArraySetAsSeries(ema50, true);
+   if(CopyBuffer(m_ema20Handle, 0, 0, 3, ema20) < 3) return false;
+   if(CopyBuffer(m_ema50Handle, 0, 0, 3, ema50) < 3) return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, InpInjectorTF, 0, 3, rates) < 3) return false;
+
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+   // Tendencia Alcista: EMA 20 > EMA 50
+   if(ema20[1] > ema50[1] && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
+   {
+      // El precio testeó la EMA 20 (vela 1 o vela actual tocó el rango de la EMA)
+      bool touchedEma = (rates[1].low <= (ema20[1] + InpMitigationBufferUSD) && rates[1].close >= (ema20[1] - InpMitigationBufferUSD));
+      bool bouncingUp = (currentBid > ema20[0] && rates[1].close > rates[1].open);
+
+      if(touchedEma && bouncingUp)
+      {
+         direction = POSITION_TYPE_BUY;
+         return true;
+      }
+   }
+
+   // Tendencia Bajista: EMA 20 < EMA 50
+   if(ema20[1] < ema50[1] && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+   {
+      // El precio testeó la EMA 20 desde abajo
+      bool touchedEma = (rates[1].high >= (ema20[1] - InpMitigationBufferUSD) && rates[1].close <= (ema20[1] + InpMitigationBufferUSD));
+      bool bouncingDown = (currentAsk < ema20[0] && rates[1].close < rates[1].open);
+
+      if(touchedEma && bouncingDown)
+      {
+         direction = POSITION_TYPE_SELL;
+         return true;
+      }
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Escaneo de FVGs recientes en el lookback                         |
+//+------------------------------------------------------------------+
+void ScanRecentFVGs(FvgZone &bullishFvgs[], FvgZone &bearishFvgs[], const MqlRates &rates[], int totalRates)
+{
+   ArrayResize(bullishFvgs, 0);
+   ArrayResize(bearishFvgs, 0);
+
+   int scanLimit = MathMin(InpZoneLookbackBars, totalRates - 3);
+
+   for(int i = 1; i <= scanLimit; i++)
+   {
+      // Bullish FVG: Low de vela i > High de vela i+2
+      if(rates[i].low > rates[i + 2].high)
+      {
+         double gap = rates[i].low - rates[i + 2].high;
+         if(gap >= InpMinFvgSizeUSD)
+         {
+            int s = ArraySize(bullishFvgs);
+            ArrayResize(bullishFvgs, s + 1);
+            bullishFvgs[s].isBullish   = true;
+            bullishFvgs[s].top         = rates[i].low;
+            bullishFvgs[s].bottom      = rates[i + 2].high;
+            bullishFvgs[s].time        = rates[i].time;
+            bullishFvgs[s].isMitigated = false;
+            bullishFvgs[s].isInverted  = false;
+
+            // Comprobar si fue violado hacia abajo (para iFVG)
+            for(int j = i - 1; j >= 1; j--)
+            {
+               if(rates[j].close < bullishFvgs[s].bottom)
+               {
+                  bullishFvgs[s].isInverted = true;
+                  break;
+               }
+            }
+         }
+      }
+
+      // Bearish FVG: High de vela i < Low de vela i+2
+      if(rates[i].high < rates[i + 2].low)
+      {
+         double gap = rates[i + 2].low - rates[i].high;
+         if(gap >= InpMinFvgSizeUSD)
+         {
+            int s = ArraySize(bearishFvgs);
+            ArrayResize(bearishFvgs, s + 1);
+            bearishFvgs[s].isBullish   = false;
+            bearishFvgs[s].top         = rates[i + 2].low;
+            bearishFvgs[s].bottom      = rates[i].high;
+            bearishFvgs[s].time        = rates[i].time;
+            bearishFvgs[s].isMitigated = false;
+            bearishFvgs[s].isInverted  = false;
+
+            // Comprobar si fue violado hacia arriba (para iFVG)
+            for(int j = i - 1; j >= 1; j--)
+            {
+               if(rates[j].close > bearishFvgs[s].top)
+               {
+                  bearishFvgs[s].isInverted = true;
+                  break;
+               }
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Inyector 2: Retest y Mitigación de FVG en dirección de tendencia |
+//+------------------------------------------------------------------+
+bool CheckFvgRetest(ENUM_POSITION_TYPE &direction)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   int copied = CopyRates(_Symbol, InpInjectorTF, 0, InpZoneLookbackBars + 5, rates);
+   if(copied < InpZoneLookbackBars + 5) return false;
+
+   FvgZone bullFvgs[], bearFvgs[];
+   ScanRecentFVGs(bullFvgs, bearFvgs, rates, copied);
+
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+   // Comprobar Bullish FVG Retest (Compras)
+   if(InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY)
+   {
+      for(int i = 0; i < ArraySize(bullFvgs); i++)
+      {
+         if(!bullFvgs[i].isInverted)
+         {
+            // El precio actual está testeando el FVG alcista
+            if(currentBid <= (bullFvgs[i].top + InpMitigationBufferUSD) && currentBid >= (bullFvgs[i].bottom - InpMitigationBufferUSD))
+            {
+               // Vela previa o actual mostrando rechazo alcista
+               if(rates[1].close > rates[1].open || currentBid > rates[0].open)
+               {
+                  direction = POSITION_TYPE_BUY;
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   // Comprobar Bearish FVG Retest (Ventas)
+   if(InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL)
+   {
+      for(int i = 0; i < ArraySize(bearFvgs); i++)
+      {
+         if(!bearFvgs[i].isInverted)
+         {
+            // El precio actual está testeando el FVG bajista
+            if(currentAsk >= (bearFvgs[i].bottom - InpMitigationBufferUSD) && currentAsk <= (bearFvgs[i].top + InpMitigationBufferUSD))
+            {
+               // Vela previa o actual mostrando rechazo bajista
+               if(rates[1].close < rates[1].open || currentAsk < rates[0].open)
+               {
+                  direction = POSITION_TYPE_SELL;
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Inyector 3: Retest de Inverted FVG (iFVG - Cambio de Polaridad)  |
+//+------------------------------------------------------------------+
+bool CheckInvertedFvgRetest(ENUM_POSITION_TYPE &direction)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   int copied = CopyRates(_Symbol, InpInjectorTF, 0, InpZoneLookbackBars + 5, rates);
+   if(copied < InpZoneLookbackBars + 5) return false;
+
+   FvgZone bullFvgs[], bearFvgs[];
+   ScanRecentFVGs(bullFvgs, bearFvgs, rates, copied);
+
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+   // Comprobar iFVG Alcista: FVG bajista roto al alza, ahora testeado como Soporte
+   if(InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY)
+   {
+      for(int i = 0; i < ArraySize(bearFvgs); i++)
+      {
+         if(bearFvgs[i].isInverted)
+         {
+            // El precio viene desde arriba a apoyarse en el techo/suelo del iFVG
+            if(currentBid <= (bearFvgs[i].top + InpMitigationBufferUSD) && currentBid >= (bearFvgs[i].bottom - InpMitigationBufferUSD))
+            {
+               if(rates[1].close >= bearFvgs[i].bottom && (rates[1].close > rates[1].open || currentBid > rates[0].open))
+               {
+                  direction = POSITION_TYPE_BUY;
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   // Comprobar iFVG Bajista: FVG alcista roto a la baja, ahora testeado como Resistencia
+   if(InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL)
+   {
+      for(int i = 0; i < ArraySize(bullFvgs); i++)
+      {
+         if(bullFvgs[i].isInverted)
+         {
+            // El precio viene desde abajo a apoyarse en el suelo/techo del iFVG
+            if(currentAsk >= (bullFvgs[i].bottom - InpMitigationBufferUSD) && currentAsk <= (bullFvgs[i].top + InpMitigationBufferUSD))
+            {
+               if(rates[1].close <= bullFvgs[i].top && (rates[1].close < rates[1].open || currentAsk < rates[0].open))
+               {
+                  direction = POSITION_TYPE_SELL;
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Inyector 4: Balanced Price Range (BPR - Solape de FVGs)          |
+//+------------------------------------------------------------------+
+bool CheckBprRetest(ENUM_POSITION_TYPE &direction)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   int copied = CopyRates(_Symbol, InpInjectorTF, 0, InpZoneLookbackBars + 5, rates);
+   if(copied < InpZoneLookbackBars + 5) return false;
+
+   FvgZone bullFvgs[], bearFvgs[];
+   ScanRecentFVGs(bullFvgs, bearFvgs, rates, copied);
+
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+   // Buscar solape entre FVG Alcista y Bajista
+   for(int b = 0; b < ArraySize(bullFvgs); b++)
+   {
+      for(int s = 0; s < ArraySize(bearFvgs); s++)
+      {
+         double overlapTop    = MathMin(bullFvgs[b].top, bearFvgs[s].top);
+         double overlapBottom = MathMax(bullFvgs[b].bottom, bearFvgs[s].bottom);
+
+         if((overlapTop - overlapBottom) >= (InpMinFvgSizeUSD * 0.5)) // Solape BPR válido
+         {
+            // Comprobar si el precio actual está en la zona BPR
+            if(currentBid >= (overlapBottom - InpMitigationBufferUSD) && currentAsk <= (overlapTop + InpMitigationBufferUSD))
+            {
+               // Determinar sesgo por cuál FVG se formó más recientemente
+               bool isExpansionBullish = (bullFvgs[b].time >= bearFvgs[s].time);
+
+               if(isExpansionBullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
+               {
+                  direction = POSITION_TYPE_BUY;
+                  return true;
+               }
+               else if(!isExpansionBullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+               {
+                  direction = POSITION_TYPE_SELL;
+                  return true;
+               }
+            }
+         }
+      }
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Inyector 5: Confluencia (FVG / BPR + EMA 20)                     |
+//+------------------------------------------------------------------+
+bool CheckConfluenceAll(ENUM_POSITION_TYPE &direction)
+{
+   ENUM_POSITION_TYPE dirEma;
+   ENUM_POSITION_TYPE dirFvg;
+
+   bool emaOk = CheckEma20Pullback(dirEma);
+   bool fvgOk = CheckFvgRetest(dirFvg) || CheckInvertedFvgRetest(dirFvg) || CheckBprRetest(dirFvg);
+
+   if(emaOk && fvgOk && dirEma == dirFvg)
+   {
+      direction = dirEma;
+      return true;
+   }
+
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Modos Clásicos: Rotura 15m y Momentum                            |
+//+------------------------------------------------------------------+
+bool CheckBreakoutM15(ENUM_POSITION_TYPE &direction)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   int copied = CopyRates(_Symbol, PERIOD_M1, 1, InpRangeLookbackM1, rates);
+   if(copied < InpRangeLookbackM1) return false;
+
+   double highestHigh = -1.0;
+   double lowestLow   = 9999999.0;
+
+   for(int i = 0; i < copied; i++)
+   {
+      if(rates[i].high > highestHigh) highestHigh = rates[i].high;
+      if(rates[i].low < lowestLow)    lowestLow   = rates[i].low;
+   }
+
+   double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+   if(currentBid >= highestHigh && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
+   {
+      direction = POSITION_TYPE_BUY;
+      return true;
+   }
+   if(currentAsk <= lowestLow && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+   {
+      direction = POSITION_TYPE_SELL;
+      return true;
+   }
+   return false;
+}
+
+bool CheckMomentumM1(ENUM_POSITION_TYPE &direction)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, PERIOD_M1, 1, 1, rates) > 0)
+   {
+      if(rates[0].close > rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
+      {
+         direction = POSITION_TYPE_BUY;
+         return true;
+      }
+      else if(rates[0].close < rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+      {
+         direction = POSITION_TYPE_SELL;
+         return true;
+      }
+   }
+   return false;
+}
+
+bool CheckMomentumM1_HTF(ENUM_POSITION_TYPE &direction)
+{
+   if(m_htfEmaHandle == INVALID_HANDLE)
+      m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
+
+   double emaValues[];
+   ArraySetAsSeries(emaValues, true);
+   if(CopyBuffer(m_htfEmaHandle, 0, 1, 1, emaValues) <= 0) return false;
+
+   MqlRates htfRates[];
+   ArraySetAsSeries(htfRates, true);
+   if(CopyRates(_Symbol, InpHTFTimeframe, 1, 1, htfRates) <= 0) return false;
+
+   bool htfBullish = (htfRates[0].close > emaValues[0]);
+   bool htfBearish = (htfRates[0].close < emaValues[0]);
+
+   MqlRates m1Rates[];
+   ArraySetAsSeries(m1Rates, true);
+   if(CopyRates(_Symbol, PERIOD_M1, 1, 1, m1Rates) <= 0) return false;
+
+   bool m1Bullish = (m1Rates[0].close > m1Rates[0].open);
+   bool m1Bearish = (m1Rates[0].close < m1Rates[0].open);
+
+   if(htfBullish && m1Bullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
+   {
+      direction = POSITION_TYPE_BUY;
+      return true;
+   }
+   else if(htfBearish && m1Bearish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
+   {
+      direction = POSITION_TYPE_SELL;
+      return true;
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Evaluador Principal de Señal de Inyección                        |
 //+------------------------------------------------------------------+
 bool CheckNewEntrySignal(ENUM_POSITION_TYPE &direction)
 {
-   if(InpEntryMode == ENTRY_BREAKOUT_M15)
+   datetime currentBarTime = iTime(_Symbol, InpInjectorTF, 0);
+   if(currentBarTime == m_lastEntryBarTime)
+      return false;
+
+   bool signalTriggered = false;
+
+   switch(InpEntryMode)
    {
-      MqlRates rates[];
-      ArraySetAsSeries(rates, true);
-      int copied = CopyRates(_Symbol, PERIOD_M1, 1, InpRangeLookbackM1, rates);
-      if(copied < InpRangeLookbackM1)
-         return false;
+      case ENTRY_EMA20_PULLBACK:
+         signalTriggered = CheckEma20Pullback(direction);
+         break;
 
-      double highestHigh = -1.0;
-      double lowestLow   = 9999999.0;
+      case ENTRY_FVG_RETEST:
+         signalTriggered = CheckFvgRetest(direction);
+         break;
 
-      for(int i = 0; i < copied; i++)
-      {
-         if(rates[i].high > highestHigh) highestHigh = rates[i].high;
-         if(rates[i].low < lowestLow)    lowestLow   = rates[i].low;
-      }
+      case ENTRY_IFVG_RETEST:
+         signalTriggered = CheckInvertedFvgRetest(direction);
+         break;
 
-      double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-      double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      case ENTRY_BPR_RETEST:
+         signalTriggered = CheckBprRetest(direction);
+         break;
 
-      if(currentBid >= highestHigh && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
-      {
-         direction = POSITION_TYPE_BUY;
-         return true;
-      }
-      if(currentAsk <= lowestLow && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
-      {
-         direction = POSITION_TYPE_SELL;
-         return true;
-      }
+      case ENTRY_CONFLUENCE_ALL:
+         signalTriggered = CheckConfluenceAll(direction);
+         break;
+
+      case ENTRY_BREAKOUT_M15:
+         signalTriggered = CheckBreakoutM15(direction);
+         break;
+
+      case ENTRY_MOMENTUM_M1:
+         signalTriggered = CheckMomentumM1(direction);
+         break;
+
+      case ENTRY_MOMENTUM_M1_HTF:
+         signalTriggered = CheckMomentumM1_HTF(direction);
+         break;
+
+      case ENTRY_MANUAL_DIRECTION:
+         if(InpAllowedDirection == DIR_BUY) { direction = POSITION_TYPE_BUY; signalTriggered = true; }
+         else if(InpAllowedDirection == DIR_SELL) { direction = POSITION_TYPE_SELL; signalTriggered = true; }
+         break;
    }
-   else if(InpEntryMode == ENTRY_MOMENTUM_M1)
+
+   if(signalTriggered)
    {
-      MqlRates rates[];
-      ArraySetAsSeries(rates, true);
-      if(CopyRates(_Symbol, PERIOD_M1, 1, 1, rates) > 0)
-      {
-         if(rates[0].close > rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
-         {
-            direction = POSITION_TYPE_BUY;
-            return true;
-         }
-         else if(rates[0].close < rates[0].open && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
-         {
-            direction = POSITION_TYPE_SELL;
-            return true;
-         }
-      }
-   }
-   else if(InpEntryMode == ENTRY_MOMENTUM_M1_HTF)
-   {
-      // 1. Obtener tendencia HTF (ej: H1 con EMA 50)
-      if(m_htfEmaHandle == INVALID_HANDLE)
-         m_htfEmaHandle = iMA(_Symbol, InpHTFTimeframe, InpHTF_EMA_Period, 0, MODE_EMA, PRICE_CLOSE);
-
-      double emaValues[];
-      ArraySetAsSeries(emaValues, true);
-      if(CopyBuffer(m_htfEmaHandle, 0, 1, 1, emaValues) <= 0)
-         return false;
-
-      MqlRates htfRates[];
-      ArraySetAsSeries(htfRates, true);
-      if(CopyRates(_Symbol, InpHTFTimeframe, 1, 1, htfRates) <= 0)
-         return false;
-
-      bool htfBullish = (htfRates[0].close > emaValues[0]);
-      bool htfBearish = (htfRates[0].close < emaValues[0]);
-
-      // 2. Obtener momentum M1 (última vela cerrada)
-      MqlRates m1Rates[];
-      ArraySetAsSeries(m1Rates, true);
-      if(CopyRates(_Symbol, PERIOD_M1, 1, 1, m1Rates) <= 0)
-         return false;
-
-      bool m1Bullish = (m1Rates[0].close > m1Rates[0].open);
-      bool m1Bearish = (m1Rates[0].close < m1Rates[0].open);
-
-      // 3. Gatillo: Solo disparamos M1 en la misma dirección que la tendencia HTF
-      if(htfBullish && m1Bullish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_BUY))
-      {
-         direction = POSITION_TYPE_BUY;
-         return true;
-      }
-      else if(htfBearish && m1Bearish && (InpAllowedDirection == DIR_BOTH || InpAllowedDirection == DIR_SELL))
-      {
-         direction = POSITION_TYPE_SELL;
-         return true;
-      }
-   }
-   else if(InpEntryMode == ENTRY_MANUAL_DIRECTION)
-   {
-      if(InpAllowedDirection == DIR_BUY)
-      {
-         direction = POSITION_TYPE_BUY;
-         return true;
-      }
-      else if(InpAllowedDirection == DIR_SELL)
-      {
-         direction = POSITION_TYPE_SELL;
-         return true;
-      }
+      m_lastEntryBarTime = currentBarTime;
+      return true;
    }
 
    return false;
@@ -903,7 +1444,7 @@ void CreateDashboard()
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_XDISTANCE, x + 12);
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_YDISTANCE, y + 32);
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_COLOR, clrSilver);
-   ObjectSetString(0, prefix + "SUB", OBJPROP_TEXT, "Zonas Seguras: 09:00-12:30 y 18:00-21:30 ES");
+   ObjectSetString(0, prefix + "SUB", OBJPROP_TEXT, StringFormat("Inyector: %s (%s)", EnumToString(InpEntryMode), EnumToString(InpInjectorTF)));
    ObjectSetString(0, prefix + "SUB", OBJPROP_FONT, "Segoe UI");
    ObjectSetInteger(0, prefix + "SUB", OBJPROP_FONTSIZE, 8);
 
@@ -958,13 +1499,20 @@ void UpdateDashboard(string statusMsg)
       targetDistStr = StringFormat("%.2f$ (%.1fp)", dist, dist * 10);
    }
 
-   SetLabelText(prefix + "LINE_0", StringFormat("Estado: %s", (statusMsg != "" ? statusMsg : dirStr)), dirColor);
+   double realizedToday = GetDailyRealizedProfit(serverTime);
+   double totalDailyPnL = realizedToday + floatingProfit;
+
+   color statusColor = dirColor;
+   if(m_dailyHalted)
+      statusColor = (totalDailyPnL >= 0 ? clrGold : clrTomato);
+
+   SetLabelText(prefix + "LINE_0", StringFormat("Estado: %s", (statusMsg != "" ? statusMsg : dirStr)), statusColor);
    SetLabelText(prefix + "LINE_1", StringFormat("Cesta: %d/%d ordenes | Lotes: %.2f", openCount, InpMaxOrders, totalLots), clrWhite);
    SetLabelText(prefix + "LINE_2", StringFormat("P. Medio: %.2f | Distancia TP: %s", weightedEntry, targetDistStr), clrAqua);
    SetLabelText(prefix + "LINE_3", StringFormat("Flotante: $%.2f (%+.2f%%)", floatingProfit, (balance > 0 ? floatingProfit/balance*100.0 : 0.0)), (floatingProfit >= 0 ? clrLime : clrOrangeRed));
    SetLabelText(prefix + "LINE_4", StringFormat("Balance: $%.2f | Equidad: $%.2f", balance, equity), clrWhite);
    SetLabelText(prefix + "LINE_5", StringFormat("Hora ES: %02d:%02d | Spread: %.2f$", spainHour, dt.min, spreadUSD), (spreadUSD > InpMaxSpreadUSD ? clrRed : clrLightGray));
-   SetLabelText(prefix + "LINE_6", StringFormat("Ciclos Ganados: %d | Ganancia: $%.2f", m_closedCyclesCount, m_closedCyclesProfit), clrGold);
+   SetLabelText(prefix + "LINE_6", StringFormat("Hoy PnL: $%.2f (Meta: +$%.0f | MaxSL: -$%.0f)", totalDailyPnL, InpDailyTargetUSD, InpDailyMaxLossUSD), (totalDailyPnL >= 0 ? clrGold : clrTomato));
 }
 
 void SetLabelText(string name, string text, color clr)

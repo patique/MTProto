@@ -224,11 +224,11 @@
       "isSafeFromNews": true
     },
     "outcome": {
-      "status": "PENDING",
-      "pipsGained": 0,
-      "profitUSD": 0,
-      "durationMinutes": 0,
-      "resolvedAt": null
+      "status": "LOSS",
+      "pipsGained": 7199.5,
+      "profitUSD": -719.95,
+      "durationMinutes": 8463,
+      "resolvedAt": "2026-10-14T05:58:09.083Z"
     }
   },
   {
@@ -306,11 +306,11 @@
       "isSafeFromNews": true
     },
     "outcome": {
-      "status": "PENDING",
-      "pipsGained": 0,
-      "profitUSD": 0,
-      "durationMinutes": 0,
-      "resolvedAt": null
+      "status": "WIN",
+      "pipsGained": 261,
+      "profitUSD": 26.1,
+      "durationMinutes": 7435,
+      "resolvedAt": "2026-10-13T12:50:24.359Z"
     }
   },
   {
@@ -4462,6 +4462,4675 @@
       "profitUSD": 0,
       "durationMinutes": 0,
       "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791773604539_-1001936020052",
+    "timestamp": 1791773604539,
+    "utcDate": "2026-10-12T02:53:24.221Z",
+    "timeStr": "2:53:24",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1001936020052",
+      "name": "GOLD BTC TRADER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4206.6,
+      "sl": 4198,
+      "tp1": 4211,
+      "tp2": 4223,
+      "tp3": 4219,
+      "slPips": 86,
+      "tp1Pips": 44,
+      "tp2Pips": 164,
+      "rrRatioTP2": 1.91,
+      "lotSize": 0.87,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4208,
+      "nearestRoundNumber": 4210,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4211.15,
+      "asianLow": 4186.14,
+      "asianRangePips": 250.1,
+      "distanceToAsianHighPips": -31.5,
+      "distanceToAsianLowPips": 218.6,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4211.15,
+      "low24h": 4182.1,
+      "range24hPips": 290.5,
+      "positionIn24hRangePercent": 89.2
+    },
+    "candleAnatomyM5": {
+      "timeStr": "2:45:00",
+      "open": 4204.33,
+      "high": 4204.33,
+      "low": 4201.32,
+      "close": 4202.24,
+      "rangePips": 30.1,
+      "bodyPips": 20.9,
+      "upperWickPips": 0,
+      "lowerWickPips": 9.2,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.31,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4208/4206  TP 4211 TP 4215 TP 4219 TP 4223 TP 4227 TP 4231  SL 4197",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 3457,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7647.3,
+      "profitUSD": -764.73,
+      "durationMinutes": 80,
+      "resolvedAt": "2026-10-12T04:13:32.793Z"
+    }
+  },
+  {
+    "id": "1791826178158_PROPRIETARY_BPR_INSTITUTIONAL_GBPUSD_M5",
+    "timestamp": 1791826178158,
+    "utcDate": "2026-10-12T17:29:37.881Z",
+    "timeStr": "17:29:37",
+    "session": "NEW_YORK",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_GBPUSD_M5",
+      "name": "BPR_INSTITUTIONAL_GBPUSD_M5"
+    },
+    "order": {
+      "symbol": "GBPUSD",
+      "action": "BUY",
+      "entry": 1.32083,
+      "sl": 1.32035,
+      "tp2": 1.32228,
+      "tp3": null,
+      "slPips": 0,
+      "tp1Pips": null,
+      "tp2Pips": 0,
+      "rrRatioTP2": null,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4195.16,
+      "asianLow": 4180.16,
+      "asianRangePips": 150,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4195.16,
+      "low24h": 4154.73,
+      "range24hPips": 404.3,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "17:20:00",
+      "open": 4168.61,
+      "high": 4169.19,
+      "low": 4168.61,
+      "close": 4169.19,
+      "rangePips": 5.8,
+      "bodyPips": 5.8,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 2580,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791826200668_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1791826200668,
+    "utcDate": "2026-10-12T17:30:00.655Z",
+    "timeStr": "17:30:00",
+    "session": "NEW_YORK",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4166.51,
+      "sl": 4163.51,
+      "tp2": 4172.51,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4166.51,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 15.1,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4195.16,
+      "asianLow": 4180.16,
+      "asianRangePips": 150,
+      "distanceToAsianHighPips": -286.5,
+      "distanceToAsianLowPips": -136.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4195.16,
+      "low24h": 4154.73,
+      "range24hPips": 404.3,
+      "positionIn24hRangePercent": 29.1
+    },
+    "candleAnatomyM5": {
+      "timeStr": "17:20:00",
+      "open": 4168.61,
+      "high": 4169.19,
+      "low": 4168.61,
+      "close": 4169.19,
+      "rangePips": 5.8,
+      "bodyPips": 5.8,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 2580,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 10566.900000000001,
+      "profitUSD": 1056.69,
+      "durationMinutes": 59,
+      "resolvedAt": "2026-10-12T18:28:54.529Z"
+    }
+  },
+  {
+    "id": "1791864914767_-1002493671900",
+    "timestamp": 1791864914767,
+    "utcDate": "2026-10-13T04:15:14.483Z",
+    "timeStr": "4:15:14",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002493671900",
+      "name": "XAUUSD FOREX TRADING"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4189.85,
+      "sl": 4200,
+      "tp1": 4185,
+      "tp2": 4175,
+      "tp3": 4175,
+      "slPips": 101.5,
+      "tp1Pips": 48.5,
+      "tp2Pips": 148.5,
+      "rrRatioTP2": 1.46,
+      "lotSize": 0.74,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4190,
+      "nearestRoundNumber": 4190,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4192.1,
+      "asianLow": 4152.95,
+      "asianRangePips": 391.5,
+      "distanceToAsianHighPips": -21,
+      "distanceToAsianLowPips": 370.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4192.1,
+      "low24h": 4152.95,
+      "range24hPips": 391.5,
+      "positionIn24hRangePercent": 94.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:10:00",
+      "open": 4191.17,
+      "high": 4191.6,
+      "low": 4191,
+      "close": 4191.6,
+      "rangePips": 6,
+      "bodyPips": 4.3,
+      "upperWickPips": 0,
+      "lowerWickPips": 1.7,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.28,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD SELL NOW 4190/4195  TP. 4185 TP. 4180 TP. 4175 TP. 4170  SL. 4205",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1935,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 90.8,
+      "profitUSD": -9.08,
+      "durationMinutes": 62,
+      "resolvedAt": "2026-10-13T05:17:36.125Z"
+    }
+  },
+  {
+    "id": "1791886323537_PROPRIETARY_BPR_INSTITUTIONAL_USDCAD_M5",
+    "timestamp": 1791886323537,
+    "utcDate": "2026-10-13T10:12:03.045Z",
+    "timeStr": "10:12:03",
+    "session": "LONDON",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_USDCAD_M5",
+      "name": "BPR_INSTITUTIONAL_USDCAD_M5"
+    },
+    "order": {
+      "symbol": "USDCAD",
+      "action": "BUY",
+      "entry": 1.42573,
+      "sl": 1.42449,
+      "tp2": 1.42945,
+      "tp3": null,
+      "slPips": 0,
+      "tp1Pips": null,
+      "tp2Pips": 0,
+      "rrRatioTP2": null,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "10:05:00",
+      "open": 4188.64,
+      "high": 4191.76,
+      "low": 4188.2,
+      "close": 4189.75,
+      "rangePips": 35.6,
+      "bodyPips": 11.1,
+      "upperWickPips": 20.1,
+      "lowerWickPips": 4.4,
+      "upperWickRatio": 0.56,
+      "lowerWickRatio": 0.12,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1578,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791889046974_-1004307971022",
+    "timestamp": 1791889046974,
+    "utcDate": "2026-10-13T10:57:26.689Z",
+    "timeStr": "10:57:26",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4180.92,
+      "sl": 4168,
+      "tp1": 4185,
+      "tp2": 4205,
+      "tp3": 4195,
+      "slPips": 129.2,
+      "tp1Pips": 40.8,
+      "tp2Pips": 240.8,
+      "rrRatioTP2": 1.86,
+      "lotSize": 0.58,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4177,
+      "nearestRoundNumber": 4175,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -245.7,
+      "distanceToAsianLowPips": 240.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 49.5
+    },
+    "candleAnatomyM5": {
+      "timeStr": "10:50:00",
+      "open": 4183.37,
+      "high": 4183.97,
+      "low": 4183.07,
+      "close": 4183.97,
+      "rangePips": 9,
+      "bodyPips": 6,
+      "upperWickPips": 0,
+      "lowerWickPips": 3,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.33,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4180__4177  🔸 Stoploss:  4168  🔹 Takeprofit 1: 4185 🔹 Takeprofit 2: 4190 🔹 Takeprofit 3: 4195 🔹 Takeprofit 4: 4200 🔹 Takeprofit 5: 4205  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1533,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 26.9,
+      "profitUSD": 2.69,
+      "durationMinutes": 18,
+      "resolvedAt": "2026-10-13T11:15:01.264Z"
+    }
+  },
+  {
+    "id": "1791889981959_-1002912763769",
+    "timestamp": 1791889981959,
+    "utcDate": "2026-10-13T11:13:01.683Z",
+    "timeStr": "11:13:01",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002912763769",
+      "name": "TRADE WITH RAJA"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4185.72,
+      "sl": 4196,
+      "tp1": 4183,
+      "tp2": 4174,
+      "tp3": 4177,
+      "slPips": 102.8,
+      "tp1Pips": 27.2,
+      "tp2Pips": 117.2,
+      "rrRatioTP2": 1.14,
+      "lotSize": 0.72,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4186,
+      "nearestRoundNumber": 4185,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -155.7,
+      "distanceToAsianLowPips": 330.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 68
+    },
+    "candleAnatomyM5": {
+      "timeStr": "11:05:00",
+      "open": 4186.01,
+      "high": 4187.79,
+      "low": 4185.62,
+      "close": 4187.79,
+      "rangePips": 21.7,
+      "bodyPips": 17.8,
+      "upperWickPips": 0,
+      "lowerWickPips": 3.9,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.18,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD SELL 4186  TP 4183 TP 4180 TP 4177 TP 4174  SL 4196",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1517,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 106,
+      "profitUSD": 10.6,
+      "durationMinutes": 113,
+      "resolvedAt": "2026-10-13T13:06:10.061Z"
+    }
+  },
+  {
+    "id": "1791894087017_-1002174340947",
+    "timestamp": 1791894087017,
+    "utcDate": "2026-10-13T12:21:26.743Z",
+    "timeStr": "12:21:26",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002174340947",
+      "name": "VIP GOLD SIGNALS"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4185.86,
+      "sl": 4172,
+      "tp1": 4186,
+      "tp2": 4202,
+      "tp3": 4194,
+      "slPips": 138.6,
+      "tp1Pips": 1.4,
+      "tp2Pips": 161.4,
+      "rrRatioTP2": 1.16,
+      "lotSize": 0.53,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4182,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -195.7,
+      "distanceToAsianLowPips": 290.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 59.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "12:15:00",
+      "open": 4189.3,
+      "high": 4189.65,
+      "low": 4184.7,
+      "close": 4187.42,
+      "rangePips": 49.5,
+      "bodyPips": 18.8,
+      "upperWickPips": 3.5,
+      "lowerWickPips": 27.2,
+      "upperWickRatio": 0.07,
+      "lowerWickRatio": 0.55,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD BUY 4182  TP 4186 TP 4190 TP 4194 TP 4198 TP 4202  SL 4170 USE RISK MANAGEMENT",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1449,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 201.4,
+      "profitUSD": 20.14,
+      "durationMinutes": 11,
+      "resolvedAt": "2026-10-13T12:32:15.521Z"
+    }
+  },
+  {
+    "id": "1791897235203_-1002174340947",
+    "timestamp": 1791897235203,
+    "utcDate": "2026-10-13T13:13:54.906Z",
+    "timeStr": "13:13:54",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002174340947",
+      "name": "VIP GOLD SIGNALS"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4176.37,
+      "sl": 4188,
+      "tp1": 4174,
+      "tp2": 4158,
+      "tp3": 4166,
+      "slPips": 116.3,
+      "tp1Pips": 23.7,
+      "tp2Pips": 183.7,
+      "rrRatioTP2": 1.58,
+      "lotSize": 0.64,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4178,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -235.7,
+      "distanceToAsianLowPips": 250.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 51.5
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:05:00",
+      "open": 4178.03,
+      "high": 4181.51,
+      "low": 4176.27,
+      "close": 4180.25,
+      "rangePips": 52.4,
+      "bodyPips": 22.2,
+      "upperWickPips": 12.6,
+      "lowerWickPips": 17.6,
+      "upperWickRatio": 0.24,
+      "lowerWickRatio": 0.34,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD SELL 4178  TP 4174 TP 4170 TP 4166 TP 4162 TP 4158  SL 4192 USE RISK MANAGEMENT",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1396,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7539.2,
+      "profitUSD": -753.92,
+      "durationMinutes": 16,
+      "resolvedAt": "2026-10-13T13:29:48.768Z"
+    }
+  },
+  {
+    "id": "1791898081085_-1002157727490",
+    "timestamp": 1791898081085,
+    "utcDate": "2026-10-13T13:28:00.808Z",
+    "timeStr": "13:28:00",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4184.2,
+      "sl": 4169,
+      "tp1": 4187,
+      "tp2": 4210,
+      "tp3": 4195,
+      "slPips": 152,
+      "tp1Pips": 28,
+      "tp2Pips": 258,
+      "rrRatioTP2": 1.7,
+      "lotSize": 0.49,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4179,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -225.7,
+      "distanceToAsianLowPips": 260.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 53.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:20:00",
+      "open": 4182.82,
+      "high": 4187.64,
+      "low": 4182.82,
+      "close": 4186.42,
+      "rangePips": 48.2,
+      "bodyPips": 36,
+      "upperWickPips": 12.2,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.25,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4183 - 4179  TP 4187 - TP 4191 - TP 4195 -  TP 4210  SL : 4169",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1382,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 135.6,
+      "profitUSD": -13.56,
+      "durationMinutes": 30,
+      "resolvedAt": "2026-10-13T13:57:42.883Z"
+    }
+  },
+  {
+    "id": "1791900192709_-1002157727490",
+    "timestamp": 1791900192709,
+    "utcDate": "2026-10-13T14:03:12.422Z",
+    "timeStr": "14:03:12",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4167.63,
+      "sl": 4154,
+      "tp1": 4172,
+      "tp2": 4195,
+      "tp3": 4180,
+      "slPips": 136.3,
+      "tp1Pips": 43.7,
+      "tp2Pips": 273.7,
+      "rrRatioTP2": 2.01,
+      "lotSize": 0.54,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4164,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4152.95,
+      "asianRangePips": 486.2,
+      "distanceToAsianHighPips": -375.7,
+      "distanceToAsianLowPips": 110.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4152.95,
+      "range24hPips": 486.2,
+      "positionIn24hRangePercent": 22.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:55:00",
+      "open": 4177.01,
+      "high": 4177.01,
+      "low": 4171.97,
+      "close": 4172.24,
+      "rangePips": 50.4,
+      "bodyPips": 47.7,
+      "upperWickPips": 0,
+      "lowerWickPips": 2.7,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.05,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4168 - 4164  TP 4172 - TP 4176 - TP 4180 -  TP 4195  SL : 4154",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1347,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 0.7000000000000001,
+      "profitUSD": 0.07,
+      "durationMinutes": 42,
+      "resolvedAt": "2026-10-13T14:44:58.602Z"
+    }
+  },
+  {
+    "id": "1791902254229_PROPRIETARY_BPR_INSTITUTIONAL_EURUSD_M5",
+    "timestamp": 1791902254229,
+    "utcDate": "2026-10-13T14:37:33.880Z",
+    "timeStr": "14:37:33",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_EURUSD_M5",
+      "name": "BPR_INSTITUTIONAL_EURUSD_M5"
+    },
+    "order": {
+      "symbol": "EURUSD",
+      "action": "BUY",
+      "entry": 1.11883,
+      "sl": 1.1188,
+      "tp2": 1.11892,
+      "tp3": null,
+      "slPips": 0,
+      "tp1Pips": null,
+      "tp2Pips": 0,
+      "rrRatioTP2": null,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4168.52,
+      "asianRangePips": 330.5,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4167.35,
+      "range24hPips": 342.2,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "14:30:00",
+      "open": 4170.92,
+      "high": 4172.45,
+      "low": 4169.34,
+      "close": 4169.69,
+      "rangePips": 31.1,
+      "bodyPips": 12.3,
+      "upperWickPips": 15.3,
+      "lowerWickPips": 3.5,
+      "upperWickRatio": 0.49,
+      "lowerWickRatio": 0.11,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1312,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791902700343_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1791902700343,
+    "utcDate": "2026-10-13T14:45:00.059Z",
+    "timeStr": "14:45:00",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4167.73,
+      "sl": 4164.73,
+      "tp2": 4173.73,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4167.73,
+      "nearestRoundNumber": 4170,
+      "distanceToRoundPips": 22.7,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4168.52,
+      "asianRangePips": 330.5,
+      "distanceToAsianHighPips": -338.4,
+      "distanceToAsianLowPips": -7.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": true,
+      "high24h": 4201.57,
+      "low24h": 4167.35,
+      "range24hPips": 342.2,
+      "positionIn24hRangePercent": 1.1
+    },
+    "candleAnatomyM5": {
+      "timeStr": "14:35:00",
+      "open": 4170.18,
+      "high": 4171.44,
+      "low": 4169.94,
+      "close": 4170.7,
+      "rangePips": 15,
+      "bodyPips": 5.2,
+      "upperWickPips": 7.4,
+      "lowerWickPips": 2.4,
+      "upperWickRatio": 0.49,
+      "lowerWickRatio": 0.16,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1305,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 22.9,
+      "profitUSD": 2.29,
+      "durationMinutes": 12,
+      "resolvedAt": "2026-10-13T14:56:48.144Z"
+    }
+  },
+  {
+    "id": "1791903458797_-1002157727490",
+    "timestamp": 1791903458797,
+    "utcDate": "2026-10-13T14:57:38.519Z",
+    "timeStr": "14:57:38",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4170.07,
+      "sl": 4151,
+      "tp1": 4169,
+      "tp2": 4195,
+      "tp3": 4177,
+      "slPips": 190.7,
+      "tp1Pips": 10.7,
+      "tp2Pips": 249.3,
+      "rrRatioTP2": 1.31,
+      "lotSize": 0.38,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4161,
+      "nearestRoundNumber": 4160,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4168.91,
+      "asianRangePips": 326.6,
+      "distanceToAsianHighPips": -405.7,
+      "distanceToAsianLowPips": -79.1,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4167.35,
+      "range24hPips": 342.2,
+      "positionIn24hRangePercent": -18.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "14:50:00",
+      "open": 4174.76,
+      "high": 4176.32,
+      "low": 4173.14,
+      "close": 4175.58,
+      "rangePips": 31.8,
+      "bodyPips": 8.2,
+      "upperWickPips": 7.4,
+      "lowerWickPips": 16.2,
+      "upperWickRatio": 0.23,
+      "lowerWickRatio": 0.51,
+      "pattern": "BULLISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4165 - 4161  TP 4169 - TP 4173 - TP 4177 -  TP 4195  SL : 4151",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1292,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 169.8,
+      "profitUSD": -16.98,
+      "durationMinutes": 123,
+      "resolvedAt": "2026-10-13T17:00:29.177Z"
+    }
+  },
+  {
+    "id": "1791904950134_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1791904950134,
+    "utcDate": "2026-10-13T15:22:29.844Z",
+    "timeStr": "15:22:29",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4166.43,
+      "sl": 4169.43,
+      "tp2": 4160.43,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4166.43,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 14.3,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4176.9,
+      "asianRangePips": 246.7,
+      "distanceToAsianHighPips": -351.4,
+      "distanceToAsianLowPips": -104.7,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4167.27,
+      "range24hPips": 343,
+      "positionIn24hRangePercent": -2.4
+    },
+    "candleAnatomyM5": {
+      "timeStr": "15:15:00",
+      "open": 4167.99,
+      "high": 4169.06,
+      "low": 4167.27,
+      "close": 4167.6,
+      "rangePips": 17.9,
+      "bodyPips": 3.9,
+      "upperWickPips": 10.7,
+      "lowerWickPips": 3.3,
+      "upperWickRatio": 0.6,
+      "lowerWickRatio": 0.18,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1268,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 54.1,
+      "profitUSD": 5.41,
+      "durationMinutes": 7,
+      "resolvedAt": "2026-10-13T15:29:00.604Z"
+    }
+  },
+  {
+    "id": "1791907128773_-1002157727490",
+    "timestamp": 1791907128773,
+    "utcDate": "2026-10-13T15:58:48.488Z",
+    "timeStr": "15:58:48",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4159.42,
+      "sl": 4143,
+      "tp1": 4161,
+      "tp2": 4187,
+      "tp3": 4169,
+      "slPips": 164.2,
+      "tp1Pips": 15.8,
+      "tp2Pips": 275.8,
+      "rrRatioTP2": 1.68,
+      "lotSize": 0.45,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4153,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4201.57,
+      "asianLow": 4180.53,
+      "asianRangePips": 210.4,
+      "distanceToAsianHighPips": -485.7,
+      "distanceToAsianLowPips": -275.3,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4201.57,
+      "low24h": 4161.01,
+      "range24hPips": 405.6,
+      "positionIn24hRangePercent": -19.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "15:50:00",
+      "open": 4162.79,
+      "high": 4163.71,
+      "low": 4162.79,
+      "close": 4163.7,
+      "rangePips": 9.2,
+      "bodyPips": 9.1,
+      "upperWickPips": 0.1,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.01,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4157 - 4153  TP 4161 - TP 4165 - TP 4169 -  TP 4187  SL : 4143",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 1231,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7457.4,
+      "profitUSD": -745.74,
+      "durationMinutes": 54,
+      "resolvedAt": "2026-10-13T16:53:09.344Z"
+    }
+  },
+  {
+    "id": "1791940373076_-1002402499107",
+    "timestamp": 1791940373076,
+    "utcDate": "2026-10-14T01:12:52.808Z",
+    "timeStr": "1:12:52",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002402499107",
+      "name": "GOLD PIPS HUNTER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4155.12,
+      "sl": 4140,
+      "tp1": 4156,
+      "tp2": 4176,
+      "tp3": 4162,
+      "slPips": 151.2,
+      "tp1Pips": 8.8,
+      "tp2Pips": 208.8,
+      "rrRatioTP2": 1.38,
+      "lotSize": 0.48,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4153,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4167.51,
+      "asianLow": 4156.22,
+      "asianRangePips": 112.9,
+      "distanceToAsianHighPips": -145.1,
+      "distanceToAsianLowPips": -32.2,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4192.24,
+      "low24h": 4150.82,
+      "range24hPips": 414.2,
+      "positionIn24hRangePercent": 5.3
+    },
+    "candleAnatomyM5": {
+      "timeStr": "1:05:00",
+      "open": 4159.49,
+      "high": 4163.11,
+      "low": 4157.41,
+      "close": 4157.41,
+      "rangePips": 57,
+      "bodyPips": 20.8,
+      "upperWickPips": 36.2,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.64,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4153   SL 4140   TP 4156  TP 4159  TP 4162  TP 4165  TP 4168  TP 4172  TP 4176",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 677,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 57.599999999999994,
+      "profitUSD": -5.76,
+      "durationMinutes": 287,
+      "resolvedAt": "2026-10-14T05:59:45.219Z"
+    }
+  },
+  {
+    "id": "1791946377725_-1004307971022",
+    "timestamp": 1791946377725,
+    "utcDate": "2026-10-14T02:52:57.450Z",
+    "timeStr": "2:52:57",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4164.15,
+      "sl": 4151,
+      "tp1": 4164,
+      "tp2": 4178,
+      "tp3": 4172,
+      "slPips": 131.5,
+      "tp1Pips": 1.5,
+      "tp2Pips": 138.5,
+      "rrRatioTP2": 1.05,
+      "lotSize": 0.55,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4157,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4169.5,
+      "asianLow": 4150,
+      "asianRangePips": 195,
+      "distanceToAsianHighPips": -125,
+      "distanceToAsianLowPips": 70,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4176.32,
+      "low24h": 4150,
+      "range24hPips": 263.2,
+      "positionIn24hRangePercent": 26.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "2:45:00",
+      "open": 4162.87,
+      "high": 4165.82,
+      "low": 4162.28,
+      "close": 4165.82,
+      "rangePips": 35.4,
+      "bodyPips": 29.5,
+      "upperWickPips": 0,
+      "lowerWickPips": 5.9,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.17,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4160__4157  🔸 Stoploss:  4151  🔹 Takeprofit 1: 4164 🔹 Takeprofit 2: 4168 🔹 Takeprofit 3: 4172 🔹 Takeprofit 4: 4174 🔹 Takeprofit 5: 4178  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 577,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 110.39999999999999,
+      "profitUSD": -11.04,
+      "durationMinutes": 183,
+      "resolvedAt": "2026-10-14T05:56:26.765Z"
+    }
+  },
+  {
+    "id": "1791953507537_-1002429125771",
+    "timestamp": 1791953507537,
+    "utcDate": "2026-10-14T04:51:47.256Z",
+    "timeStr": "4:51:47",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002429125771",
+      "name": "GOLD PRO SIGNAL"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4166,
+      "sl": 4176,
+      "tp1": 4163,
+      "tp2": 4150,
+      "tp3": 4157,
+      "slPips": 100,
+      "tp1Pips": 30,
+      "tp2Pips": 160,
+      "rrRatioTP2": 1.6,
+      "lotSize": 0.73,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4166,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -60.6,
+      "distanceToAsianLowPips": 160,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4150,
+      "range24hPips": 220.6,
+      "positionIn24hRangePercent": 72.5
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:45:00",
+      "open": 4170.98,
+      "high": 4170.98,
+      "low": 4169.59,
+      "close": 4169.6,
+      "rangePips": 13.9,
+      "bodyPips": 13.8,
+      "upperWickPips": 0,
+      "lowerWickPips": 0.1,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.01,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL NOW 4166  LIMIT TRADE       4169   TAKE PROFIT.   4163  TAKE PROFIT.   4160  TAKE PROFIT.   4157     TAKE PROFIT.   4150 CONFIRM   STOP LOSS.      4176",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 458,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791954613382_-1002157727490",
+    "timestamp": 1791954613382,
+    "utcDate": "2026-10-14T05:10:13.110Z",
+    "timeStr": "5:10:13",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4159.61,
+      "sl": 4145,
+      "tp1": 4162,
+      "tp2": 4180,
+      "tp3": 4170,
+      "slPips": 146.1,
+      "tp1Pips": 23.9,
+      "tp2Pips": 203.9,
+      "rrRatioTP2": 1.4,
+      "lotSize": 0.5,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4154,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -180.6,
+      "distanceToAsianLowPips": 40,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4150,
+      "range24hPips": 220.6,
+      "positionIn24hRangePercent": 18.1
+    },
+    "candleAnatomyM5": {
+      "timeStr": "5:05:00",
+      "open": 4168.33,
+      "high": 4168.75,
+      "low": 4162.89,
+      "close": 4163.49,
+      "rangePips": 58.6,
+      "bodyPips": 48.4,
+      "upperWickPips": 4.2,
+      "lowerWickPips": 6,
+      "upperWickRatio": 0.07,
+      "lowerWickRatio": 0.1,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4158 - 4154  TP 4162 - TP 4166 - TP 4170 -  TP 4180  SL : 4145",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 440,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 78.89999999999999,
+      "profitUSD": -7.89,
+      "durationMinutes": 48,
+      "resolvedAt": "2026-10-14T05:58:12.279Z"
+    }
+  },
+  {
+    "id": "1791958670443_-1002157727490",
+    "timestamp": 1791958670443,
+    "utcDate": "2026-10-14T06:17:50.173Z",
+    "timeStr": "6:17:50",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4158.81,
+      "sl": 4173,
+      "tp1": 4156,
+      "tp2": 4140,
+      "tp3": 4148,
+      "slPips": 141.9,
+      "tp1Pips": 28.1,
+      "tp2Pips": 188.1,
+      "rrRatioTP2": 1.33,
+      "lotSize": 0.51,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4165,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -70.6,
+      "distanceToAsianLowPips": 150,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4150,
+      "range24hPips": 220.6,
+      "positionIn24hRangePercent": 68
+    },
+    "candleAnatomyM5": {
+      "timeStr": "6:10:00",
+      "open": 4160.26,
+      "high": 4167.16,
+      "low": 4160.25,
+      "close": 4166.89,
+      "rangePips": 69.1,
+      "bodyPips": 66.3,
+      "upperWickPips": 2.7,
+      "lowerWickPips": 0.1,
+      "upperWickRatio": 0.04,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL NOW 4160 - 4165  TP 4156 - TP 4152  - TP - 4148 TP - 4140  SL : 4173",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 372,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7009.2,
+      "profitUSD": -700.92,
+      "durationMinutes": 584,
+      "resolvedAt": "2026-10-14T16:01:55.106Z"
+    }
+  },
+  {
+    "id": "1791961239202_PROPRIETARY_BPR_INSTITUTIONAL_XAUUSD_M5",
+    "timestamp": 1791961239202,
+    "utcDate": "2026-10-14T07:00:38.898Z",
+    "timeStr": "7:00:38",
+    "session": "LONDON",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_XAUUSD_M5",
+      "name": "BPR_INSTITUTIONAL_XAUUSD_M5"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4146.68,
+      "sl": 4130.91,
+      "tp2": 4194,
+      "tp3": null,
+      "slPips": 157.7,
+      "tp1Pips": null,
+      "tp2Pips": 473.2,
+      "rrRatioTP2": 3,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4150,
+      "range24hPips": 220.6,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "6:55:00",
+      "open": 4153.4,
+      "high": 4153.51,
+      "low": 4152.61,
+      "close": 4152.8,
+      "rangePips": 9,
+      "bodyPips": 6,
+      "upperWickPips": 1.1,
+      "lowerWickPips": 1.9,
+      "upperWickRatio": 0.12,
+      "lowerWickRatio": 0.21,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 329,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791961800688_PROPRIETARY_BPR_INSTITUTIONAL_GBPUSD_M5",
+    "timestamp": 1791961800688,
+    "utcDate": "2026-10-14T07:10:00.345Z",
+    "timeStr": "7:10:00",
+    "session": "LONDON",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_GBPUSD_M5",
+      "name": "BPR_INSTITUTIONAL_GBPUSD_M5"
+    },
+    "order": {
+      "symbol": "GBPUSD",
+      "action": "BUY",
+      "entry": 1.32619,
+      "sl": 1.32034,
+      "tp2": 1.34374,
+      "tp3": null,
+      "slPips": 0.1,
+      "tp1Pips": null,
+      "tp2Pips": 0.2,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4150,
+      "range24hPips": 220.6,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "7:00:00",
+      "open": 4152.79,
+      "high": 4156.15,
+      "low": 4151.18,
+      "close": 4154.05,
+      "rangePips": 49.7,
+      "bodyPips": 12.6,
+      "upperWickPips": 21,
+      "lowerWickPips": 16.1,
+      "upperWickRatio": 0.42,
+      "lowerWickRatio": 0.32,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 320,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791962399103_-1002402499107",
+    "timestamp": 1791962399104,
+    "utcDate": "2026-10-14T07:19:58.787Z",
+    "timeStr": "7:19:58",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002402499107",
+      "name": "GOLD PIPS HUNTER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4146.09,
+      "sl": 4130,
+      "tp1": 4147,
+      "tp2": 4170,
+      "tp3": 4153,
+      "slPips": 160.9,
+      "tp1Pips": 9.1,
+      "tp2Pips": 239.1,
+      "rrRatioTP2": 1.49,
+      "lotSize": 0.45,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4144,
+      "nearestRoundNumber": 4145,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -280.6,
+      "distanceToAsianLowPips": -60,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4149.7,
+      "range24hPips": 223.6,
+      "positionIn24hRangePercent": -25.5
+    },
+    "candleAnatomyM5": {
+      "timeStr": "7:10:00",
+      "open": 4153.64,
+      "high": 4154.3,
+      "low": 4153.64,
+      "close": 4153.85,
+      "rangePips": 6.6,
+      "bodyPips": 2.1,
+      "upperWickPips": 4.5,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.68,
+      "lowerWickRatio": 0,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4144   SL 4130   TP 4147  TP 4150  TP 4153  TP 4156  TP 4160  TP 4165  TP 4170",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 310,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 4.3,
+      "profitUSD": -0.43,
+      "durationMinutes": 77,
+      "resolvedAt": "2026-10-14T08:36:44.104Z"
+    }
+  },
+  {
+    "id": "1791962436693_-1001936020052",
+    "timestamp": 1791962436693,
+    "utcDate": "2026-10-14T07:20:36.400Z",
+    "timeStr": "7:20:36",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1001936020052",
+      "name": "GOLD BTC TRADER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4145.84,
+      "sl": 4136,
+      "tp1": 4150,
+      "tp2": 4170,
+      "tp3": 4158,
+      "slPips": 98.4,
+      "tp1Pips": 41.6,
+      "tp2Pips": 241.6,
+      "rrRatioTP2": 2.46,
+      "lotSize": 0.73,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4147,
+      "nearestRoundNumber": 4145,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -250.6,
+      "distanceToAsianLowPips": -30,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4149.7,
+      "range24hPips": 223.6,
+      "positionIn24hRangePercent": -12.1
+    },
+    "candleAnatomyM5": {
+      "timeStr": "7:15:00",
+      "open": 4153.85,
+      "high": 4153.85,
+      "low": 4149.7,
+      "close": 4151.12,
+      "rangePips": 41.5,
+      "bodyPips": 27.3,
+      "upperWickPips": 0,
+      "lowerWickPips": 14.2,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.34,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4147/4145  TP 4150 TP 4154 TP 4158 TP 4162 TP 4166 TP 4170  SL 4136",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 309,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 0.4,
+      "profitUSD": -0.04,
+      "durationMinutes": 76,
+      "resolvedAt": "2026-10-14T08:36:44.756Z"
+    }
+  },
+  {
+    "id": "1791962866793_-1002493671900",
+    "timestamp": 1791962866793,
+    "utcDate": "2026-10-14T07:27:46.492Z",
+    "timeStr": "7:27:46",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002493671900",
+      "name": "XAUUSD FOREX TRADING"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4145.67,
+      "sl": 4130,
+      "tp1": 4150,
+      "tp2": 4165,
+      "tp3": 4160,
+      "slPips": 156.7,
+      "tp1Pips": 43.3,
+      "tp2Pips": 193.3,
+      "rrRatioTP2": 1.23,
+      "lotSize": 0.46,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4145,
+      "nearestRoundNumber": 4145,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -270.6,
+      "distanceToAsianLowPips": -50,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4149.7,
+      "range24hPips": 223.6,
+      "positionIn24hRangePercent": -21
+    },
+    "candleAnatomyM5": {
+      "timeStr": "7:20:00",
+      "open": 4151.12,
+      "high": 4151.12,
+      "low": 4149.71,
+      "close": 4150.09,
+      "rangePips": 14.1,
+      "bodyPips": 10.3,
+      "upperWickPips": 0,
+      "lowerWickPips": 3.8,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.27,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD BUY NOW 4145/4140  TP. 4150 TP. 4155 TP. 4160 TP. 4165  SL. 4130",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 302,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 4.4,
+      "profitUSD": -0.44,
+      "durationMinutes": 69,
+      "resolvedAt": "2026-10-14T08:36:45.335Z"
+    }
+  },
+  {
+    "id": "1791963285230_-1004307971022",
+    "timestamp": 1791963285230,
+    "utcDate": "2026-10-14T07:34:44.713Z",
+    "timeStr": "7:34:44",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4147.39,
+      "sl": 4136,
+      "tp1": 4150,
+      "tp2": 4170,
+      "tp3": 4160,
+      "slPips": 113.9,
+      "tp1Pips": 26.1,
+      "tp2Pips": 226.1,
+      "rrRatioTP2": 1.99,
+      "lotSize": 0.63,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4142,
+      "nearestRoundNumber": 4140,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -300.6,
+      "distanceToAsianLowPips": -80,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4149.66,
+      "range24hPips": 224,
+      "positionIn24hRangePercent": -34.2
+    },
+    "candleAnatomyM5": {
+      "timeStr": "7:25:00",
+      "open": 4150.08,
+      "high": 4152.34,
+      "low": 4150.08,
+      "close": 4152.34,
+      "rangePips": 22.6,
+      "bodyPips": 22.6,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4145__4142  🔸 Stoploss:  4136  🔹 Takeprofit 1: 4150 🔹 Takeprofit 2: 4155 🔹 Takeprofit 3: 4160 🔹 Takeprofit 4: 4165 🔹 Takeprofit 5: 4170  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 295,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 23,
+      "profitUSD": -2.3,
+      "durationMinutes": 62,
+      "resolvedAt": "2026-10-14T08:36:46.142Z"
+    }
+  },
+  {
+    "id": "1791965701256_PROPRIETARY_BPR_INSTITUTIONAL_XAGUSD_M5",
+    "timestamp": 1791965701256,
+    "utcDate": "2026-10-14T08:15:00.647Z",
+    "timeStr": "8:15:00",
+    "session": "LONDON",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_XAGUSD_M5",
+      "name": "BPR_INSTITUTIONAL_XAGUSD_M5"
+    },
+    "order": {
+      "symbol": "XAGUSD",
+      "action": "SELL",
+      "entry": 58.797,
+      "sl": 61.433,
+      "tp2": 50.889,
+      "tp3": null,
+      "slPips": 26.4,
+      "tp1Pips": null,
+      "tp2Pips": 79.1,
+      "rrRatioTP2": 3,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4149.66,
+      "range24hPips": 224,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "8:05:00",
+      "open": 4156.56,
+      "high": 4159.09,
+      "low": 4156.35,
+      "close": 4158.26,
+      "rangePips": 27.4,
+      "bodyPips": 17,
+      "upperWickPips": 8.3,
+      "lowerWickPips": 2.1,
+      "upperWickRatio": 0.3,
+      "lowerWickRatio": 0.08,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 255,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791974060554_PROPRIETARY_BPR_INSTITUTIONAL_GBPJPY_M5",
+    "timestamp": 1791974060554,
+    "utcDate": "2026-10-14T10:34:20.274Z",
+    "timeStr": "10:34:20",
+    "session": "LONDON",
+    "channel": {
+      "id": "PROPRIETARY_BPR_INSTITUTIONAL_GBPJPY_M5",
+      "name": "BPR_INSTITUTIONAL_GBPJPY_M5"
+    },
+    "order": {
+      "symbol": "GBPJPY",
+      "action": "BUY",
+      "entry": 210.182,
+      "sl": 208.461,
+      "tp2": 215.345,
+      "tp3": null,
+      "slPips": 17.2,
+      "tp1Pips": null,
+      "tp2Pips": 51.6,
+      "rrRatioTP2": 3,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": null,
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": null,
+      "distanceToAsianLowPips": null,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4141.82,
+      "range24hPips": 302.4,
+      "positionIn24hRangePercent": null
+    },
+    "candleAnatomyM5": {
+      "timeStr": "10:25:00",
+      "open": 4145.76,
+      "high": 4145.76,
+      "low": 4143.13,
+      "close": 4143.75,
+      "rangePips": 26.3,
+      "bodyPips": 20.1,
+      "upperWickPips": 0,
+      "lowerWickPips": 6.2,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.24,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 116,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1791978739597_-1002157727490",
+    "timestamp": 1791978739597,
+    "utcDate": "2026-10-14T11:52:19.277Z",
+    "timeStr": "11:52:19",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4138.74,
+      "sl": 4123,
+      "tp1": 4141,
+      "tp2": 4164,
+      "tp3": 4150,
+      "slPips": 157.4,
+      "tp1Pips": 22.6,
+      "tp2Pips": 252.6,
+      "rrRatioTP2": 1.6,
+      "lotSize": 0.45,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4133,
+      "nearestRoundNumber": 4135,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -390.6,
+      "distanceToAsianLowPips": -170,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4140.02,
+      "range24hPips": 320.4,
+      "positionIn24hRangePercent": -21.9
+    },
+    "candleAnatomyM5": {
+      "timeStr": "11:45:00",
+      "open": 4144.23,
+      "high": 4144.72,
+      "low": 4142.23,
+      "close": 4143.46,
+      "rangePips": 24.9,
+      "bodyPips": 7.7,
+      "upperWickPips": 4.9,
+      "lowerWickPips": 12.3,
+      "upperWickRatio": 0.2,
+      "lowerWickRatio": 0.49,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4137 - 4133  TP 4141 - TP 4145 - TP 4150 -  TP 4164  SL : 4123",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 38,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 91.5,
+      "profitUSD": 9.15,
+      "durationMinutes": 28,
+      "resolvedAt": "2026-10-14T12:20:43.893Z"
+    }
+  },
+  {
+    "id": "1791979240658_-1004307971022",
+    "timestamp": 1791979240658,
+    "utcDate": "2026-10-14T12:00:40.392Z",
+    "timeStr": "12:00:40",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4140.81,
+      "sl": 4129,
+      "tp1": 4141,
+      "tp2": 4158,
+      "tp3": 4150,
+      "slPips": 118.1,
+      "tp1Pips": 1.9,
+      "tp2Pips": 171.9,
+      "rrRatioTP2": 1.46,
+      "lotSize": 0.6,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4135,
+      "nearestRoundNumber": 4135,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -370.6,
+      "distanceToAsianLowPips": -150,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4140.02,
+      "range24hPips": 320.4,
+      "positionIn24hRangePercent": -15.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "11:55:00",
+      "open": 4145.33,
+      "high": 4147.17,
+      "low": 4142.79,
+      "close": 4145.66,
+      "rangePips": 43.8,
+      "bodyPips": 3.3,
+      "upperWickPips": 15.1,
+      "lowerWickPips": 25.4,
+      "upperWickRatio": 0.34,
+      "lowerWickRatio": 0.58,
+      "pattern": "BULLISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4137__4135  🔸 Stoploss:  4129  🔹 Takeprofit 1: 4141 🔹 Takeprofit 2: 4145 🔹 Takeprofit 3: 4150 🔹 Takeprofit 4: 4154 🔹 Takeprofit 5: 4158  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core CPI m/m",
+      "minutesRemaining": 29,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 74.6,
+      "profitUSD": 7.46,
+      "durationMinutes": 20,
+      "resolvedAt": "2026-10-14T12:20:42.774Z"
+    }
+  },
+  {
+    "id": "1791982037381_-1002157727490",
+    "timestamp": 1791982037381,
+    "utcDate": "2026-10-14T12:47:17.098Z",
+    "timeStr": "12:47:17",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4096.19,
+      "sl": 4075,
+      "tp1": 4094,
+      "tp2": 4120,
+      "tp3": 4104,
+      "slPips": 211.9,
+      "tp1Pips": 21.9,
+      "tp2Pips": 238.1,
+      "rrRatioTP2": 1.12,
+      "lotSize": 0.33,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4085,
+      "nearestRoundNumber": 4085,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -870.6,
+      "distanceToAsianLowPips": -650,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4099.51,
+      "range24hPips": 725.5,
+      "positionIn24hRangePercent": -20
+    },
+    "candleAnatomyM5": {
+      "timeStr": "12:40:00",
+      "open": 4120.31,
+      "high": 4121.1,
+      "low": 4099.51,
+      "close": 4106.29,
+      "rangePips": 215.9,
+      "bodyPips": 140.2,
+      "upperWickPips": 7.9,
+      "lowerWickPips": 67.8,
+      "upperWickRatio": 0.04,
+      "lowerWickRatio": 0.31,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4089 - 4085  TP 4094 - TP 4099 - TP 4104 -  TP 4120  SL : 4075",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 1423,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 222.10000000000002,
+      "profitUSD": 22.21,
+      "durationMinutes": 174,
+      "resolvedAt": "2026-10-14T15:41:45.866Z"
+    }
+  },
+  {
+    "id": "1791985000560_-1002157727490",
+    "timestamp": 1791985000560,
+    "utcDate": "2026-10-14T13:36:40.273Z",
+    "timeStr": "13:36:40",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4104.64,
+      "sl": 4120,
+      "tp1": 4102,
+      "tp2": 4080,
+      "tp3": 4094,
+      "slPips": 153.6,
+      "tp1Pips": 26.4,
+      "tp2Pips": 246.4,
+      "rrRatioTP2": 1.6,
+      "lotSize": 0.46,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4110,
+      "nearestRoundNumber": 4110,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -620.6,
+      "distanceToAsianLowPips": -400,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4093.2,
+      "range24hPips": 788.6,
+      "positionIn24hRangePercent": 21.3
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:30:00",
+      "open": 4102.87,
+      "high": 4117.69,
+      "low": 4102.87,
+      "close": 4114.76,
+      "rangePips": 148.2,
+      "bodyPips": 118.9,
+      "upperWickPips": 29.3,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.2,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL NOW 4106 - 4110  TP 4102 - TP 4098 TP - 4094 TP - 4080  SL : 4120",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 1373,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 9.5,
+      "profitUSD": 0.95,
+      "durationMinutes": 15,
+      "resolvedAt": "2026-10-14T13:51:54.255Z"
+    }
+  },
+  {
+    "id": "1791985634882_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1791985634882,
+    "utcDate": "2026-10-14T13:47:14.471Z",
+    "timeStr": "13:47:14",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4098.45,
+      "sl": 4095.45,
+      "tp2": 4104.45,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4098.45,
+      "nearestRoundNumber": 4100,
+      "distanceToRoundPips": 15.5,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4172.06,
+      "asianLow": 4150,
+      "asianRangePips": 220.6,
+      "distanceToAsianHighPips": -736.1,
+      "distanceToAsianLowPips": -515.5,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4172.06,
+      "low24h": 4093.2,
+      "range24hPips": 788.6,
+      "positionIn24hRangePercent": 6.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:40:00",
+      "open": 4110.13,
+      "high": 4113.62,
+      "low": 4109.33,
+      "close": 4113.55,
+      "rangePips": 42.9,
+      "bodyPips": 34.2,
+      "upperWickPips": 0.7,
+      "lowerWickPips": 8,
+      "upperWickRatio": 0.02,
+      "lowerWickRatio": 0.19,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 1363,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 56.900000000000006,
+      "profitUSD": 5.69,
+      "durationMinutes": 1,
+      "resolvedAt": "2026-10-14T13:48:02.334Z"
+    }
+  },
+  {
+    "id": "1792032338586_-1004307971022",
+    "timestamp": 1792032338586,
+    "utcDate": "2026-10-15T02:45:38.295Z",
+    "timeStr": "2:45:38",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4144.88,
+      "sl": 4133,
+      "tp1": 4146,
+      "tp2": 4162,
+      "tp3": 4154,
+      "slPips": 118.8,
+      "tp1Pips": 11.2,
+      "tp2Pips": 171.2,
+      "rrRatioTP2": 1.44,
+      "lotSize": 0.59,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4140,
+      "nearestRoundNumber": 4140,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4158.58,
+      "asianLow": 4122.3,
+      "asianRangePips": 362.8,
+      "distanceToAsianHighPips": -185.8,
+      "distanceToAsianLowPips": 177,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4158.58,
+      "low24h": 4087.09,
+      "range24hPips": 714.9,
+      "positionIn24hRangePercent": 74
+    },
+    "candleAnatomyM5": {
+      "timeStr": "2:40:00",
+      "open": 4148.42,
+      "high": 4149.04,
+      "low": 4146.8,
+      "close": 4147.96,
+      "rangePips": 22.4,
+      "bodyPips": 4.6,
+      "upperWickPips": 6.2,
+      "lowerWickPips": 11.6,
+      "upperWickRatio": 0.28,
+      "lowerWickRatio": 0.52,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4143__4140  🔸 Stoploss:  4133  🔹 Takeprofit 1: 4146 🔹 Takeprofit 2: 4150 🔹 Takeprofit 3: 4154 🔹 Takeprofit 4: 4158 🔹 Takeprofit 5: 4162  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 584,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 6932.5,
+      "profitUSD": -693.25,
+      "durationMinutes": 203,
+      "resolvedAt": "2026-10-15T06:08:12.545Z"
+    }
+  },
+  {
+    "id": "1792034356753_-1002493671900",
+    "timestamp": 1792034356753,
+    "utcDate": "2026-10-15T03:19:16.461Z",
+    "timeStr": "3:19:16",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002493671900",
+      "name": "XAUUSD FOREX TRADING"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4151.8,
+      "sl": 4137,
+      "tp1": 4157,
+      "tp2": 4172,
+      "tp3": 4167,
+      "slPips": 148,
+      "tp1Pips": 52,
+      "tp2Pips": 202,
+      "rrRatioTP2": 1.36,
+      "lotSize": 0.47,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4152,
+      "nearestRoundNumber": 4150,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -125.9,
+      "distanceToAsianLowPips": 297,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 83.8
+    },
+    "candleAnatomyM5": {
+      "timeStr": "3:10:00",
+      "open": 4158.62,
+      "high": 4158.95,
+      "low": 4156.26,
+      "close": 4158.01,
+      "rangePips": 26.9,
+      "bodyPips": 6.1,
+      "upperWickPips": 3.3,
+      "lowerWickPips": 17.5,
+      "upperWickRatio": 0.12,
+      "lowerWickRatio": 0.65,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD BUY NOW 4152/4147  TP. 4157 TP. 4162 TP. 4167 TP. 4172  SL. 4137",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 551,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7144,
+      "profitUSD": -714.4,
+      "durationMinutes": 158,
+      "resolvedAt": "2026-10-15T05:57:18.570Z"
+    }
+  },
+  {
+    "id": "1792034616503_-1002157727490",
+    "timestamp": 1792034616503,
+    "utcDate": "2026-10-15T03:23:36.225Z",
+    "timeStr": "3:23:36",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4150.18,
+      "sl": 4165,
+      "tp1": 4147,
+      "tp2": 4130,
+      "tp3": 4139,
+      "slPips": 148.2,
+      "tp1Pips": 31.8,
+      "tp2Pips": 201.8,
+      "rrRatioTP2": 1.36,
+      "lotSize": 0.47,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4155,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -95.9,
+      "distanceToAsianLowPips": 327,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 87.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "3:15:00",
+      "open": 4157.85,
+      "high": 4159.72,
+      "low": 4155.18,
+      "close": 4155.18,
+      "rangePips": 45.4,
+      "bodyPips": 26.7,
+      "upperWickPips": 18.7,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.41,
+      "lowerWickRatio": 0,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL NOW 4151 - 4155  TP 4147 - TP 4143 TP - 4139 TP - 4130  SL : 4165",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 546,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 33.7,
+      "profitUSD": 3.37,
+      "durationMinutes": 278,
+      "resolvedAt": "2026-10-15T08:01:20.213Z"
+    }
+  },
+  {
+    "id": "1792036963349_-1002493671900",
+    "timestamp": 1792036963349,
+    "utcDate": "2026-10-15T04:02:43.063Z",
+    "timeStr": "4:02:43",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002493671900",
+      "name": "XAUUSD FOREX TRADING"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4145.24,
+      "sl": 4130,
+      "tp1": 4150,
+      "tp2": 4165,
+      "tp3": 4160,
+      "slPips": 152.4,
+      "tp1Pips": 47.6,
+      "tp2Pips": 197.6,
+      "rrRatioTP2": 1.3,
+      "lotSize": 0.46,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4145,
+      "nearestRoundNumber": 4145,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -195.9,
+      "distanceToAsianLowPips": 227,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 74.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "3:55:00",
+      "open": 4149.64,
+      "high": 4150.07,
+      "low": 4149.43,
+      "close": 4149.52,
+      "rangePips": 6.4,
+      "bodyPips": 1.2,
+      "upperWickPips": 4.3,
+      "lowerWickPips": 0.9,
+      "upperWickRatio": 0.67,
+      "lowerWickRatio": 0.14,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD BUY NOW 4145/4140  TP. 4150 TP. 4155 TP. 4160 TP. 4165  SL. 4130",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 507,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 132,
+      "profitUSD": -13.2,
+      "durationMinutes": 115,
+      "resolvedAt": "2026-10-15T05:57:18.209Z"
+    }
+  },
+  {
+    "id": "1792037666313_-1002429125771",
+    "timestamp": 1792037666313,
+    "utcDate": "2026-10-15T04:14:26.023Z",
+    "timeStr": "4:14:26",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002429125771",
+      "name": "GOLD PRO SIGNAL"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4142,
+      "sl": 4132,
+      "tp1": 4145,
+      "tp2": 4160,
+      "tp3": 4151,
+      "slPips": 100,
+      "tp1Pips": 30,
+      "tp2Pips": 180,
+      "rrRatioTP2": 1.8,
+      "lotSize": 0.7,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4142,
+      "nearestRoundNumber": 4140,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -225.9,
+      "distanceToAsianLowPips": 197,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 70.9
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:05:00",
+      "open": 4148.7,
+      "high": 4148.7,
+      "low": 4146.34,
+      "close": 4146.34,
+      "rangePips": 23.6,
+      "bodyPips": 23.6,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4142  LIMIT TRADE       4139   TAKE PROFIT.   4145  TAKE PROFIT.   4148  TAKE PROFIT.   4151     TAKE PROFIT.   4160 CONFIRM   STOP LOSS.      4132",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 496,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 10342.4,
+      "profitUSD": 1034.24,
+      "durationMinutes": 927,
+      "resolvedAt": "2026-10-15T19:41:21.536Z"
+    }
+  },
+  {
+    "id": "1792037732798_-1001936020052",
+    "timestamp": 1792037732798,
+    "utcDate": "2026-10-15T04:15:32.518Z",
+    "timeStr": "4:15:32",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1001936020052",
+      "name": "GOLD BTC TRADER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4144.22,
+      "sl": 4130,
+      "tp1": 4144,
+      "tp2": 4164,
+      "tp3": 4152,
+      "slPips": 142.2,
+      "tp1Pips": 2.2,
+      "tp2Pips": 197.8,
+      "rrRatioTP2": 1.39,
+      "lotSize": 0.49,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4141,
+      "nearestRoundNumber": 4140,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -235.9,
+      "distanceToAsianLowPips": 187,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 69.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:10:00",
+      "open": 4146.34,
+      "high": 4146.34,
+      "low": 4144.75,
+      "close": 4145.54,
+      "rangePips": 15.9,
+      "bodyPips": 8,
+      "upperWickPips": 0,
+      "lowerWickPips": 7.9,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.5,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4141/4139  TP 4144 TP 4148 TP 4152 TP 4156 TP 4160 TP 4164  SL 4130",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 494,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "PENDING",
+      "pipsGained": 0,
+      "profitUSD": 0,
+      "durationMinutes": 0,
+      "resolvedAt": null
+    }
+  },
+  {
+    "id": "1792038272518_-1001823957090",
+    "timestamp": 1792038272518,
+    "utcDate": "2026-10-15T04:24:32.240Z",
+    "timeStr": "4:24:32",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1001823957090",
+      "name": "Craig Percoco Daily Trades"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4144.4,
+      "sl": 4160,
+      "tp1": 4142,
+      "tp2": 4120,
+      "tp3": 4134,
+      "slPips": 156,
+      "tp1Pips": 24,
+      "tp2Pips": 244,
+      "rrRatioTP2": 1.56,
+      "lotSize": 0.45,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4150,
+      "nearestRoundNumber": 4150,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -145.9,
+      "distanceToAsianLowPips": 277,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4087.09,
+      "range24hPips": 775,
+      "positionIn24hRangePercent": 81.2
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:15:00",
+      "open": 4146.57,
+      "high": 4149.46,
+      "low": 4146.47,
+      "close": 4148.8,
+      "rangePips": 29.9,
+      "bodyPips": 22.3,
+      "upperWickPips": 6.6,
+      "lowerWickPips": 1,
+      "upperWickRatio": 0.22,
+      "lowerWickRatio": 0.03,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD   SELL  4147__4150    TP1 4142   TP2 4138   TP3 4134   TP4 4130   TP5 4126   TP6 4120    SL 4160",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 485,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 18.2,
+      "profitUSD": -1.82,
+      "durationMinutes": 217,
+      "resolvedAt": "2026-10-15T08:01:21.317Z"
+    }
+  },
+  {
+    "id": "1792060600128_-1002912763769",
+    "timestamp": 1792060600128,
+    "utcDate": "2026-10-15T10:36:39.844Z",
+    "timeStr": "10:36:39",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002912763769",
+      "name": "TRADE WITH RAJA"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4155.12,
+      "sl": 4165,
+      "tp1": 4152,
+      "tp2": 4143,
+      "tp3": 4146,
+      "slPips": 98.8,
+      "tp1Pips": 31.2,
+      "tp2Pips": 121.2,
+      "rrRatioTP2": 1.23,
+      "lotSize": 0.7,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4155,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -95.9,
+      "distanceToAsianLowPips": 327,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4111.19,
+      "range24hPips": 534,
+      "positionIn24hRangePercent": 82
+    },
+    "candleAnatomyM5": {
+      "timeStr": "10:30:00",
+      "open": 4155.99,
+      "high": 4156.86,
+      "low": 4155.58,
+      "close": 4155.58,
+      "rangePips": 12.8,
+      "bodyPips": 4.1,
+      "upperWickPips": 8.7,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.68,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD SELL 4155  TP 4152 TP 4149 TP 4146 TP 4143  SL 4165",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 113,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 88,
+      "profitUSD": 8.8,
+      "durationMinutes": 85,
+      "resolvedAt": "2026-10-15T12:01:19.763Z"
+    }
+  },
+  {
+    "id": "1792062685753_-1002157727490",
+    "timestamp": 1792062685753,
+    "utcDate": "2026-10-15T11:11:25.336Z",
+    "timeStr": "11:11:25",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4156.31,
+      "sl": 4172,
+      "tp1": 4154,
+      "tp2": 4135,
+      "tp3": 4146,
+      "slPips": 156.9,
+      "tp1Pips": 23.1,
+      "tp2Pips": 213.1,
+      "rrRatioTP2": 1.36,
+      "lotSize": 0.44,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4162,
+      "nearestRoundNumber": 4160,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4122.3,
+      "asianRangePips": 422.9,
+      "distanceToAsianHighPips": -25.9,
+      "distanceToAsianLowPips": 397,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4111.19,
+      "range24hPips": 534,
+      "positionIn24hRangePercent": 95.1
+    },
+    "candleAnatomyM5": {
+      "timeStr": "11:05:00",
+      "open": 4159.26,
+      "high": 4160.48,
+      "low": 4158.37,
+      "close": 4158.67,
+      "rangePips": 21.1,
+      "bodyPips": 5.9,
+      "upperWickPips": 12.2,
+      "lowerWickPips": 3,
+      "upperWickRatio": 0.58,
+      "lowerWickRatio": 0.14,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL NOW 4158 - 4162  TP 4154 - TP 4150 TP - 4146 TP - 4135  SL : 4172",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Core PPI m/m",
+      "minutesRemaining": 79,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 99.2,
+      "profitUSD": 9.92,
+      "durationMinutes": 50,
+      "resolvedAt": "2026-10-15T12:01:22.834Z"
+    }
+  },
+  {
+    "id": "1792070176632_-1002402499107",
+    "timestamp": 1792070176632,
+    "utcDate": "2026-10-15T13:16:16.332Z",
+    "timeStr": "13:16:16",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002402499107",
+      "name": "GOLD PIPS HUNTER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4160.93,
+      "sl": 4176,
+      "tp1": 4160,
+      "tp2": 4145,
+      "tp3": 4153,
+      "slPips": 150.7,
+      "tp1Pips": 9.3,
+      "tp2Pips": 159.3,
+      "rrRatioTP2": 1.06,
+      "lotSize": 0.46,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4164,
+      "nearestRoundNumber": 4165,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4136.07,
+      "asianRangePips": 285.2,
+      "distanceToAsianHighPips": -5.9,
+      "distanceToAsianLowPips": 279.3,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4164.59,
+      "low24h": 4127.89,
+      "range24hPips": 367,
+      "positionIn24hRangePercent": 98.4
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:10:00",
+      "open": 4147.79,
+      "high": 4156.99,
+      "low": 4147,
+      "close": 4156.59,
+      "rangePips": 99.9,
+      "bodyPips": 88,
+      "upperWickPips": 4,
+      "lowerWickPips": 7.9,
+      "upperWickRatio": 0.04,
+      "lowerWickRatio": 0.08,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD Sell NOW 4164  SL 4176   TP 4160  TP 4156  TP 4153  TP 4150  TP 4145",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 854,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 141.7,
+      "profitUSD": 14.17,
+      "durationMinutes": 175,
+      "resolvedAt": "2026-10-15T16:11:33.593Z"
+    }
+  },
+  {
+    "id": "1792071904946_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1792071904946,
+    "utcDate": "2026-10-15T13:45:04.645Z",
+    "timeStr": "13:45:04",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4156.6,
+      "sl": 4153.6,
+      "tp2": 4162.6,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4156.6,
+      "nearestRoundNumber": 4155,
+      "distanceToRoundPips": 16,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4136.07,
+      "asianRangePips": 285.2,
+      "distanceToAsianHighPips": -79.9,
+      "distanceToAsianLowPips": 205.3,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4166.69,
+      "low24h": 4127.89,
+      "range24hPips": 388,
+      "positionIn24hRangePercent": 74
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:40:00",
+      "open": 4158.49,
+      "high": 4161.72,
+      "low": 4155.61,
+      "close": 4158.12,
+      "rangePips": 61.1,
+      "bodyPips": 3.7,
+      "upperWickPips": 32.3,
+      "lowerWickPips": 25.1,
+      "upperWickRatio": 0.53,
+      "lowerWickRatio": 0.41,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 825,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 32.7,
+      "profitUSD": -3.27,
+      "durationMinutes": 6,
+      "resolvedAt": "2026-10-15T13:51:04.607Z"
+    }
+  },
+  {
+    "id": "1792072396381_-1001823957090",
+    "timestamp": 1792072396381,
+    "utcDate": "2026-10-15T13:53:16.082Z",
+    "timeStr": "13:53:16",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1001823957090",
+      "name": "Craig Percoco Daily Trades"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4153.46,
+      "sl": 4145,
+      "tp1": 4160,
+      "tp2": 4180,
+      "tp3": 4168,
+      "slPips": 84.6,
+      "tp1Pips": 65.4,
+      "tp2Pips": 265.4,
+      "rrRatioTP2": 3.14,
+      "lotSize": 0.83,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4150,
+      "nearestRoundNumber": 4150,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4164.59,
+      "asianLow": 4136.07,
+      "asianRangePips": 285.2,
+      "distanceToAsianHighPips": -145.9,
+      "distanceToAsianLowPips": 139.3,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4166.69,
+      "low24h": 4127.89,
+      "range24hPips": 388,
+      "positionIn24hRangePercent": 57
+    },
+    "candleAnatomyM5": {
+      "timeStr": "13:45:00",
+      "open": 4156.69,
+      "high": 4160.37,
+      "low": 4154.69,
+      "close": 4156.4,
+      "rangePips": 56.8,
+      "bodyPips": 2.9,
+      "upperWickPips": 36.8,
+      "lowerWickPips": 17.1,
+      "upperWickRatio": 0.65,
+      "lowerWickRatio": 0.3,
+      "pattern": "BEARISH_REJECTION_PINBAR"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD    BUY  4155__4150    TP1 4160   TP2 4165   TP3 4168   TP4 4171   TP5 4174   TP6 4180    SL 4145",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 817,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 74.3,
+      "profitUSD": -7.43,
+      "durationMinutes": 24,
+      "resolvedAt": "2026-10-15T14:17:39.054Z"
+    }
+  },
+  {
+    "id": "1792080214832_-1002429125771",
+    "timestamp": 1792080214832,
+    "utcDate": "2026-10-15T16:03:34.537Z",
+    "timeStr": "16:03:34",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002429125771",
+      "name": "GOLD PRO SIGNAL"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4149,
+      "sl": 4138,
+      "tp1": 4152,
+      "tp2": 4165,
+      "tp3": 4158,
+      "slPips": 110,
+      "tp1Pips": 30,
+      "tp2Pips": 160,
+      "rrRatioTP2": 1.45,
+      "lotSize": 0.64,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4149,
+      "nearestRoundNumber": 4150,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4155.77,
+      "asianLow": 4136.07,
+      "asianRangePips": 197,
+      "distanceToAsianHighPips": -67.7,
+      "distanceToAsianLowPips": 129.3,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4168.26,
+      "low24h": 4127.89,
+      "range24hPips": 403.7,
+      "positionIn24hRangePercent": 52.3
+    },
+    "candleAnatomyM5": {
+      "timeStr": "15:55:00",
+      "open": 4154.64,
+      "high": 4154.64,
+      "low": 4152.99,
+      "close": 4152.99,
+      "rangePips": 16.5,
+      "bodyPips": 16.5,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4149  LIMIT TRADE      4146   TAKE PROFIT.   4152  TAKE PROFIT.   4155  TAKE PROFIT.   4158     TAKE PROFIT.   4165 CONFIRM   STOP LOSS.      4138",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 686,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 147.5,
+      "profitUSD": 14.75,
+      "durationMinutes": 218,
+      "resolvedAt": "2026-10-15T19:41:20.650Z"
+    }
+  },
+  {
+    "id": "1792114402104_-1002402499107",
+    "timestamp": 1792114402104,
+    "utcDate": "2026-10-16T01:33:21.784Z",
+    "timeStr": "1:33:21",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002402499107",
+      "name": "GOLD PIPS HUNTER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4148.33,
+      "sl": 4136,
+      "tp1": 4151,
+      "tp2": 4170,
+      "tp3": 4157,
+      "slPips": 123.3,
+      "tp1Pips": 26.7,
+      "tp2Pips": 216.7,
+      "rrRatioTP2": 1.76,
+      "lotSize": 0.58,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4148,
+      "nearestRoundNumber": 4150,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4161.82,
+      "asianLow": 4150.67,
+      "asianRangePips": 111.5,
+      "distanceToAsianHighPips": -138.2,
+      "distanceToAsianLowPips": -26.7,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4178,
+      "low24h": 4145.76,
+      "range24hPips": 322.4,
+      "positionIn24hRangePercent": 6.9
+    },
+    "candleAnatomyM5": {
+      "timeStr": "1:25:00",
+      "open": 4155.92,
+      "high": 4155.92,
+      "low": 4153.08,
+      "close": 4153.77,
+      "rangePips": 28.4,
+      "bodyPips": 21.5,
+      "upperWickPips": 0,
+      "lowerWickPips": 6.9,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.24,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY NOW 4148   SL 4136   TP 4151  TP 4154  TP 4157  TP 4160  TP 4163  TP 4167  TP 4170",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 117,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 193.2,
+      "profitUSD": 19.32,
+      "durationMinutes": 79,
+      "resolvedAt": "2026-10-16T02:51:54.883Z"
+    }
+  },
+  {
+    "id": "1792119394047_-1002157727490",
+    "timestamp": 1792119394047,
+    "utcDate": "2026-10-16T02:56:33.741Z",
+    "timeStr": "2:56:33",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4178.02,
+      "sl": 4186,
+      "tp1": 4168,
+      "tp2": 4148,
+      "tp3": 4160,
+      "slPips": 79.8,
+      "tp1Pips": 100.2,
+      "tp2Pips": 300.2,
+      "rrRatioTP2": 3.76,
+      "lotSize": 0.91,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4176,
+      "nearestRoundNumber": 4175,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4179,
+      "asianLow": 4150.01,
+      "asianRangePips": 289.9,
+      "distanceToAsianHighPips": -30,
+      "distanceToAsianLowPips": 259.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4179,
+      "low24h": 4148.92,
+      "range24hPips": 300.8,
+      "positionIn24hRangePercent": 90
+    },
+    "candleAnatomyM5": {
+      "timeStr": "2:50:00",
+      "open": 4169.96,
+      "high": 4172.85,
+      "low": 4169.96,
+      "close": 4172.85,
+      "rangePips": 28.9,
+      "bodyPips": 28.9,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL 4172 - 4176  TP 4168 - TP 4164 - TP 4160 -  TP 4148  SL : 4186",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 33,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 7361.900000000001,
+      "profitUSD": -736.19,
+      "durationMinutes": 69,
+      "resolvedAt": "2026-10-16T04:05:12.816Z"
+    }
+  },
+  {
+    "id": "1792119521945_-1002157727490",
+    "timestamp": 1792119521945,
+    "utcDate": "2026-10-16T02:58:41.656Z",
+    "timeStr": "2:58:41",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4178.77,
+      "sl": 4193,
+      "tp1": 4175,
+      "tp2": 4150,
+      "tp3": 4166,
+      "slPips": 142.3,
+      "tp1Pips": 37.7,
+      "tp2Pips": 287.7,
+      "rrRatioTP2": 2.02,
+      "lotSize": 0.51,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4183,
+      "nearestRoundNumber": 4185,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4179.72,
+      "asianLow": 4150.01,
+      "asianRangePips": 297.1,
+      "distanceToAsianHighPips": 32.8,
+      "distanceToAsianLowPips": 329.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4179.72,
+      "low24h": 4148.92,
+      "range24hPips": 308,
+      "positionIn24hRangePercent": 110.6
+    },
+    "candleAnatomyM5": {
+      "timeStr": "2:50:00",
+      "open": 4169.96,
+      "high": 4172.85,
+      "low": 4169.96,
+      "close": 4172.85,
+      "rangePips": 28.9,
+      "bodyPips": 28.9,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD SELL 4179 - 4183  TP 4175 - TP 4171 - TP 4166 -  TP 4150  SL : 4193",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Fed Chairman Warsh Speaks",
+      "minutesRemaining": 31,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 67.6,
+      "profitUSD": -6.76,
+      "durationMinutes": 67,
+      "resolvedAt": "2026-10-16T04:05:12.721Z"
+    }
+  },
+  {
+    "id": "1792126846521_-1004307971022",
+    "timestamp": 1792126846521,
+    "utcDate": "2026-10-16T05:00:46.238Z",
+    "timeStr": "5:00:46",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1004307971022",
+      "name": "Attaullah Trading Zone"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4175.27,
+      "sl": 4162,
+      "tp1": 4176,
+      "tp2": 4192,
+      "tp3": 4184,
+      "slPips": 132.7,
+      "tp1Pips": 7.3,
+      "tp2Pips": 167.3,
+      "rrRatioTP2": 1.26,
+      "lotSize": 0.54,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4170,
+      "nearestRoundNumber": 4170,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4150.01,
+      "asianRangePips": 363.8,
+      "distanceToAsianHighPips": -163.9,
+      "distanceToAsianLowPips": 199.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4186.39,
+      "low24h": 4150.01,
+      "range24hPips": 363.8,
+      "positionIn24hRangePercent": 54.9
+    },
+    "candleAnatomyM5": {
+      "timeStr": "4:55:00",
+      "open": 4173.32,
+      "high": 4174.8,
+      "low": 4173.32,
+      "close": 4174.8,
+      "rangePips": 14.8,
+      "bodyPips": 14.8,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BULLISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "#XAUUSD  (GOLD)    🟢 BUY ZONE 4172__4170  🔸 Stoploss:  4162  🔹 Takeprofit 1: 4176 🔹 Takeprofit 2: 4180 🔹 Takeprofit 3: 4184 🔹 Takeprofit 4: 4188 🔹 Takeprofit 5: 4192  💯💯💯",
+      "detectedKeywords": [
+        "ZONE_ENTRY"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 24.8,
+      "profitUSD": 2.48,
+      "durationMinutes": 112,
+      "resolvedAt": "2026-10-16T06:52:26.117Z"
+    }
+  },
+  {
+    "id": "1792133477189_-1002912763769",
+    "timestamp": 1792133477189,
+    "utcDate": "2026-10-16T06:51:16.909Z",
+    "timeStr": "6:51:16",
+    "session": "ASIA",
+    "channel": {
+      "id": "-1002912763769",
+      "name": "TRADE WITH RAJA"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "SELL",
+      "entry": 4179.15,
+      "sl": 4189,
+      "tp1": 4176,
+      "tp2": 4167,
+      "tp3": 4170,
+      "slPips": 98.5,
+      "tp1Pips": 31.5,
+      "tp2Pips": 121.5,
+      "rrRatioTP2": 1.23,
+      "lotSize": 0.73,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4179,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 10,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4150.01,
+      "asianRangePips": 363.8,
+      "distanceToAsianHighPips": -73.9,
+      "distanceToAsianLowPips": 289.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4186.39,
+      "low24h": 4150.01,
+      "range24hPips": 363.8,
+      "positionIn24hRangePercent": 79.7
+    },
+    "candleAnatomyM5": {
+      "timeStr": "6:45:00",
+      "open": 4181.95,
+      "high": 4181.95,
+      "low": 4180.02,
+      "close": 4180.02,
+      "rangePips": 19.3,
+      "bodyPips": 19.3,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD SELL 4179  TP 4176 TP 4173 TP 4170 TP 4167  SL 4189",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 64,
+      "profitUSD": -6.4,
+      "durationMinutes": 31,
+      "resolvedAt": "2026-10-16T07:22:26.219Z"
+    }
+  },
+  {
+    "id": "1792144105065_-1001823957090",
+    "timestamp": 1792144105065,
+    "utcDate": "2026-10-16T09:48:24.795Z",
+    "timeStr": "9:48:24",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1001823957090",
+      "name": "Craig Percoco Daily Trades"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4182.17,
+      "sl": 4167,
+      "tp1": 4184,
+      "tp2": 4220,
+      "tp3": 4190,
+      "slPips": 151.7,
+      "tp1Pips": 18.3,
+      "tp2Pips": 378.3,
+      "rrRatioTP2": 2.49,
+      "lotSize": 0.47,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4178,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4150.01,
+      "asianRangePips": 363.8,
+      "distanceToAsianHighPips": -83.9,
+      "distanceToAsianLowPips": 279.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4188.37,
+      "low24h": 4150.01,
+      "range24hPips": 383.6,
+      "positionIn24hRangePercent": 73
+    },
+    "candleAnatomyM5": {
+      "timeStr": "9:40:00",
+      "open": 4179.34,
+      "high": 4179.34,
+      "low": 4177.46,
+      "close": 4177.47,
+      "rangePips": 18.8,
+      "bodyPips": 18.7,
+      "upperWickPips": 0,
+      "lowerWickPips": 0.1,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.01,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "XAUUSD    BUY  4181__4178    TP1 4184   TP2 4187   TP3 4190   TP4 4193   TP5 4196   TP6 4220    SL 4167",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 135.39999999999998,
+      "profitUSD": -13.54,
+      "durationMinutes": 187,
+      "resolvedAt": "2026-10-16T12:55:39.201Z"
+    }
+  },
+  {
+    "id": "1792147036116_-1002157727490",
+    "timestamp": 1792147036116,
+    "utcDate": "2026-10-16T10:37:15.820Z",
+    "timeStr": "10:37:15",
+    "session": "LONDON",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4184,
+      "sl": 4168,
+      "tp1": 4186,
+      "tp2": 4208,
+      "tp3": 4194,
+      "slPips": 160,
+      "tp1Pips": 20,
+      "tp2Pips": 240,
+      "rrRatioTP2": 1.5,
+      "lotSize": 0.44,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4178,
+      "nearestRoundNumber": 4180,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4150.01,
+      "asianRangePips": 363.8,
+      "distanceToAsianHighPips": -83.9,
+      "distanceToAsianLowPips": 279.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4188.37,
+      "low24h": 4150.01,
+      "range24hPips": 383.6,
+      "positionIn24hRangePercent": 73
+    },
+    "candleAnatomyM5": {
+      "timeStr": "10:30:00",
+      "open": 4180.13,
+      "high": 4180.13,
+      "low": 4179.47,
+      "close": 4179.57,
+      "rangePips": 6.6,
+      "bodyPips": 5.6,
+      "upperWickPips": 0,
+      "lowerWickPips": 1,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.15,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4182 - 4178  TP 4186 - TP 4190 - TP 4194 -  TP 4208  SL : 4168",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 151.4,
+      "profitUSD": -15.14,
+      "durationMinutes": 138,
+      "resolvedAt": "2026-10-16T12:55:39.321Z"
+    }
+  },
+  {
+    "id": "1792155560565_-1002157727490",
+    "timestamp": 1792155560565,
+    "utcDate": "2026-10-16T12:59:20.272Z",
+    "timeStr": "12:59:20",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002157727490",
+      "name": "MARCO TRADING HUB"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "BUY",
+      "entry": 4166.86,
+      "sl": 4150,
+      "tp1": 4168,
+      "tp2": 4190,
+      "tp3": 4176,
+      "slPips": 168.6,
+      "tp1Pips": 11.4,
+      "tp2Pips": 231.4,
+      "rrRatioTP2": 1.37,
+      "lotSize": 0.42,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4160,
+      "nearestRoundNumber": 4160,
+      "distanceToRoundPips": 0,
+      "isAtRoundNumberZone": true,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4150.01,
+      "asianRangePips": 363.8,
+      "distanceToAsianHighPips": -263.9,
+      "distanceToAsianLowPips": 99.9,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4188.37,
+      "low24h": 4150.01,
+      "range24hPips": 383.6,
+      "positionIn24hRangePercent": 26
+    },
+    "candleAnatomyM5": {
+      "timeStr": "12:50:00",
+      "open": 4173.2,
+      "high": 4173.2,
+      "low": 4168.09,
+      "close": 4168.09,
+      "rangePips": 51.1,
+      "bodyPips": 51.1,
+      "upperWickPips": 0,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0,
+      "pattern": "BEARISH_MOMENTUM"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD BUY 4164 - 4160  TP 4168 - TP 4172 - TP 4176 -  TP 4190  SL : 4150",
+      "detectedKeywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 207.2,
+      "profitUSD": 20.72,
+      "durationMinutes": 62,
+      "resolvedAt": "2026-10-16T14:01:00.378Z"
+    }
+  },
+  {
+    "id": "1792162048605_-1002402499107",
+    "timestamp": 1792162048605,
+    "utcDate": "2026-10-16T14:47:28.330Z",
+    "timeStr": "14:47:28",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "-1002402499107",
+      "name": "GOLD PIPS HUNTER"
+    },
+    "order": {
+      "symbol": "GOLD",
+      "action": "SELL",
+      "entry": 4186.66,
+      "sl": 4200,
+      "tp1": 4185,
+      "tp2": 4170,
+      "tp3": 4181,
+      "slPips": 133.4,
+      "tp1Pips": 16.6,
+      "tp2Pips": 166.6,
+      "rrRatioTP2": 1.25,
+      "lotSize": 0.53,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4187,
+      "nearestRoundNumber": 4185,
+      "distanceToRoundPips": 20,
+      "isAtRoundNumberZone": false,
+      "levelType": "MID_ROUND_5"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4156.46,
+      "asianRangePips": 299.3,
+      "distanceToAsianHighPips": 6.1,
+      "distanceToAsianLowPips": 305.4,
+      "isSweepingAsianHigh": true,
+      "isSweepingAsianLow": false,
+      "high24h": 4193.66,
+      "low24h": 4154.1,
+      "range24hPips": 395.6,
+      "positionIn24hRangePercent": 83.2
+    },
+    "candleAnatomyM5": {
+      "timeStr": "14:40:00",
+      "open": 4184.83,
+      "high": 4186.93,
+      "low": 4184.83,
+      "close": 4184.91,
+      "rangePips": 21,
+      "bodyPips": 0.8,
+      "upperWickPips": 20.2,
+      "lowerWickPips": 0,
+      "upperWickRatio": 0.96,
+      "lowerWickRatio": 0,
+      "pattern": "DOJI_INDECISION"
+    },
+    "channelIntelligence": {
+      "rawText": "GOLD Sell NOW 4187   SL 4200   TP 4185  TP 4183  TP 4181  TP 4178  TP 4176  TP 4174  TP 4170",
+      "detectedKeywords": [
+        "MOMENTUM"
+      ]
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "WIN",
+      "pipsGained": 150.1,
+      "profitUSD": 15.01,
+      "durationMinutes": 71,
+      "resolvedAt": "2026-10-16T15:58:04.989Z"
+    }
+  },
+  {
+    "id": "1792166303419_PROPRIETARY_NY_SNIPER_XAUUSD",
+    "timestamp": 1792166303419,
+    "utcDate": "2026-10-16T15:58:23.139Z",
+    "timeStr": "15:58:23",
+    "session": "LONDON_NY_OVERLAP",
+    "channel": {
+      "id": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "name": "NY Daily Range Sniper XAUUSD"
+    },
+    "order": {
+      "symbol": "XAUUSD",
+      "action": "BUY",
+      "entry": 4168.51,
+      "sl": 4165.51,
+      "tp2": 4174.51,
+      "tp3": null,
+      "slPips": 30,
+      "tp1Pips": null,
+      "tp2Pips": 60,
+      "rrRatioTP2": 2,
+      "lotSize": 0.01,
+      "isProvisionalSL": false
+    },
+    "brokerTelemetry": {
+      "liveBid": null,
+      "liveAsk": null,
+      "liveSpreadPips": 3.7,
+      "entrySlippagePips": 0
+    },
+    "psychologicalLevels": {
+      "currentPrice": 4168.51,
+      "nearestRoundNumber": 4170,
+      "distanceToRoundPips": 14.9,
+      "isAtRoundNumberZone": false,
+      "levelType": "MAJOR_ROUND_10"
+    },
+    "sessionContext": {
+      "asianHigh": 4186.39,
+      "asianLow": 4165.03,
+      "asianRangePips": 213.6,
+      "distanceToAsianHighPips": -178.8,
+      "distanceToAsianLowPips": 34.8,
+      "isSweepingAsianHigh": false,
+      "isSweepingAsianLow": false,
+      "high24h": 4193.66,
+      "low24h": 4154.1,
+      "range24hPips": 395.6,
+      "positionIn24hRangePercent": 36.4
+    },
+    "candleAnatomyM5": {
+      "timeStr": "15:50:00",
+      "open": 4171.24,
+      "high": 4171.24,
+      "low": 4169.36,
+      "close": 4170.48,
+      "rangePips": 18.8,
+      "bodyPips": 7.6,
+      "upperWickPips": 0,
+      "lowerWickPips": 11.2,
+      "upperWickRatio": 0,
+      "lowerWickRatio": 0.6,
+      "pattern": "NEUTRAL"
+    },
+    "channelIntelligence": {
+      "rawText": "",
+      "keywords": []
+    },
+    "newsContext": {
+      "nextEvent": "Ninguna noticia cercana",
+      "minutesRemaining": null,
+      "isSafeFromNews": true
+    },
+    "outcome": {
+      "status": "LOSS",
+      "pipsGained": 29.1,
+      "profitUSD": -2.91,
+      "durationMinutes": 4,
+      "resolvedAt": "2026-10-16T16:02:31.045Z"
     }
   }
 ]

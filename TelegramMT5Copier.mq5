@@ -16,12 +16,20 @@ input double   InpDefaultSlippage = 10;                      // Deslizamiento m�
 input bool     InpAllowHedging = true;                       // Permitir Hedging (true: Capital Propio | false: Prop Firms)
 input string   InpSymbolsToMonitor = "XAUUSD,EURUSD,GBPJPY,USDCAD,GBPUSD,AUDUSD,USDJPY,NAS100"; // Símbolos a alimentar a Node.js (separados por coma)
 
-// 🛡️ PARÁMETROS AUTO BREAK-EVEN & TRAILING STOP DINÁMICO (DESACTIVADO: GESTIÓN PURA POR RATIOS EN NODE.JS)
-input bool     InpEnableAutoBE          = false; // DESACTIVADO: Evita mover a BE por pips fijos arbitrarios
-input double   InpBETriggerPips         = 0.0;   // Inactivo
-input double   InpBEOffsetPips          = 0.0;   // Inactivo
+// 🛡️ PARÁMETROS BLINDADO DE SEGURIDAD (STOP LOSS Y TAKE PROFIT DE EMERGENCIA)
+input group "=== 🛡️ 1. BLINDADO DE SEGURIDAD (SL / TP AUTOMÁTICO) ===";
+input double   InpEmergencySL_Gold      = 3.0;   // SL de Emergencia Oro en $ (3.0$ = 30 pips)
+input double   InpEmergencyTP_Gold      = 12.0;  // TP de Emergencia Oro por defecto en $ (12.0$ = 120 pips)
+input bool     InpUseFarthestActiveTP   = true;  // Heredar TP más lejano si existen posiciones activas en la misma dirección
 
-input bool     InpEnableTrailing        = false; // DESACTIVADO: Evita trailing stop por pips fijos arbitrarios
+// 🛡️ PARÁMETROS AUTO BREAK-EVEN DINÁMICO (50% DEL RECORRIDO AL TP)
+input group "=== 🛡️ 2. AUTO BREAK-EVEN DINÁMICO (50% DEL TP) ===";
+input bool     InpEnableAutoBE          = true;  // Activar Auto Break-Even al 50% del recorrido al TP
+input double   InpBETriggerPercent      = 50.0;  // Recorrido hacia el TP para activar BE (%: 50.0 = 50%)
+input double   InpBEOffsetPips          = 0.0;   // Offset sobre precio de entrada (pips, 0 = BE exacto)
+
+input group "=== 🛡️ 3. TRAILING STOP ===";
+input bool     InpEnableTrailing        = false; // Trailing Stop (opcional)
 input double   InpTrailingTriggerPips   = 0.0;   // Inactivo
 input double   InpTrailingDistance      = 0.0;   // Inactivo
 input double   InpTrailingStep          = 0.0;   // Inactivo
@@ -35,7 +43,8 @@ datetime       lastCheckTime = 0;
 int OnInit()
 {
    EventSetMillisecondTimer(InpPollInterval);
-   Print("✅ TelegramMT5Copier iniciado. Auto-BE=OFF | Trailing=OFF (Gestión R:R pura). Conectando a ", InpServerUrl);
+   Print("✅ TelegramMT5Copier iniciado. Blindado: SL=", InpEmergencySL_Gold, "$ | TP_Defecto=", InpEmergencyTP_Gold, 
+         "$ | HeredarTPLejano=", InpUseFarthestActiveTP, " | Auto-BE(50%)=", InpEnableAutoBE ? "ON" : "OFF", ". Conectando a ", InpServerUrl);
    return(INIT_SUCCEEDED);
 }
 
@@ -49,29 +58,16 @@ void OnDeinit(const int reason)
 }
 
 //+------------------------------------------------------------------+
-//| Gestor de Auto Break-Even y Trailing Stop (DESACTIVADO)           |
+//| Helper: Distancia de Stop Loss de emergencia por activo          |
 //+------------------------------------------------------------------+
-void AutoBreakEvenManager()
-{
-   // Desactivado: El bot no modifica SL por pips fijos para no cortar operaciones prematuramente
-   return;
-}
-
-//+------------------------------------------------------------------+
-//| Vigilante de Emergencia: Garantizar que NINGUNA posicion quede  |
-//| sin Stop Loss (SL) ni Take Profit (TP).                          |
-//+------------------------------------------------------------------+
-//+------------------------------------------------------------------+
-//| Helper: Distancia de emergencia adaptativa por activo            |
-//+------------------------------------------------------------------+
-double GetDefaultEmergencyDistance(string sym)
+double GetDefaultEmergencySLDistance(string sym)
 {
    string s = sym;
    StringToUpper(s);
    int digits = (int)SymbolInfoInteger(sym, SYMBOL_DIGITS);
    double point = SymbolInfoDouble(sym, SYMBOL_POINT);
    
-   if(StringFind(s, "XAU") >= 0 || StringFind(s, "GOLD") >= 0) return 3.5;
+   if(StringFind(s, "XAU") >= 0 || StringFind(s, "GOLD") >= 0) return InpEmergencySL_Gold;
    if(StringFind(s, "XAG") >= 0 || StringFind(s, "SILVER") >= 0) return 0.35;
    if(StringFind(s, "BTC") >= 0) return 250.0;
    if(StringFind(s, "ETH") >= 0) return 20.0;
@@ -81,6 +77,184 @@ double GetDefaultEmergencyDistance(string sym)
    if(digits == 3 || digits == 5) return 250 * point; // 25 pips
    if(digits == 2 || digits == 4) return 25 * point;  // 25 pips
    return 50 * (point > 0 ? point : 0.0001);
+}
+
+//+------------------------------------------------------------------+
+//| Helper: Distancia de Take Profit de emergencia por defecto       |
+//+------------------------------------------------------------------+
+double GetDefaultEmergencyTPDistance(string sym)
+{
+   string s = sym;
+   StringToUpper(s);
+   int digits = (int)SymbolInfoInteger(sym, SYMBOL_DIGITS);
+   double point = SymbolInfoDouble(sym, SYMBOL_POINT);
+   
+   if(StringFind(s, "XAU") >= 0 || StringFind(s, "GOLD") >= 0) return InpEmergencyTP_Gold; // 12.0$ por defecto
+   if(StringFind(s, "XAG") >= 0 || StringFind(s, "SILVER") >= 0) return 1.40;
+   if(StringFind(s, "BTC") >= 0) return 1000.0;
+   if(StringFind(s, "ETH") >= 0) return 80.0;
+   if(StringFind(s, "SOL") >= 0) return 10.0;
+   if(StringFind(s, "NAS") >= 0 || StringFind(s, "100") >= 0 || StringFind(s, "US30") >= 0 || StringFind(s, "DJ") >= 0 || StringFind(s, "SPX") >= 0)
+      return 100.0;
+   if(digits == 3 || digits == 5) return 1000 * point; // 100 pips
+   if(digits == 2 || digits == 4) return 100 * point;  // 100 pips
+   return 200 * (point > 0 ? point : 0.0001);
+}
+
+//+------------------------------------------------------------------+
+//| Helper: Buscar el TP más lejano de posiciones activas en la misma |
+//| dirección (BUY / SELL) y mismo símbolo                           |
+//+------------------------------------------------------------------+
+double FindFarthestActiveTP(string sym, ENUM_POSITION_TYPE dir, ulong excludeTicket = 0)
+{
+   double farthestTP = 0.0;
+   int total = PositionsTotal();
+   
+   for(int i = 0; i < total; i++)
+   {
+      ulong t = PositionGetTicket(i);
+      if(t == 0 || t == excludeTicket) continue;
+      
+      string pSym = PositionGetString(POSITION_SYMBOL);
+      if(pSym != sym) continue;
+      
+      ENUM_POSITION_TYPE pType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      if(pType != dir) continue;
+      
+      double pTP = PositionGetDouble(POSITION_TP);
+      if(pTP <= 0) continue;
+      
+      if(dir == POSITION_TYPE_BUY)
+      {
+         // Para compras, el TP más lejano es el más alto
+         if(farthestTP == 0.0 || pTP > farthestTP)
+            farthestTP = pTP;
+      }
+      else if(dir == POSITION_TYPE_SELL)
+      {
+         // Para ventas, el TP más lejano es el más bajo
+         if(farthestTP == 0.0 || pTP < farthestTP)
+            farthestTP = pTP;
+      }
+   }
+   
+   return farthestTP;
+}
+
+//+------------------------------------------------------------------+
+//| Helper: Calcular el Take Profit inteligente para una nueva       |
+//| posición o para el vigilante de seguridad                        |
+//+------------------------------------------------------------------+
+double GetSmartEmergencyTP(string sym, ENUM_POSITION_TYPE dir, double entryPrice, int digits, ulong excludeTicket = 0)
+{
+   if(InpUseFarthestActiveTP)
+   {
+      double farthestTP = FindFarthestActiveTP(sym, dir, excludeTicket);
+      if(farthestTP > 0)
+      {
+         if(dir == POSITION_TYPE_BUY && farthestTP > entryPrice)
+         {
+            Print("🎯 [BLINDADO INTELIGENTE] Heredando TP más lejano de compras activas: ", farthestTP);
+            return NormalizeDouble(farthestTP, digits);
+         }
+         else if(dir == POSITION_TYPE_SELL && farthestTP < entryPrice)
+         {
+            Print("🎯 [BLINDADO INTELIGENTE] Heredando TP más lejano de ventas activas: ", farthestTP);
+            return NormalizeDouble(farthestTP, digits);
+         }
+      }
+   }
+
+   // Si no hay operaciones previas en esa dirección con TP, usar el valor por defecto (12$ en Oro)
+   double defaultDist = GetDefaultEmergencyTPDistance(sym);
+   double defaultTP = (dir == POSITION_TYPE_BUY) ? (entryPrice + defaultDist) : (entryPrice - defaultDist);
+   Print("🛡️ [BLINDADO INTELIGENTE] Asignando TP por defecto (+/-", defaultDist, "): ", defaultTP);
+   return NormalizeDouble(defaultTP, digits);
+}
+
+//+------------------------------------------------------------------+
+//| Gestor de Auto Break-Even al 50% del Recorrido hacia el TP       |
+//+------------------------------------------------------------------+
+void AutoBreakEvenManager()
+{
+   if(!InpEnableAutoBE) return;
+
+   int total = PositionsTotal();
+   for(int i = total - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+
+      double sl = PositionGetDouble(POSITION_SL);
+      double tp = PositionGetDouble(POSITION_TP);
+      double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+      string posSym = PositionGetString(POSITION_SYMBOL);
+      ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+      
+      // Solo se puede calcular el 50% si la posición tiene TP definido
+      if(tp <= 0) continue;
+
+      int digits = (int)SymbolInfoInteger(posSym, SYMBOL_DIGITS);
+      if(digits <= 0) digits = 2;
+      double point = SymbolInfoDouble(posSym, SYMBOL_POINT);
+      if(point <= 0) point = 0.01;
+
+      double pipUnit = (digits == 3 || digits == 5) ? (point * 10) : point;
+      double offsetPrice = InpBEOffsetPips * pipUnit;
+
+      if(posType == POSITION_TYPE_BUY)
+      {
+         double tpDistance = tp - openPrice;
+         if(tpDistance <= 0) continue;
+
+         double triggerPrice = openPrice + (tpDistance * (InpBETriggerPercent / 100.0));
+         double bid = SymbolInfoDouble(posSym, SYMBOL_BID);
+         if(bid <= 0) continue;
+
+         // Si el precio ya recorrió el 50% del camino al TP
+         if(bid >= triggerPrice)
+         {
+            double newSL = NormalizeDouble(openPrice + offsetPrice, digits);
+            // Solo mover si el SL actual está por debajo de newSL
+            if(sl < newSL - 0.00001)
+            {
+               Print("🛡️ [AUTO BREAK-EVEN 50%] Posición BUY #", ticket, " (", posSym, ") alcanzó el ", InpBETriggerPercent, 
+                     "% del TP (Bid: ", bid, " >= Trigger 50%: ", triggerPrice, "). Moviendo SL a Entrada (", newSL, ")");
+               bool ok = trade.PositionModify(ticket, newSL, tp);
+               if(!ok)
+               {
+                  ModifySinglePositionByTicket(ticket, newSL, tp);
+               }
+            }
+         }
+      }
+      else if(posType == POSITION_TYPE_SELL)
+      {
+         double tpDistance = openPrice - tp;
+         if(tpDistance <= 0) continue;
+
+         double triggerPrice = openPrice - (tpDistance * (InpBETriggerPercent / 100.0));
+         double ask = SymbolInfoDouble(posSym, SYMBOL_ASK);
+         if(ask <= 0) continue;
+
+         // Si el precio ya recorrió el 50% del camino al TP a la baja
+         if(ask <= triggerPrice)
+         {
+            double newSL = NormalizeDouble(openPrice - offsetPrice, digits);
+            // Solo mover si el SL actual está por encima de newSL o no tiene SL
+            if(sl > newSL + 0.00001 || sl <= 0)
+            {
+               Print("🛡️ [AUTO BREAK-EVEN 50%] Posición SELL #", ticket, " (", posSym, ") alcanzó el ", InpBETriggerPercent, 
+                     "% del TP (Ask: ", ask, " <= Trigger 50%: ", triggerPrice, "). Moviendo SL a Entrada (", newSL, ")");
+               bool ok = trade.PositionModify(ticket, newSL, tp);
+               if(!ok)
+               {
+                  ModifySinglePositionByTicket(ticket, newSL, tp);
+               }
+            }
+         }
+      }
+   }
 }
 
 //+------------------------------------------------------------------+
@@ -113,9 +287,9 @@ void EnforceSafetyStopLoss()
                int digits = (int)SymbolInfoInteger(posSym, SYMBOL_DIGITS);
                if(digits <= 0) digits = 2;
 
-               double emDist = GetDefaultEmergencyDistance(posSym);
-               double normSL = (sl > 0) ? sl : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice - emDist, digits) : NormalizeDouble(openPrice + emDist, digits));
-               double normTP = (tp > 0) ? tp : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice + emDist, digits) : NormalizeDouble(openPrice - emDist, digits));
+               double emSLDist = GetDefaultEmergencySLDistance(posSym);
+               double normSL = (sl > 0) ? sl : ((posType == POSITION_TYPE_BUY) ? NormalizeDouble(openPrice - emSLDist, digits) : NormalizeDouble(openPrice + emSLDist, digits));
+               double normTP = (tp > 0) ? tp : GetSmartEmergencyTP(posSym, posType, openPrice, digits, ticket);
 
                bool ok = trade.PositionModify(ticket, normSL, normTP);
 
@@ -212,7 +386,10 @@ void OnTimer()
    // 1. Ejecutar vigilante de seguridad de Stop Loss en cada pulso (250 ms)
    EnforceSafetyStopLoss();
 
-   string cookie=NULL, headers;
+   // 2. Ejecutar Auto Break-Even inteligente al 50% del recorrido al TP
+   AutoBreakEvenManager();
+
+   string cookie=NULL;
    char post[], result[];
    string result_headers;
    int timeout = 500;
@@ -222,18 +399,21 @@ void OnTimer()
    string company = AccountInfoString(ACCOUNT_COMPANY);
    double balance = AccountInfoDouble(ACCOUNT_BALANCE);
    double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+   double credit = AccountInfoDouble(ACCOUNT_CREDIT);
    string curr = AccountInfoString(ACCOUNT_CURRENCY);
    double liveBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double liveAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    int openPosCount = PositionsTotal();
 
-   // Conteo de posiciones con RIESGO ACTIVO (cuyo Stop Loss no esté en Break-Even)
+   double realFloatingProfit = 0.0;
+   // Conteo de posiciones con RIESGO ACTIVO y cálculo exacto del beneficio flotante real de las órdenes
    int riskPosCount = 0;
    for(int p = 0; p < openPosCount; p++)
    {
       ulong t = PositionGetTicket(p);
       if(t > 0)
       {
+         realFloatingProfit += PositionGetDouble(POSITION_PROFIT);
          double opPrice = PositionGetDouble(POSITION_PRICE_OPEN);
          double posSL   = PositionGetDouble(POSITION_SL);
          ENUM_POSITION_TYPE pType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
@@ -271,6 +451,8 @@ void OnTimer()
                 "&symbol=" + _Symbol +
                 "&balance=" + DoubleToString(balance, 2) + 
                 "&equity=" + DoubleToString(equity, 2) + 
+                "&credit=" + DoubleToString(credit, 2) + 
+                "&floatingProfit=" + DoubleToString(realFloatingProfit, 2) + 
                 "&currency=" + curr +
                 "&broker=" + company + 
                 "&bid=" + DoubleToString(liveBid, chartDig) + 
@@ -293,6 +475,14 @@ void OnTimer()
          ExecuteJsonOrders(jsonResponse);
       }
    }
+}
+
+//+------------------------------------------------------------------+
+//| Tick function (Auto Break-Even instantáneo por cada tick)        |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   AutoBreakEvenManager();
 }
 
 //+------------------------------------------------------------------+
@@ -789,20 +979,8 @@ void ExecuteSingleOrder(string json)
       Print("🔄 [MT5 EA] Comando MODIFY recibido para ", symbol, " (Tipo: ", modType == "" ? "ESTANDAR" : modType, "). Ticket: ", ticket, " | SL: ", sl, " | TP: ", tp);
       if(modType == "BREAK_EVEN" || modType == "BE")
       {
-         int totalPos = PositionsTotal();
-         for(int p = totalPos - 1; p >= 0; p--)
-         {
-            ulong pTicket = PositionGetTicket(p);
-            if(pTicket > 0 && PositionGetString(POSITION_SYMBOL) == symbol)
-            {
-               double op = PositionGetDouble(POSITION_PRICE_OPEN);
-               double curTP = PositionGetDouble(POSITION_TP);
-               ENUM_POSITION_TYPE pType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
-               double bePrice = (pType == POSITION_TYPE_BUY) ? NormalizeDouble(op + InpBEOffsetPips, digits) : NormalizeDouble(op - InpBEOffsetPips, digits);
-               trade.PositionModify(pTicket, bePrice, curTP);
-               Print("🛡️ [MT5 EA] Posicion #", pTicket, " movida a Break-Even (", bePrice, ") por senal externa.");
-            }
-         }
+         Print("🛡️ [MT5 EA] Comando BREAK_EVEN ignorado por configuracion del usuario (SL se mantiene en su nivel original).");
+         return;
       }
       else if(ticket > 0)
       {
@@ -819,7 +997,10 @@ void ExecuteSingleOrder(string json)
    {
       double entryPrice = ExtractJsonDouble(json, "entryPrice");
       if(entryPrice <= 0) entryPrice = ExtractJsonDouble(json, "entry");
-      Print("⏳ [MT5 EA] Colocando orden pendiente BUY LIMIT en ", symbol, " a ", entryPrice);
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(entryPrice - emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_BUY, entryPrice, digits);
+      Print("⏳ [MT5 EA] Colocando orden pendiente BUY LIMIT en ", symbol, " a ", entryPrice, " | SL: ", sl, " | TP: ", tp);
       bool res = trade.BuyLimit(volume > 0 ? volume : 0.01, entryPrice, symbol, sl, tp, ORDER_TIME_GTC, 0, comment);
       if(res) Print("✅ [MT5 EA] Orden pendiente BUY LIMIT colocada con exito en ", symbol);
       else Print("❌ [MT5 EA] Error al colocar BUY LIMIT. Retcode: ", trade.ResultRetcode());
@@ -828,7 +1009,10 @@ void ExecuteSingleOrder(string json)
    {
       double entryPrice = ExtractJsonDouble(json, "entryPrice");
       if(entryPrice <= 0) entryPrice = ExtractJsonDouble(json, "entry");
-      Print("⏳ [MT5 EA] Colocando orden pendiente SELL LIMIT en ", symbol, " a ", entryPrice);
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(entryPrice + emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_SELL, entryPrice, digits);
+      Print("⏳ [MT5 EA] Colocando orden pendiente SELL LIMIT en ", symbol, " a ", entryPrice, " | SL: ", sl, " | TP: ", tp);
       bool res = trade.SellLimit(volume > 0 ? volume : 0.01, entryPrice, symbol, sl, tp, ORDER_TIME_GTC, 0, comment);
       if(res) Print("✅ [MT5 EA] Orden pendiente SELL LIMIT colocada con exito en ", symbol);
       else Print("❌ [MT5 EA] Error al colocar SELL LIMIT. Retcode: ", trade.ResultRetcode());
@@ -837,7 +1021,10 @@ void ExecuteSingleOrder(string json)
    {
       double entryPrice = ExtractJsonDouble(json, "entryPrice");
       if(entryPrice <= 0) entryPrice = ExtractJsonDouble(json, "entry");
-      Print("⏳ [MT5 EA] Colocando orden pendiente BUY STOP en ", symbol, " a ", entryPrice);
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(entryPrice - emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_BUY, entryPrice, digits);
+      Print("⏳ [MT5 EA] Colocando orden pendiente BUY STOP en ", symbol, " a ", entryPrice, " | SL: ", sl, " | TP: ", tp);
       bool res = trade.BuyStop(volume > 0 ? volume : 0.01, entryPrice, symbol, sl, tp, ORDER_TIME_GTC, 0, comment);
       if(res) Print("✅ [MT5 EA] Orden pendiente BUY STOP colocada con exito en ", symbol);
       else Print("❌ [MT5 EA] Error al colocar BUY STOP. Retcode: ", trade.ResultRetcode());
@@ -846,7 +1033,10 @@ void ExecuteSingleOrder(string json)
    {
       double entryPrice = ExtractJsonDouble(json, "entryPrice");
       if(entryPrice <= 0) entryPrice = ExtractJsonDouble(json, "entry");
-      Print("⏳ [MT5 EA] Colocando orden pendiente SELL STOP en ", symbol, " a ", entryPrice);
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(entryPrice + emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_SELL, entryPrice, digits);
+      Print("⏳ [MT5 EA] Colocando orden pendiente SELL STOP en ", symbol, " a ", entryPrice, " | SL: ", sl, " | TP: ", tp);
       bool res = trade.SellStop(volume > 0 ? volume : 0.01, entryPrice, symbol, sl, tp, ORDER_TIME_GTC, 0, comment);
       if(res) Print("✅ [MT5 EA] Orden pendiente SELL STOP colocada con exito en ", symbol);
       else Print("❌ [MT5 EA] Error al colocar SELL STOP. Retcode: ", trade.ResultRetcode());
@@ -862,10 +1052,10 @@ void ExecuteSingleOrder(string json)
       double ask = SymbolInfoDouble(symbol, SYMBOL_ASK);
       if(ask <= 0) ask = SymbolInfoDouble(symbol, SYMBOL_LAST);
 
-      // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inmediatos
-      double emDist = GetDefaultEmergencyDistance(symbol);
-      if(sl <= 0) sl = NormalizeDouble(ask - emDist, digits);
-      if(tp <= 0) tp = NormalizeDouble(ask + emDist, digits);
+      // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inteligentes
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(ask - emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_BUY, ask, digits);
       
       // 1. Intentar abrir con SL/TP directo en un solo paso
       bool res = trade.Buy(volume > 0 ? volume : 0.01, symbol, ask, sl, tp, comment);
@@ -920,10 +1110,10 @@ void ExecuteSingleOrder(string json)
       double bid = SymbolInfoDouble(symbol, SYMBOL_BID);
       if(bid <= 0) bid = SymbolInfoDouble(symbol, SYMBOL_LAST);
 
-      // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inmediatos
-      double emDist = GetDefaultEmergencyDistance(symbol);
-      if(sl <= 0) sl = NormalizeDouble(bid + emDist, digits);
-      if(tp <= 0) tp = NormalizeDouble(bid - emDist, digits);
+      // Garantía anti-quema: Si la orden entrase sin SL o TP, aplicar parámetros de seguridad inteligentes
+      double emDistSL = GetDefaultEmergencySLDistance(symbol);
+      if(sl <= 0) sl = NormalizeDouble(bid + emDistSL, digits);
+      if(tp <= 0) tp = GetSmartEmergencyTP(symbol, POSITION_TYPE_SELL, bid, digits);
 
       // 1. Intentar abrir con SL/TP directo en un solo paso
       bool res = trade.Sell(volume > 0 ? volume : 0.01, symbol, bid, sl, tp, comment);

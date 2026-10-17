@@ -12,7 +12,7 @@ class AttaullahStrategy extends BaseStrategy {
   constructor(config = {}) {
     super({
       ...config,
-      preferredTP: config.preferredTP || 'TP3',
+      preferredTP: config.preferredTP || 'LAST_TP',
       allowGrid: false, // ¡GRID DESACTIVADA!
       pendingOrderTTLMinutes: config.pendingOrderTTLMinutes || 30
     });
@@ -95,25 +95,36 @@ class AttaullahStrategy extends BaseStrategy {
     }
 
     // 6. Extracción de Take Profits multi-línea (Takeprofit 1..5)
-    let tp1 = null, tp2 = null, tp3 = null, tp4 = null;
+    let tp1 = null, tp2 = null, tp3 = null, tp4 = null, tp5 = null;
     const tp1Match = rawText.match(/(?:TAKEPROFIT\s*1|TP\s*1)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
     const tp2Match = rawText.match(/(?:TAKEPROFIT\s*2|TP\s*2)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
     const tp3Match = rawText.match(/(?:TAKEPROFIT\s*3|TP\s*3)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
     const tp4Match = rawText.match(/(?:TAKEPROFIT\s*4|TP\s*4)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
+    const tp5Match = rawText.match(/(?:TAKEPROFIT\s*5|TP\s*5)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/i);
 
     if (tp1Match) tp1 = parseFloat(tp1Match[1]);
     if (tp2Match) tp2 = parseFloat(tp2Match[1]);
     if (tp3Match) tp3 = parseFloat(tp3Match[1]);
     if (tp4Match) tp4 = parseFloat(tp4Match[1]);
+    if (tp5Match) tp5 = parseFloat(tp5Match[1]);
 
-    if (!tp1) {
+    const tpList = [tp1, tp2, tp3, tp4, tp5].filter(v => v !== null && !isNaN(v));
+
+    if (tpList.length === 0) {
       // Fallback a regex general de TPs
       const generalTPs = [...rawText.matchAll(/(?:TAKEPROFIT|TP\s*\d*)[\s:\.@]*([0-9]{4}(?:\.[0-9]+)?)/gi)];
-      if (generalTPs.length > 0) tp1 = parseFloat(generalTPs[0][1]);
-      if (generalTPs.length > 1) tp2 = parseFloat(generalTPs[1][1]);
-      if (generalTPs.length > 2) tp3 = parseFloat(generalTPs[2][1]);
-      if (generalTPs.length > 3) tp4 = parseFloat(generalTPs[3][1]);
+      for (const m of generalTPs) {
+        const val = parseFloat(m[1]);
+        if (!isNaN(val) && val > 0) tpList.push(val);
+      }
+      tp1 = tpList[0] || null;
+      tp2 = tpList[1] || null;
+      tp3 = tpList[2] || null;
+      tp4 = tpList[3] || null;
+      tp5 = tpList[4] || null;
     }
+
+    const lastTP = tpList.length > 0 ? tpList[tpList.length - 1] : null;
 
     return new SignalData({
       channelId: this.channelId,
@@ -128,6 +139,9 @@ class AttaullahStrategy extends BaseStrategy {
       tp2,
       tp3,
       tp4,
+      tp5,
+      tps: tpList,
+      lastTP,
       rawText
     });
   }

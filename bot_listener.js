@@ -14,8 +14,9 @@ const { findChannelConfig } = require('./config/channels.config');
 const { strategyFactory } = require('./core/StrategyFactory');
 const { riskEngine } = require('./core/RiskEngine');
 const { initMT5Bridge, executeTradePlan, getLatestTick } = require('./mt5_bridge');
-const { analyticsEngine } = require('./core/AnalyticsEngine');
+const { analyticsEngine, getPipSize } = require('./core/AnalyticsEngine');
 const { notificationService } = require('./core/NotificationService');
+const { signalWatchlistManager } = require('./core/SignalWatchlistManager');
 
 const stringSessionStr = process.env.TELEGRAM_SESSION || '1BAAOMTQ5LjE1NC4xNjcuOTEAUGYACNtv9yPGXZJfDRuJY9r0iKUbmrHVPLW/J9O0InWWf0nnf2PIqawqdIE6hSwAZ12JXXPZfhIXa/p8ojq7BhqvQ1oHxZ6Vrb6YntossRASwVrIo3CDLL8XisiudFRhsUfe/bfusFNSCZtcrH781FscrTQ6AhBK/bqosPsQxWUfCzjMr3xx2b5qvMYYRC6DCcz4PwRQyig5gWI7G9XJ+AFOaBnixOq1wmEScNeXifbmRMYVaUcwEm4Isu2XVagBncvsOrrwPoh9WgxvLxExdWB2cAL/YOJCHLjhPMPGCFR4BB09IUA2FqsQSlJ47n/NvUT34yT3IwKjq8DdMPKR870=';
 const stringSession = new StringSession(stringSessionStr);
@@ -169,25 +170,71 @@ async function startListener() {
           return;
         }
 
-        // 🛡️ ANTI-DUPLICADOS POR TIEMPO (Ventana de 120s por canal, par y acción)
-        const recentKey = `${channelId}:${signal.symbol}:${signal.action}`;
-        const lastDispatched = recentSignalDispatches.get(recentKey);
-        if (lastDispatched && (Date.now() - lastDispatched) < 120000) {
-          console.log(`⚠️ [Anti-Duplicado] Señal duplicada recibida para "${channelCfg.name}" (${signal.symbol} ${signal.action}) con solo ${((Date.now() - lastDispatched)/1000).toFixed(1)}s de diferencia. Despacho omitido.`);
-          return;
-        }
-
-        executedMessageIds.add(executedMsgKey);
-        recentSignalDispatches.set(recentKey, Date.now());
-
-        console.log(`🎯 [SEÑAL VÁLIDA]: ${signal.action} ${signal.symbol} | Entrada: ${signal.entry || 'MERCADO'} | SL: ${signal.sl} | TP1: ${signal.tp1} | TP2: ${signal.tp2}`);
-
         // Obtener precio en vivo del broker
         const liveTick = getLatestTick(signal.symbol);
         const livePrice = signal.action.includes('BUY') ? (liveTick.ask || liveTick.bid) : (liveTick.bid || liveTick.ask);
 
         // Crear plan de ejecución específico de la estrategia del canal
         const plan = strategy.createExecutionPlan(signal, livePrice || signal.entry, riskEngine);
+
+        const entryDiffPips = (signal.entry && livePrice) 
+          ? Math.abs(livePrice - signal.entry) / getPipSize(signal.symbol) 
+          : 0;
+
+        // 📊 AUDITORÍA PURA DE SEÑALES DE TELEGRAM:
+        // Registrar la señal inmediatamente con su validez de entrada y motivo
+        analyticsEngine.recordSignal(channelId, channelCfg.name, signal, {
+          entryPrice: signal.entry || livePrice,
+          slPrice: signal.sl,
+          targetTP: strategy.resolveTargetTP(signal) || signal.tp1 || signal.tp2 || signal.tp,
+          valid: plan ? plan.valid : false,
+          reason: plan ? (plan.valid ? 'VÁLIDA (Entrada a tiempo)' : plan.reason) : 'Plan nulo',
+          entryDiffPips
+        });
+
+        if (!plan || !plan.valid) {
+          console.log(`⚠️ [Plan No Válido] "${channelCfg.name}": ${plan ? plan.reason : 'Plan nulo'}. Despacho omitido.`);
+          // 🛡️ RE-EVALUACIÓN EN DRAWDOWN / DESCUENTO:
+          // Si el plan fue rechazado por Ratio R:R, agregar a la lista de vigilancia de pullback (3 intentos cada 5 min, máx 15 min)
+          if (plan && (plan.isRRReject || (plan.reason && plan.reason.includes('Ratio R:R')))) {
+            signalWatchlistManager.addToWatchlist({
+              channelId,
+              channelName: channelCfg.name,
+              messageId: message.id,
+              signal,
+              strategy,
+              channelCfg,
+              initialRR: plan.currentRR || 0,
+              targetTP: plan.targetTP
+            });
+          }
+          return;
+        }
+
+        // 🛡️ ANTI-DUPLICADOS POR TIEMPO (Ventana de 120s por canal, par y acción)
+        // Solo aplica si el plan es válido y se va a ejecutar
+        const recentKey = `${channelId}:${signal.symbol}:${signal.action}`;
+        const lastDispatched = recentSignalDispatches.get(recentKey);
+        if (lastDispatched && (Date.now() - lastDispatched) < 120000) {
+          const prevWasProvisional = recentSignalDispatches.get(`${recentKey}:provisional`);
+          if (prevWasProvisional && signal.sl && !signal.isProvisionalSL) {
+            console.log(`🔄 [Actualización de Niveles] "${channelCfg.name}": Señal completa recibida con SL técnico tras orden previa provisional. Procediendo...`);
+          } else {
+            console.log(`⚠️ [Anti-Duplicado] Señal duplicada recibida para "${channelCfg.name}" (${signal.symbol} ${signal.action}) con solo ${((Date.now() - lastDispatched)/1000).toFixed(1)}s de diferencia. Despacho omitido.`);
+            return;
+          }
+        }
+
+        executedMessageIds.add(executedMsgKey);
+        signalWatchlistManager.markAsExecuted(channelId, message.id, signal.symbol, signal.action);
+        recentSignalDispatches.set(recentKey, Date.now());
+        if (signal.isProvisionalSL) {
+          recentSignalDispatches.set(`${recentKey}:provisional`, true);
+        } else {
+          recentSignalDispatches.delete(`${recentKey}:provisional`);
+        }
+
+        console.log(`🎯 [SEÑAL VÁLIDA]: ${signal.action} ${signal.symbol} | Entrada: ${signal.entry || 'MERCADO'} | SL: ${signal.sl} | TP Objetivo: ${plan.targetTP} | BE Trigger: ${plan.tp2}`);
 
         // Despachar a MT5 con la señal original para telemetría
         await executeTradePlan(plan, signal);
@@ -241,8 +288,37 @@ async function startListener() {
 
               const liveTick = getLatestTick(signal.symbol);
               const livePrice = signal.action.includes('BUY') ? (liveTick.ask || liveTick.bid) : (liveTick.bid || liveTick.ask);
+
               const plan = strategy.createExecutionPlan(signal, livePrice || signal.entry, riskEngine);
-              await executeTradePlan(plan, signal);
+
+              const entryDiffPips = (signal.entry && livePrice) 
+                ? Math.abs(livePrice - signal.entry) / getPipSize(signal.symbol) 
+                : 0;
+
+              // 📊 AUDITORÍA PURA DE SEÑALES DE TELEGRAM (POLLER)
+              analyticsEngine.recordSignal(config.id, config.name, signal, {
+                entryPrice: signal.entry || livePrice,
+                slPrice: signal.sl,
+                targetTP: strategy.resolveTargetTP(signal) || signal.tp1 || signal.tp2 || signal.tp,
+                valid: plan ? plan.valid : false,
+                reason: plan ? (plan.valid ? 'VÁLIDA (Entrada a tiempo)' : plan.reason) : 'Plan nulo',
+                entryDiffPips
+              });
+              if (plan && plan.valid) {
+                signalWatchlistManager.markAsExecuted(config.id, m.id, signal.symbol, signal.action);
+                await executeTradePlan(plan, signal);
+              } else if (plan && (plan.isRRReject || (plan.reason && plan.reason.includes('Ratio R:R')))) {
+                signalWatchlistManager.addToWatchlist({
+                  channelId: config.id,
+                  channelName: config.name,
+                  messageId: m.id,
+                  signal,
+                  strategy,
+                  channelCfg: config,
+                  initialRR: plan.currentRR || 0,
+                  targetTP: plan.targetTP
+                });
+              }
             }
           }
         } catch (eChat) {}

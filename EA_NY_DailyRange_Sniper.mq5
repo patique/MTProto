@@ -32,9 +32,10 @@ enum ENUM_RISK_MODE
 
 enum ENUM_STRATEGY_MODE
 {
-   MODE_NY_OPEN_ONLY,     // Solo Tiro 1: Apertura de NY
-   MODE_PDH_PDL_REV_ONLY, // Solo Tiro 2: Reversión en PDH/PDL tras Barrido
-   MODE_DUAL_SHOT         // Ambos Tiros: Apertura NY + Reversión en PDH/PDL
+   MODE_NY_OPEN_ONLY,           // Solo Tiro 1: Apertura de NY
+   MODE_TURTLE_SOUP_REV_ONLY,   // Solo Tiro 2: Reversión Turtle Soup en PDH/PDL
+   MODE_BREAKOUT_RETEST_ONLY,   // Solo Tiro 2: Aceptación de Rotura en PDH/PDL
+   MODE_DUAL_BIDIRECTIONAL      // Sistema Completo: Apertura NY + Dual PDH/PDL (Turtle Soup si rechaza, Breakout si acepta)
 };
 
 enum ENUM_REV_ENTRY
@@ -55,11 +56,11 @@ input ENUM_RISK_MODE     InpRiskMode           = RISK_PERCENT; // Modo de Cálcu
 input double             InpRiskPercent        = 0.50;         // Riesgo por Trade (% Balance)
 input double             InpFixedLotSize       = 0.01;         // Lotaje Fijo (si RISK_FIXED_LOT)
 input double             InpMaxDailyLossPct    = 3.0;          // Pérdida Máxima Diaria Permitida (%)
-input int                InpMaxTradesPerDay    = 2;            // Máximo Trades por Día (Permite 2 si Dual Shot)
+input int                InpMaxTradesPerDay    = 2;            // Máximo Trades por Día (Permite 2 si Dual)
 input double             InpMaxSpreadPips      = 3.5;          // Spread Máximo Permitido (Pips en Oro)
 
-input group "=== 2. MODO ESTRATEGIA: TIRO 1 & TIRO 2 ===";
-input ENUM_STRATEGY_MODE InpStrategyMode       = MODE_DUAL_SHOT; // Modo Operativo General
+input group "=== 2. MODO ESTRATEGIA: TIRO 1 & DUAL TIRO 2 ===";
+input ENUM_STRATEGY_MODE InpStrategyMode       = MODE_DUAL_BIDIRECTIONAL; // Modo Operativo General
 
 input group "=== 3. TIRO 1: APERTURA NY (HORARIO SERVIDOR) ===";
 input int                InpNYOpenHour         = 15;           // Hora Apertura NY Servidor (Ej: 15 para 15:30)
@@ -76,13 +77,17 @@ input bool               InpRequireWickReject  = true;          // Exigir Mecha 
 input double             InpMinWickPercent     = 25.0;          // Mecha mínima de rechazo (%)
 input bool               InpFilterPremDisc     = false;         // Filtro ICT Discount/Premium
 
-input group "=== 4. TIRO 2: REVERSIÓN PDH / PDL (BOS + FVG) ===";
-input ENUM_REV_ENTRY     InpRevEntryType       = REV_ENTRY_FVG_RETEST; // Gatillo de Entrada
+input group "=== 4. TIRO 2: DUAL PDH / PDL (TURTLE SOUP & BREAKOUT RETEST) ===";
+input ENUM_REV_ENTRY     InpRevEntryType       = REV_ENTRY_FVG_RETEST; // Gatillo de Entrada Reversión
 input ENUM_REV_TP        InpRevTPMode          = REV_TP_FIXED_RR;      // Objetivo de Reversión
-input double             InpRevFixedRR         = 2.0;                  // Ratio R:R del 2º Tiro
-input double             InpSweepBufferPips    = 5.0;                  // Buffer sobre mecha del barrido (Pips)
-input double             InpMaxReversalSLPips  = 60.0;                 // SL Máximo permitido (Pips)
+input double             InpRevFixedRR         = 2.0;                  // Ratio R:R Fijo (1:2.0 Validado)
+input double             InpSweepBufferPips    = 3.0;                  // Buffer sobre mecha del barrido (Pips)
+input double             InpMinSweepPips       = 5.0;                  // Barrido Mínimo para Turtle Soup (Pips)
+input double             InpMaxSweepPips       = 35.0;                 // Barrido Máximo para Turtle Soup (Pips)
+input int                InpMaxBarsOutside     = 3;                    // Velas M15 máx fuera de rango (Turtle Soup)
+input double             InpMaxReversalSLPips  = 45.0;                 // SL Máximo permitido (Pips)
 input double             InpMinReversalSLPips  = 15.0;                 // SL Mínimo permitido (Pips)
+input int                InpBreakoutBarsAccept = 3;                    // Velas M15 consecutivas fuera para confirmar Aceptación
 
 input group "=== 5. CONTROL Y GRÁFICOS ===";
 input ulong              InpMagicNumber        = 778899;        // Magic Number
@@ -260,7 +265,7 @@ void OnTick()
       return;
    }
 
-   if (!m_nyCandleIdentified && (InpStrategyMode == MODE_NY_OPEN_ONLY || InpStrategyMode == MODE_DUAL_SHOT))
+   if (!m_nyCandleIdentified && (InpStrategyMode == MODE_NY_OPEN_ONLY || InpStrategyMode == MODE_DUAL_BIDIRECTIONAL))
    {
       MqlRates m15Rates[];
       ArraySetAsSeries(m15Rates, true);
@@ -325,16 +330,16 @@ void OnTick()
    }
 
    // Ejecutar Tiro 1 (Apertura NY) si corresponde
-   if (InpStrategyMode == MODE_NY_OPEN_ONLY || InpStrategyMode == MODE_DUAL_SHOT)
+   if (InpStrategyMode == MODE_NY_OPEN_ONLY || InpStrategyMode == MODE_DUAL_BIDIRECTIONAL)
    {
       EvaluateEntry();
       if (HasOpenPosition()) return;
    }
 
-   // Ejecutar Tiro 2 (Reversión PDH / PDL tras Sweep + BOS + FVG)
-   if (InpStrategyMode == MODE_PDH_PDL_REV_ONLY || InpStrategyMode == MODE_DUAL_SHOT)
+   // Ejecutar Tiro 2 (Dual PDH / PDL: Turtle Soup si rechaza, Breakout si acepta)
+   if (InpStrategyMode != MODE_NY_OPEN_ONLY)
    {
-      EvaluatePDHPDLReversal();
+      EvaluatePDHPDLDual();
    }
 }
 
@@ -475,9 +480,9 @@ void EvaluateEntry()
 }
 
 //+------------------------------------------------------------------+
-//| Tiro 2: Reversión en PDH / PDL tras Sweep de Liquidez + BOS + FVG|
+//| Tiro 2: Dual PDH / PDL (Turtle Soup si rechaza, Breakout si acepta)|
 //+------------------------------------------------------------------+
-void EvaluatePDHPDLReversal()
+void EvaluatePDHPDLDual()
 {
    if (HasOpenPosition()) return;
    if (m_pdh <= 0.0 || m_pdl <= 0.0) return;
@@ -485,17 +490,22 @@ void EvaluatePDHPDLReversal()
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
    int copied = CopyRates(_Symbol, PERIOD_M15, 0, 15, rates);
-   if (copied < 6) return;
+   if (copied < 8) return;
 
    MqlRates currentBar = rates[1];
    double currentBid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double currentAsk = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double midpoint   = (m_pdh + m_pdl) / 2.0;
 
-   // 1. REVERSIÓN BAJISTA (Tras barrido de PDH)
+   bool allowTurtle   = (InpStrategyMode == MODE_TURTLE_SOUP_REV_ONLY || InpStrategyMode == MODE_DUAL_BIDIRECTIONAL);
+   bool allowBreakout = (InpStrategyMode == MODE_BREAKOUT_RETEST_ONLY || InpStrategyMode == MODE_DUAL_BIDIRECTIONAL);
+
+   // =================================================================
+   // 1. ANÁLISIS EN PDH (MÁXIMO DEL DÍA ANTERIOR)
+   // =================================================================
    int sweepHighIdx = -1;
    double sweepHigh = -1.0;
-   for (int i = 2; i < MathMin(copied, 10); i++)
+   for (int i = 1; i < MathMin(copied, 8); i++)
    {
       if (rates[i].high > m_pdh)
       {
@@ -507,66 +517,57 @@ void EvaluatePDHPDLReversal()
       }
    }
 
-   if (sweepHighIdx > 1)
+   // --- SUB-ESCENARIO 1.A: TURTLE SOUP SELL (RECHAZO DENTRO DE 3 VELAS) ---
+   if (allowTurtle && sweepHighIdx > 0 && sweepHighIdx <= InpMaxBarsOutside + 1)
    {
-      bool closedBelowPDH = (currentBar.close < m_pdh);
-      bool bosConfirmed   = (currentBar.close < rates[sweepHighIdx].low);
-
-      if (closedBelowPDH && bosConfirmed)
+      double sweepDepthPips = (sweepHigh - m_pdh) / m_pipSize;
+      if (sweepDepthPips >= InpMinSweepPips && sweepDepthPips <= InpMaxSweepPips)
       {
-         bool hasFvg = false;
-         double fvgTop = 0.0;
-         double fvgBottom = 0.0;
-         if (rates[3].low > rates[1].high)
-         {
-            hasFvg = true;
-            fvgTop = rates[3].low;
-            fvgBottom = rates[1].high;
-         }
+         bool closedBelowPDH = (currentBar.close < m_pdh);
+         bool bosConfirmed   = (currentBar.close < rates[sweepHighIdx].low);
 
-         double slPrice = sweepHigh + (InpSweepBufferPips * m_pipSize);
-         double entryPrice = 0.0;
-
-         if (InpRevEntryType == REV_ENTRY_FVG_RETEST)
+         if (closedBelowPDH && bosConfirmed)
          {
-            if (hasFvg)
+            bool hasFvg = false;
+            double fvgTop = 0.0, fvgBottom = 0.0;
+            if (rates[3].low > rates[1].high)
             {
-               if (currentBid >= fvgBottom && currentBid <= slPrice)
-               {
-                  entryPrice = currentBid;
-               }
+               hasFvg = true;
+               fvgTop = rates[3].low;
+               fvgBottom = rates[1].high;
             }
-         }
-         else
-         {
-            entryPrice = currentBid;
-         }
 
-         if (entryPrice > 0.0)
-         {
-            double slDistancePips = (slPrice - entryPrice) / m_pipSize;
-            if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
+            double slPrice = sweepHigh + (InpSweepBufferPips * m_pipSize);
+            double entryPrice = 0.0;
+
+            if (InpRevEntryType == REV_ENTRY_FVG_RETEST)
             {
-               double tpPrice = 0.0;
-               if (InpRevTPMode == REV_TP_MIDPOINT)
-               {
-                  tpPrice = midpoint;
-                  if (tpPrice >= entryPrice) tpPrice = 0.0;
-               }
-               else
-               {
-                  tpPrice = entryPrice - (slDistancePips * InpRevFixedRR * m_pipSize);
-               }
+               if (hasFvg && currentBid >= fvgBottom && currentBid <= slPrice)
+                  entryPrice = currentBid;
+               else if (!hasFvg)
+                  entryPrice = currentBid;
+            }
+            else
+            {
+               entryPrice = currentBid;
+            }
 
-               if (tpPrice > 0.0)
+            if (entryPrice > 0.0)
+            {
+               double slDistancePips = (slPrice - entryPrice) / m_pipSize;
+               if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
                {
-                  double lots = CalculateLotSize(slDistancePips);
-                  if (lots > 0.0)
+                  double tpPrice = (InpRevTPMode == REV_TP_MIDPOINT)
+                                    ? midpoint
+                                    : entryPrice - (slDistancePips * InpRevFixedRR * m_pipSize);
+
+                  if (tpPrice > 0.0 && tpPrice < entryPrice)
                   {
-                     if (m_trade.Sell(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_RevPDH"))
+                     double lots = CalculateLotSize(slDistancePips);
+                     if (lots > 0.0 && m_trade.Sell(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_TurtlePDH"))
                      {
                         m_tradesToday++;
-                        PrintFormat("🎯 [NY Sniper - Tiro 2] SELL REVERSIÓN PDH! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
+                        PrintFormat("🎯 [NY Sniper - Turtle Soup] SELL PDH! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
                                     lots, entryPrice, slPrice, slDistancePips, tpPrice);
                         return;
                      }
@@ -577,10 +578,40 @@ void EvaluatePDHPDLReversal()
       }
    }
 
-   // 2. REVERSIÓN ALCISTA (Tras barrido de PDL)
+   // --- SUB-ESCENARIO 1.B: TREND ACCEPTANCE BUY (BREAKOUT & RETEST PDH) ---
+   if (allowBreakout)
+   {
+      bool acceptAbove = (rates[1].close > m_pdh && rates[2].close > m_pdh && rates[3].close > m_pdh);
+      if (acceptAbove)
+      {
+         if (currentBid <= m_pdh + (4.0 * m_pipSize) && currentBid >= m_pdh - (2.5 * m_pipSize))
+         {
+            double entryPrice = currentAsk;
+            double slPrice = m_pdh - (18.0 * m_pipSize);
+            double slDistancePips = (entryPrice - slPrice) / m_pipSize;
+
+            if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
+            {
+               double tpPrice = entryPrice + (slDistancePips * InpRevFixedRR * m_pipSize);
+               double lots = CalculateLotSize(slDistancePips);
+               if (lots > 0.0 && m_trade.Buy(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_BrkPDH"))
+               {
+                  m_tradesToday++;
+                  PrintFormat("🚀 [NY Sniper - Breakout Retest] BUY PDH ACEPTADO! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
+                              lots, entryPrice, slPrice, slDistancePips, tpPrice);
+                  return;
+               }
+            }
+         }
+      }
+   }
+
+   // =================================================================
+   // 2. ANÁLISIS EN PDL (MÍNIMO DEL DÍA ANTERIOR)
+   // =================================================================
    int sweepLowIdx = -1;
    double sweepLow = 9999999.0;
-   for (int i = 2; i < MathMin(copied, 10); i++)
+   for (int i = 1; i < MathMin(copied, 8); i++)
    {
       if (rates[i].low < m_pdl)
       {
@@ -592,70 +623,89 @@ void EvaluatePDHPDLReversal()
       }
    }
 
-   if (sweepLowIdx > 1)
+   // --- SUB-ESCENARIO 2.A: TURTLE SOUP BUY (RECHAZO DENTRO DE 3 VELAS) ---
+   if (allowTurtle && sweepLowIdx > 0 && sweepLowIdx <= InpMaxBarsOutside + 1)
    {
-      bool closedAbovePDL = (currentBar.close > m_pdl);
-      bool bosConfirmed   = (currentBar.close > rates[sweepLowIdx].high);
-
-      if (closedAbovePDL && bosConfirmed)
+      double sweepDepthPips = (m_pdl - sweepLow) / m_pipSize;
+      if (sweepDepthPips >= InpMinSweepPips && sweepDepthPips <= InpMaxSweepPips)
       {
-         bool hasFvg = false;
-         double fvgBottom = 0.0;
-         double fvgTop = 0.0;
-         if (rates[1].low > rates[3].high)
-         {
-            hasFvg = true;
-            fvgBottom = rates[3].high;
-            fvgTop = rates[1].low;
-         }
+         bool closedAbovePDL = (currentBar.close > m_pdl);
+         bool bosConfirmed   = (currentBar.close > rates[sweepLowIdx].high);
 
-         double slPrice = sweepLow - (InpSweepBufferPips * m_pipSize);
-         double entryPrice = 0.0;
-
-         if (InpRevEntryType == REV_ENTRY_FVG_RETEST)
+         if (closedAbovePDL && bosConfirmed)
          {
-            if (hasFvg)
+            bool hasFvg = false;
+            double fvgTop = 0.0, fvgBottom = 0.0;
+            if (rates[1].low > rates[3].high)
             {
-               if (currentAsk <= fvgTop && currentAsk >= slPrice)
-               {
-                  entryPrice = currentAsk;
-               }
+               hasFvg = true;
+               fvgBottom = rates[3].high;
+               fvgTop = rates[1].low;
             }
-         }
-         else
-         {
-            entryPrice = currentAsk;
-         }
 
-         if (entryPrice > 0.0)
-         {
-            double slDistancePips = (entryPrice - slPrice) / m_pipSize;
-            if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
+            double slPrice = sweepLow - (InpSweepBufferPips * m_pipSize);
+            double entryPrice = 0.0;
+
+            if (InpRevEntryType == REV_ENTRY_FVG_RETEST)
             {
-               double tpPrice = 0.0;
-               if (InpRevTPMode == REV_TP_MIDPOINT)
-               {
-                  tpPrice = midpoint;
-                  if (tpPrice <= entryPrice) tpPrice = 0.0;
-               }
-               else
-               {
-                  tpPrice = entryPrice + (slDistancePips * InpRevFixedRR * m_pipSize);
-               }
+               if (hasFvg && currentAsk <= fvgTop && currentAsk >= slPrice)
+                  entryPrice = currentAsk;
+               else if (!hasFvg)
+                  entryPrice = currentAsk;
+            }
+            else
+            {
+               entryPrice = currentAsk;
+            }
 
-               if (tpPrice > 0.0)
+            if (entryPrice > 0.0)
+            {
+               double slDistancePips = (entryPrice - slPrice) / m_pipSize;
+               if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
                {
-                  double lots = CalculateLotSize(slDistancePips);
-                  if (lots > 0.0)
+                  double tpPrice = (InpRevTPMode == REV_TP_MIDPOINT)
+                                    ? midpoint
+                                    : entryPrice + (slDistancePips * InpRevFixedRR * m_pipSize);
+
+                  if (tpPrice > 0.0 && tpPrice > entryPrice)
                   {
-                     if (m_trade.Buy(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_RevPDL"))
+                     double lots = CalculateLotSize(slDistancePips);
+                     if (lots > 0.0 && m_trade.Buy(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_TurtlePDL"))
                      {
                         m_tradesToday++;
-                        PrintFormat("🎯 [NY Sniper - Tiro 2] BUY REVERSIÓN PDL! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
+                        PrintFormat("🎯 [NY Sniper - Turtle Soup] BUY PDL! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
                                     lots, entryPrice, slPrice, slDistancePips, tpPrice);
                         return;
                      }
                   }
+               }
+            }
+         }
+      }
+   }
+
+   // --- SUB-ESCENARIO 2.B: TREND ACCEPTANCE SELL (BREAKOUT & RETEST PDL) ---
+   if (allowBreakout)
+   {
+      bool acceptBelow = (rates[1].close < m_pdl && rates[2].close < m_pdl && rates[3].close < m_pdl);
+      if (acceptBelow)
+      {
+         if (currentAsk >= m_pdl - (4.0 * m_pipSize) && currentAsk <= m_pdl + (2.5 * m_pipSize))
+         {
+            double entryPrice = currentBid;
+            double slPrice = m_pdl + (18.0 * m_pipSize);
+            double slDistancePips = (slPrice - entryPrice) / m_pipSize;
+
+            if (slDistancePips >= InpMinReversalSLPips && slDistancePips <= InpMaxReversalSLPips)
+            {
+               double tpPrice = entryPrice - (slDistancePips * InpRevFixedRR * m_pipSize);
+               double lots = CalculateLotSize(slDistancePips);
+               if (lots > 0.0 && m_trade.Sell(lots, _Symbol, entryPrice, slPrice, tpPrice, InpTradeComment + "_BrkPDL"))
+               {
+                  m_tradesToday++;
+                  PrintFormat("🚀 [NY Sniper - Breakout Retest] SELL PDL ACEPTADO! Lotes: %.2f | Entry: %.4f | SL: %.4f (%0.1fp) | TP: %.4f",
+                              lots, entryPrice, slPrice, slDistancePips, tpPrice);
+                  return;
                }
             }
          }

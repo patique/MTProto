@@ -10,12 +10,12 @@ class BaseStrategy {
     this.config = config;
     this.channelName = config.name || 'Canal';
     this.channelId = config.id || '';
-    this.preferredTP = config.preferredTP || 'TP3';
+    this.preferredTP = config.preferredTP || 'LAST_TP';
     this.allowSplit = !!config.allowSplit; // Por defecto desactivado: orden única limpia al TP preferido
     this.allowGrid = !!config.allowGrid;
     this.pendingOrderTTLMinutes = config.pendingOrderTTLMinutes || 30;
     this.maxSlippagePips = config.maxSlippagePips || 5.0;
-    this.minRiskReward = typeof config.minRiskReward === 'number' ? config.minRiskReward : 1.3;
+    this.minRiskReward = typeof config.minRiskReward === 'number' ? config.minRiskReward : 1.0;
     this.requireTP3 = !!config.requireTP3;
   }
 
@@ -186,14 +186,17 @@ class BaseStrategy {
 
     // 6. Extracción de TPs
     const textWithoutSL = rawText.replace(/(?:STOP LOSS|STOPLOSS|\bSL\b)[\s:\.@]*[\d\.]+/gi, '');
-    let cleanTP1 = null, cleanTP2 = null, cleanTP3 = null, cleanTP4 = null;
+    let cleanTP1 = null, cleanTP2 = null, cleanTP3 = null, cleanTP4 = null, cleanTP5 = null;
 
     const tpRegex = /(?:TAKE\s*PROFIT\s*\d*|TAKEPROFIT\s*\d*|TARGETS?\s*\d*|\bTP\s*[1-9]?#?|[✅🎯↳→]\s*(?:TP\s*\d*)?)[\s:\.=\-\|→]*([0-9]{4}(?:\.[0-9]+)?)/gi;
     const tpMatches = [...textWithoutSL.matchAll(tpRegex)];
-    cleanTP1 = (tpMatches.length > 0) ? parseFloat(tpMatches[0][1]) : null;
-    cleanTP2 = (tpMatches.length > 1) ? parseFloat(tpMatches[1][1]) : null;
-    cleanTP3 = (tpMatches.length > 2) ? parseFloat(tpMatches[2][1]) : null;
-    cleanTP4 = (tpMatches.length > 3) ? parseFloat(tpMatches[3][1]) : null;
+    const tpValues = tpMatches.map(m => parseFloat(m[1])).filter(v => !isNaN(v) && v > 0);
+    cleanTP1 = tpValues[0] || null;
+    cleanTP2 = tpValues[1] || null;
+    cleanTP3 = tpValues[2] || null;
+    cleanTP4 = tpValues[3] || null;
+    cleanTP5 = tpValues[4] || null;
+    const lastTP = tpValues.length > 0 ? tpValues[tpValues.length - 1] : null;
 
     // 7. Auto-corrección de Dirección Incoherente
     if (cleanSL && cleanTP1) {
@@ -223,6 +226,9 @@ class BaseStrategy {
       tp2: cleanTP2,
       tp3: cleanTP3,
       tp4: cleanTP4,
+      tp5: cleanTP5,
+      tps: tpValues,
+      lastTP,
       rawText
     });
   }
@@ -231,17 +237,26 @@ class BaseStrategy {
    * Resuelve el Take Profit según la preferencia del canal
    */
   resolveTargetTP(signal) {
+    if (this.preferredTP === 'LAST_TP' || this.config?.preferredTP === 'LAST_TP') {
+      return signal.lastTP || signal.tp5 || signal.tp4 || signal.tp3 || signal.tp2 || signal.tp1 || null;
+    }
     if (this.requireTP3 || this.config?.requireTP3) {
       return signal.tp3 || null;
     }
     if (this.preferredTP === 'TP1') {
       return signal.tp1 || signal.tp2 || signal.tp3;
     }
+    if (this.preferredTP === 'TP2') {
+      return signal.tp2 || signal.tp3 || signal.tp1;
+    }
     if (this.preferredTP === 'TP4') {
       return signal.tp4 || signal.tp3 || signal.tp2 || signal.tp1;
     }
-    // SIEMPRE TP3 como prioridad absoluta (o el TP más cercano disponible si no existe TP3)
-    return signal.tp3 || signal.tp2 || signal.tp1;
+    if (this.preferredTP === 'TP5') {
+      return signal.tp5 || signal.tp4 || signal.tp3 || signal.tp2 || signal.tp1;
+    }
+    // SIEMPRE último TP disponible como prioridad absoluta
+    return signal.lastTP || signal.tp5 || signal.tp4 || signal.tp3 || signal.tp2 || signal.tp1;
   }
 
   /**
@@ -307,35 +322,8 @@ class BaseStrategy {
       console.log(`⚡ [Señal Rápida Detectada] "${this.channelName}" envió orden inmediata sin SL explícito. Asignando SL preventivo: ${signal.sl} (${this.defaultSLPips || 80} pips) y TP preventivo: ${signal.tp2}`);
     }
 
-    // 🛡️ TOPE DE SEGURIDAD MÁXIMO DE STOP LOSS (Cap Máximo a 100 pips):
-    // Evita pérdidas catastróficas por canales que envían SLs asimétricos (> 100 pips)
-    const MAX_SL_PIPS = 100;
-    const refEntry = signal.entry || currentPrice;
-    if (signal.sl && refEntry) {
-      const symUpper = (signal.symbol || 'XAUUSD').toUpperCase();
-      let slDistanceInPips = 0;
-      if (symUpper.includes('XAU') || symUpper.includes('GOLD')) {
-        slDistanceInPips = Math.abs(refEntry - signal.sl) * 10;
-        if (slDistanceInPips > MAX_SL_PIPS) {
-          const originalSL = signal.sl;
-          const maxDistancePrice = MAX_SL_PIPS / 10; // 10.0 en precio de Oro
-          signal.sl = isBuy
-            ? parseFloat((refEntry - maxDistancePrice).toFixed(2))
-            : parseFloat((refEntry + maxDistancePrice).toFixed(2));
-          console.log(`🛡️ [Risk Protection] "${this.channelName}": SL original (${originalSL}, ${slDistanceInPips.toFixed(1)} pips) superaba el máximo permitido (${MAX_SL_PIPS} pips). Acotado a: ${signal.sl}`);
-        }
-      } else {
-        slDistanceInPips = Math.abs(refEntry - signal.sl) * 10000;
-        if (slDistanceInPips > MAX_SL_PIPS) {
-          const originalSL = signal.sl;
-          const maxDistancePrice = MAX_SL_PIPS / 10000;
-          signal.sl = isBuy
-            ? parseFloat((refEntry - maxDistancePrice).toFixed(5))
-            : parseFloat((refEntry + maxDistancePrice).toFixed(5));
-          console.log(`🛡️ [Risk Protection] "${this.channelName}": SL original (${originalSL}, ${slDistanceInPips.toFixed(1)} pips) superaba el máximo permitido (${MAX_SL_PIPS} pips). Acotado a: ${signal.sl}`);
-        }
-      }
-    }
+    // Se respeta íntegramente el SL original enviado por el canal.
+    // El tamaño del lote se adapta matemáticamente mediante RiskEngine en función de la distancia del SL.
 
     // Validación de SL ya superado por mercado
     if (currentPrice) {
@@ -393,7 +381,23 @@ class BaseStrategy {
         if (!isBuy && currentPrice <= targetTP) {
           return new ExecutionPlan({
             valid: false,
-            reason: `Precio actual (${currentPrice}) ya alcanzó o superó el Take Profit (${targetTP}). Señal expirada.`
+            reason: `Señal tardía: El precio actual (${currentPrice}) ya alcanzó el Take Profit (${targetTP}). Señal expirada.`
+          });
+        }
+      }
+
+      // Validación de SL ya alcanzado por el mercado al llegar la señal (Señal tardía / inválida)
+      if (signal.sl && currentPrice) {
+        if (isBuy && currentPrice <= signal.sl) {
+          return new ExecutionPlan({
+            valid: false,
+            reason: `Señal tardía: El precio actual (${currentPrice}) ya perforó el Stop Loss (${signal.sl}). Señal descartada.`
+          });
+        }
+        if (!isBuy && currentPrice >= signal.sl) {
+          return new ExecutionPlan({
+            valid: false,
+            reason: `Señal tardía: El precio actual (${currentPrice}) ya perforó el Stop Loss (${signal.sl}). Señal descartada.`
           });
         }
       }
@@ -411,10 +415,14 @@ class BaseStrategy {
         const currentRR = rewardDistance / riskDistance;
         if (currentRR < this.minRiskReward) {
           console.log(`⚠️ [Filtro R:R Rechazado] "${this.channelName}": Ratio 1:${currentRR.toFixed(2)} es inferior al mínimo exigido (1:${this.minRiskReward}). Riesgo: ${riskDistance.toFixed(2)} pts | Recompensa: ${rewardDistance.toFixed(2)} pts. Señal descartada.`);
-          return new ExecutionPlan({
+          const rejectedPlan = new ExecutionPlan({
             valid: false,
             reason: `Ratio R:R proyectado (1:${currentRR.toFixed(2)}) es inferior al mínimo exigido (1:${this.minRiskReward}).`
           });
+          rejectedPlan.isRRReject = true;
+          rejectedPlan.currentRR = currentRR;
+          rejectedPlan.targetTP = chosenTP;
+          return rejectedPlan;
         }
       }
     }

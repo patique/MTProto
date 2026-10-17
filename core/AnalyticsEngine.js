@@ -1,10 +1,15 @@
 /**
- * Motor de Analíticas y Estadísticas de Acierto por Canal
- * - Registra cada señal generada y su resultado (TP1, TP2, TP3, SL o Cancelado)
- * - Calcula Win Rate %, Ratio Riesgo/Beneficio real, y Pips netos por canal
- * - Sistema de Protección Inteligente: Si un canal acumula 3 SL seguidos o Win Rate < 40%,
- *   recomienda reducir su riesgo o pausarlo temporalmente.
- * - Persistencia automática en analytics_data.json
+ * Motor de Analíticas y Evaluación Pura de Señales de Telegram (AnalyticsEngine)
+ * 
+ * Filosofía del Sistema:
+ * - Evalúa EXCLUSIVAMENTE el acierto técnico de la señal enviada por el canal en el mercado real.
+ * - Desacoplado 100% de terminales MT5: No se ve afectado por cierres manuales del usuario,
+ *   cierres por Friday Guard, filtros de riesgo o multiplicadores multi-cuenta.
+ * - El resultado (WIN o LOSS) y los pips se calculan directamente contra los ticks de mercado:
+ *   * WIN: El precio de mercado tocó el Take Profit antes que el Stop Loss.
+ *   * LOSS: El precio de mercado tocó el Stop Loss antes que el Take Profit.
+ * - Cálculo estricto de Pips de mercado según el activo (Oro 0.10, Forex 0.0001, JPY 0.01).
+ * - Persistencia limpia en analytics_data.json.
  */
 
 const fs = require('fs');
@@ -13,9 +18,26 @@ const { findChannelConfig } = require('../config/channels.config');
 
 const DATA_FILE = path.join(__dirname, '..', 'analytics_data.json');
 
+function normalizeSymbol(symbol = '') {
+  let s = String(symbol).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (s === 'GOLD' || s.startsWith('XAU')) return 'XAUUSD';
+  if (s === 'SILVER' || s.startsWith('XAG')) return 'XAGUSD';
+  return s;
+}
+
+function getPipSize(symbol = '') {
+  const s = normalizeSymbol(symbol);
+  if (s === 'XAUUSD') return 0.10; // 1 pip = 0.10 $ en Oro
+  if (s === 'XAGUSD') return 0.01;
+  if (s.includes('JPY')) return 0.01;
+  if (s.includes('BTC') || s.includes('NAS') || s.includes('US30') || s.includes('SPX')) return 1.0;
+  return 0.0001; // Forex estándar (EURUSD, GBPUSD, etc.)
+}
+
 class AnalyticsEngine {
   constructor() {
-    this.stats = {}; // { [channelId]: { name, totalSignals, winCount, lossCount, cancelledCount, pipsGained, consecutiveLosses, lastSignals: [] } }
+    this.stats = {};
+    this.recordedMessageKeys = new Set();
     this.loadData();
   }
 
@@ -24,9 +46,16 @@ class AnalyticsEngine {
       if (fs.existsSync(DATA_FILE)) {
         const raw = fs.readFileSync(DATA_FILE, 'utf-8');
         this.stats = JSON.parse(raw);
+        for (const ch of Object.values(this.stats)) {
+          if (ch.lastSignals) {
+            for (const s of ch.lastSignals) {
+              if (s.messageKey) this.recordedMessageKeys.add(s.messageKey);
+            }
+          }
+        }
       }
     } catch (e) {
-      console.warn('⚠️ [Analytics] No se pudo cargar archivo previo de métricas, iniciando en limpio.');
+      console.warn('⚠️ [Analytics] Archivo previo no encontrado o corrupto, iniciando limpio.');
       this.stats = {};
     }
   }
@@ -37,6 +66,16 @@ class AnalyticsEngine {
     } catch (e) {
       console.error('❌ [Analytics] Error guardando métricas:', e.message);
     }
+  }
+
+  /**
+   * Resetea completamente el historial a cero
+   */
+  clearHistory() {
+    this.stats = {};
+    this.recordedMessageKeys.clear();
+    this.saveData();
+    console.log('🧹 [AnalyticsEngine] Historial de métricas reseteado a cero (Análisis limpio activado).');
   }
 
   _getOrCreateChannel(channelId, channelName = 'Canal') {
@@ -54,12 +93,14 @@ class AnalyticsEngine {
         channelId: id,
         channelName: resolvedName,
         totalSignals: 0,
+        validSignalsCount: 0,
+        invalidSignalsCount: 0,
         winCount: 0,
         lossCount: 0,
         cancelledCount: 0,
         pipsGained: 0,
         consecutiveLosses: 0,
-        status: 'ACTIVE', // ACTIVE | PAUSED | REDUCED_RISK
+        status: 'ACTIVE',
         lastSignals: []
       };
     }
@@ -70,172 +111,216 @@ class AnalyticsEngine {
   }
 
   /**
-   * Registra una nueva señal despachada
+   * Registra una señal original recibida del canal para su auditoría pura en mercado
    */
-  recordSignal(channelId, channelName, signal, executionPlan) {
+  recordSignal(channelId, channelName, signal, executionPlanOrLevels = {}) {
+    if (!signal || !signal.action || (!signal.sl && !executionPlanOrLevels.slPrice)) {
+      return null;
+    }
+
+    const messageKey = `${channelId}:${signal.messageId || signal.id || Date.now()}`;
+    if (this.recordedMessageKeys.has(messageKey)) {
+      return null; // Evitar duplicar la misma señal si se re-evalúa
+    }
+    this.recordedMessageKeys.add(messageKey);
+
     const ch = this._getOrCreateChannel(channelId, channelName);
     ch.totalSignals++;
 
+    const entryPrice = executionPlanOrLevels.entryPrice || signal.entry || 0;
+    const slPrice = executionPlanOrLevels.slPrice || signal.sl || 0;
+    const targetTP = executionPlanOrLevels.targetTP || signal.tp1 || signal.tp2 || signal.tp || 0;
+
+    const isValid = executionPlanOrLevels.valid !== false;
+    const validationReason = executionPlanOrLevels.reason || (isValid ? 'VÁLIDA (Entrada a tiempo)' : 'No cumple filtros de entrada');
+    const entryDiffPips = executionPlanOrLevels.entryDiffPips || 0;
+
+    if (isValid) {
+      ch.validSignalsCount = (ch.validSignalsCount || 0) + 1;
+    } else {
+      ch.invalidSignalsCount = (ch.invalidSignalsCount || 0) + 1;
+    }
+
     const record = {
       id: `${Date.now()}_${ch.totalSignals}`,
+      messageKey,
       timestamp: Date.now(),
       timeStr: new Date().toLocaleTimeString('es-ES'),
-      symbol: signal.symbol,
-      action: signal.action,
-      entry: executionPlan.entryPrice,
-      sl: executionPlan.slPrice,
-      tp: executionPlan.targetTP,
-      isPending: executionPlan.isPendingOrder,
-      outcome: 'PENDING', // PENDING | TP_HIT | SL_HIT | CANCELLED
-      pips: 0
+      symbol: normalizeSymbol(signal.symbol || 'XAUUSD'),
+      action: signal.action.toUpperCase(),
+      entry: entryPrice,
+      sl: slPrice,
+      tp: targetTP,
+      isValid,
+      validationReason,
+      entryDiffPips: +(Number(entryDiffPips).toFixed(1)),
+      outcome: 'PENDING', // PENDING | WIN | LOSS | CANCELLED
+      pips: 0,
+      closedPrice: null,
+      closedAt: null
     };
 
     ch.lastSignals.unshift(record);
-    if (ch.lastSignals.length > 50) ch.lastSignals.pop(); // Mantener últimas 50 señales
+    if (ch.lastSignals.length > 50) ch.lastSignals.pop();
 
     this.saveData();
+
+    const statusIcon = isValid ? '✅ VÁLIDA' : '⚠️ DESCARTADA';
+    console.log(`📈 [Analytics Signal Tracked] [${statusIcon}] "${ch.channelName}": ${record.symbol} ${record.action} | Entrada: ${record.entry} | SL: ${record.sl} | TP: ${record.tp}`);
+    if (!isValid) {
+      console.log(`   Motivo descarte / retraso: "${validationReason}"`);
+    }
     return record;
   }
 
   /**
-   * Actualiza el resultado de una operación (TP o SL tocado)
-   */
-  recordOutcome(channelId, outcome, pips = 0, orderId = null) {
-    const ch = this._getOrCreateChannel(channelId);
-    if (outcome === 'TP_HIT' || outcome === 'WIN') {
-      ch.winCount++;
-      ch.consecutiveLosses = 0;
-      ch.pipsGained += Math.abs(pips);
-      if (ch.status === 'REDUCED_RISK') ch.status = 'ACTIVE';
-    } else if (outcome === 'SL_HIT' || outcome === 'LOSS') {
-      ch.lossCount++;
-      ch.consecutiveLosses++;
-      ch.pipsGained -= Math.abs(pips);
-
-      // 🛡️ Regla de protección de racha negativa
-      if (ch.consecutiveLosses >= 3) {
-        ch.status = 'REDUCED_RISK';
-        console.warn(`🚨 [Analytics Guard] Canal "${ch.channelName}" acumula ${ch.consecutiveLosses} SL consecutivos. Reduciendo riesgo automáticamente.`);
-      }
-    } else if (outcome === 'CANCELLED') {
-      ch.cancelledCount++;
-    }
-
-    if (orderId && ch.lastSignals.length > 0) {
-      const match = ch.lastSignals.find(s => s.id === orderId);
-      if (match) {
-        match.outcome = outcome;
-        match.pips = pips;
-      }
-    }
-
-    this.saveData();
-  }
-
-  /**
-   * Atribuye automáticamente una ganancia o pérdida detectada por cambio de balance en MT5
-   * al canal cuya señal pendiente corresponda al trade cerrado
-   */
-  recordAutoTradeOutcome(outcome, pips = 0, profitUSD = 0) {
-    let candidate = null;
-    let candidateChannelId = null;
-
-    for (const [id, ch] of Object.entries(this.stats)) {
-      if (id === 'MT5_AUTO') continue;
-      const pendingSig = ch.lastSignals && ch.lastSignals.find(s => s.outcome === 'PENDING');
-      if (pendingSig) {
-        if (!candidate || pendingSig.timestamp > candidate.timestamp) {
-          candidate = pendingSig;
-          candidateChannelId = id;
-        }
-      }
-    }
-
-    if (!candidateChannelId) {
-      let latestTime = 0;
-      for (const [id, ch] of Object.entries(this.stats)) {
-        if (id === 'MT5_AUTO') continue;
-        if (ch.lastSignals && ch.lastSignals.length > 0) {
-          const sig = ch.lastSignals[0];
-          if (sig.timestamp > latestTime) {
-            latestTime = sig.timestamp;
-            candidateChannelId = id;
-            candidate = sig;
-          }
-        }
-      }
-    }
-
-    const targetId = candidateChannelId || 'MT5_AUTO';
-    const ch = this._getOrCreateChannel(targetId);
-    console.log(`🎯 [Analytics Engine] Auto-atribuido cierre ${outcome} (+${pips.toFixed(1)} pips, $${profitUSD.toFixed(2)}) al canal "${ch.channelName}" (ID: ${targetId})`);
-
-    this.recordOutcome(targetId, outcome, pips, candidate ? candidate.id : null);
-    return targetId;
-  }
-
-  /**
-   * Evalúa ticks de precio en tiempo real frente a los SL y TP de señales pendientes
+   * Evalúa ticks en tiempo real contra los TP y SL de las señales PENDING
    */
   evaluatePriceTick(tick) {
-    // Desactivado: El seguimiento de SL y TP lo realiza de forma fidedigna MetaTrader 5
-    // a través del Feedback Loop (/trade-closed). El cálculo sobre ticks brutos provocaba
-    // falsos positivos de SL en órdenes no ejecutadas o ya cerradas en Break-Even.
-    return;
+    if (!tick || !tick.symbol || (!tick.bid && !tick.ask)) return;
+
+    const symNorm = normalizeSymbol(tick.symbol);
+    const now = Date.now();
+    let hasChanges = false;
+
+    for (const ch of Object.values(this.stats)) {
+      if (!ch.lastSignals || ch.lastSignals.length === 0) continue;
+
+      for (const sig of ch.lastSignals) {
+        if (sig.outcome !== 'PENDING') continue;
+        if (sig.symbol !== symNorm) continue;
+
+        const isBuy = sig.action.includes('BUY');
+        const currentPrice = isBuy ? (tick.bid || tick.ask) : (tick.ask || tick.bid);
+        if (!currentPrice || currentPrice <= 0) continue;
+
+        // TTL de seguridad: Si la señal lleva más de 48h pendiente sin tocar TP ni SL, expirar
+        if (now - sig.timestamp > 48 * 3600 * 1000) {
+          sig.outcome = 'CANCELLED';
+          ch.cancelledCount++;
+          hasChanges = true;
+          continue;
+        }
+
+        const pipSize = getPipSize(sig.symbol);
+        let outcome = null;
+        let pips = 0;
+
+        if (isBuy) {
+          // Si compra: Ganamos si el precio sube al TP; perdemos si baja al SL
+          if (sig.tp > 0 && currentPrice >= sig.tp) {
+            outcome = 'WIN';
+            pips = sig.entry > 0 ? (sig.tp - sig.entry) / pipSize : (currentPrice - sig.sl) / pipSize;
+          } else if (sig.sl > 0 && currentPrice <= sig.sl) {
+            outcome = 'LOSS';
+            pips = sig.entry > 0 ? (sig.sl - sig.entry) / pipSize : -Math.abs(sig.tp - sig.sl) / pipSize;
+          }
+        } else {
+          // Si venta: Ganamos si el precio baja al TP; perdemos si sube al SL
+          if (sig.tp > 0 && currentPrice <= sig.tp) {
+            outcome = 'WIN';
+            pips = sig.entry > 0 ? (sig.entry - sig.tp) / pipSize : (sig.sl - currentPrice) / pipSize;
+          } else if (sig.sl > 0 && currentPrice >= sig.sl) {
+            outcome = 'LOSS';
+            pips = sig.entry > 0 ? (sig.entry - sig.sl) / pipSize : -Math.abs(sig.sl - sig.tp) / pipSize;
+          }
+        }
+
+        if (outcome) {
+          sig.outcome = outcome;
+          sig.pips = +(pips.toFixed(1));
+          sig.closedPrice = currentPrice;
+          sig.closedAt = now;
+
+          if (outcome === 'WIN') {
+            ch.winCount++;
+            ch.consecutiveLosses = 0;
+            ch.pipsGained = +(ch.pipsGained + sig.pips).toFixed(1);
+            if (ch.status === 'REDUCED_RISK') ch.status = 'ACTIVE';
+          } else {
+            ch.lossCount++;
+            ch.consecutiveLosses++;
+            ch.pipsGained = +(ch.pipsGained + sig.pips).toFixed(1);
+            if (ch.consecutiveLosses >= 3) {
+              ch.status = 'REDUCED_RISK';
+              console.warn(`🚨 [Analytics Guard] Canal "${ch.channelName}" acumula ${ch.consecutiveLosses} SL consecutivos.`);
+            }
+          }
+
+          console.log(`\n🎯 [AUDITORÍA DE SEÑAL PURA - ${outcome} ${outcome === 'WIN' ? '✅' : '❌'}]`);
+          console.log(`   Canal: "${ch.channelName}" | ${sig.symbol} ${sig.action}`);
+          console.log(`   Entrada: ${sig.entry} -> Salida: ${currentPrice} | TP: ${sig.tp} | SL: ${sig.sl}`);
+          console.log(`   Pips Netos Señal: ${sig.pips >= 0 ? '+' : ''}${sig.pips} pips\n`);
+
+          hasChanges = true;
+        }
+      }
+    }
+
+    if (hasChanges) {
+      this.saveData();
+    }
   }
 
   /**
-   * Retorna métricas calculadas para un canal
+   * Métricas calculadas para un canal
    */
   getChannelMetrics(channelId) {
     const ch = this._getOrCreateChannel(channelId);
     const resolvedTrades = ch.winCount + ch.lossCount;
     const winRate = resolvedTrades > 0 ? ((ch.winCount / resolvedTrades) * 100).toFixed(1) : '0.0';
+    const totalSigs = ch.totalSignals || 0;
+    const valids = ch.validSignalsCount || 0;
+    const invalids = ch.invalidSignalsCount || 0;
+    const validRate = totalSigs > 0 ? ((valids / totalSigs) * 100).toFixed(1) : '0.0';
 
     return {
       channelId: ch.channelId,
       channelName: ch.channelName,
-      totalSignals: ch.totalSignals,
+      totalSignals: totalSigs,
+      validSignalsCount: valids,
+      invalidSignalsCount: invalids,
+      timelinessRate: `${validRate}%`,
       resolvedTrades,
       winCount: ch.winCount,
       lossCount: ch.lossCount,
       cancelledCount: ch.cancelledCount,
       winRate: `${winRate}%`,
-      pipsGained: ch.pipsGained.toFixed(1),
+      pipsGained: Number(ch.pipsGained || 0).toFixed(1),
       consecutiveLosses: ch.consecutiveLosses,
-      status: ch.status
+      status: ch.status,
+      lastSignals: ch.lastSignals || []
     };
   }
 
-  /**
-   * Retorna reporte general formateado de todos los canales
-   */
   printReport() {
     console.log('\n========================================================================================');
-    console.log('📊 REPORTE DE RENDIMIENTO Y ESTADÍSTICAS POR CANAL (AnalyticsEngine)');
+    console.log('📊 REPORTE DE CALIDAD PURA Y PUNTUALIDAD DE SEÑALES (Ticks en Vivo)');
     console.log('========================================================================================');
-    console.log('Canal                           | Señales | Ganadas | Perdidas | Win Rate | Pips Netos | Estado');
+    console.log('Canal                           | Señales | Válidas | A Tiempo% | Ganadas | Perdidas | Win Rate | Pips Netos');
     console.log('----------------------------------------------------------------------------------------');
 
     for (const id of Object.keys(this.stats)) {
       const m = this.getChannelMetrics(id);
       const name = m.channelName.padEnd(31).substring(0, 31);
       const sigs = m.totalSignals.toString().padStart(7);
+      const valids = m.validSignalsCount.toString().padStart(7);
+      const valRate = m.timelinessRate.padStart(9);
       const wins = m.winCount.toString().padStart(7);
       const losses = m.lossCount.toString().padStart(8);
       const wr = m.winRate.padStart(8);
       const pips = m.pipsGained.padStart(10);
-      const st = m.status.padStart(6);
-      console.log(`${name} | ${sigs} | ${wins} | ${losses} | ${wr} | ${pips} | ${st}`);
+      console.log(`${name} | ${sigs} | ${valids} | ${valRate} | ${wins} | ${losses} | ${wr} | ${pips}`);
     }
     console.log('========================================================================================\n');
   }
 }
 
-// Instancia singleton
 const analyticsEngine = new AnalyticsEngine();
 
 module.exports = {
   AnalyticsEngine,
-  analyticsEngine
+  analyticsEngine,
+  getPipSize,
+  normalizeSymbol
 };

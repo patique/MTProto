@@ -1,23 +1,19 @@
 /**
  * Configuración de estrategias propietarias institucionales por activo.
  * 
- * Implementa el setup unificado probado y validado en MT5:
- * - Timeframe: M5
- * - Entrada: Consequent Encroachment 50% (CE 50%) de la caja BPR
- * - R:R: 1:3.0 Asimétrico
- * - Break-Even: Activado a 1.0R (mueve SL a entrada + buffer)
- * - Slot Release: Al pasar a BE, el riesgo es $0 y libera el slot para una nueva oportunidad
- * - Control de Precios y Símbolos: Filtros estrictos de cotización por activo
+ * NOTA: enabled = true para mantener el Radar y Checklist M5 activo en el Dashboard.
+ * liveExecution = false para que NUNCA ejecuten órdenes en MT5 (modo solo análisis).
+ * El sistema ejecuta a mercado EXCLUSIVAMENTE los canales de trading de Telegram.
  */
 
 const PROPRIETARY_STRATEGIES = [
   {
     id: 'BPR_INSTITUTIONAL_XAUUSD',
-    name: 'BPR Institutional XAUUSD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional XAUUSD M5 (R:R 1:2.0)',
     symbol: 'XAUUSD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprXAUUSD',
@@ -25,11 +21,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_EURUSD',
-    name: 'BPR Institutional EURUSD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional EURUSD M5 (R:R 1:2.0)',
     symbol: 'EURUSD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprEURUSD',
@@ -37,11 +33,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_GBPJPY',
-    name: 'BPR Institutional GBPJPY M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional GBPJPY M5 (R:R 1:2.0)',
     symbol: 'GBPJPY',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprGBPJPY',
@@ -49,11 +45,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_USDCAD',
-    name: 'BPR Institutional USDCAD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional USDCAD M5 (R:R 1:2.0)',
     symbol: 'USDCAD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprUSDCAD',
@@ -61,11 +57,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_GBPUSD',
-    name: 'BPR Institutional GBPUSD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional GBPUSD M5 (R:R 1:2.0)',
     symbol: 'GBPUSD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprGBPUSD',
@@ -73,11 +69,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_AUDUSD',
-    name: 'BPR Institutional AUDUSD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional AUDUSD M5 (R:R 1:2.0)',
     symbol: 'AUDUSD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprAUDUSD',
@@ -85,11 +81,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_USDJPY',
-    name: 'BPR Institutional USDJPY M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional USDJPY M5 (R:R 1:2.0)',
     symbol: 'USDJPY',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprUSDJPY',
@@ -97,11 +93,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_XAGUSD',
-    name: 'BPR Institutional XAGUSD M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional XAGUSD M5 (R:R 1:2.0)',
     symbol: 'XAGUSD',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprXAGUSD',
@@ -109,11 +105,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_EURJPY',
-    name: 'BPR Institutional EURJPY M5 (R:R 1:3.0 | BE Slot Release)',
+    name: 'BPR Institutional EURJPY M5 (R:R 1:2.0)',
     symbol: 'EURJPY',
     enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprEURJPY',
@@ -121,11 +117,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_BTCUSD',
-    name: 'BPR Institutional BTCUSD M5 (R:R 1:3.0 | 24/7 Weekend)',
+    name: 'BPR Institutional BTCUSD M5 (R:R 1:2.0 | 24/7 Weekend)',
     symbol: 'BTCUSD',
-    enabled: false, // Desconectado temporalmente hasta calibrar estrategia específica de fin de semana
+    enabled: false,
     liveExecution: false,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprBTCUSD',
@@ -133,11 +129,11 @@ const PROPRIETARY_STRATEGIES = [
   },
   {
     id: 'BPR_INSTITUTIONAL_ETHUSD',
-    name: 'BPR Institutional ETHUSD M5 (R:R 1:3.0 | 24/7 Weekend)',
+    name: 'BPR Institutional ETHUSD M5 (R:R 1:2.0 | 24/7 Weekend)',
     symbol: 'ETHUSD',
-    enabled: false, // Desconectado temporalmente hasta calibrar estrategia específica de fin de semana
+    enabled: false,
     liveExecution: false,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 3.0 },
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/InstitutionalBPRStrategy',
     exportName: 'institutionalBprETHUSD',
@@ -147,9 +143,9 @@ const PROPRIETARY_STRATEGIES = [
     id: 'NY_SNIPER_XAUUSD',
     name: 'NY Daily Range Sniper XAUUSD (M15 Expansion + Reversal R:R 1:2.0)',
     symbol: 'XAUUSD',
-    enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 2.0 },
+    enabled: false,
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/NYDailyRangeSniperStrategy',
     exportName: 'nySniperXAUUSD',
@@ -159,9 +155,9 @@ const PROPRIETARY_STRATEGIES = [
     id: 'NY_SNIPER_NAS100',
     name: 'NY Daily Range Sniper NAS100 (M15 Wall Street Open + Reversal R:R 1:2.0)',
     symbol: 'NAS100',
-    enabled: true,
-    liveExecution: true,
-    exitManagement: { breakEven: true, trailing: false, rrRatio: 2.0 },
+    enabled: false,
+    liveExecution: false,
+    exitManagement: { breakEven: false, trailing: false, rrRatio: 2.0 },
     riskControls: { maxActiveTrades: 1 },
     modulePath: '../core/algorithms/NYDailyRangeSniperStrategy',
     exportName: 'nySniperNAS100',

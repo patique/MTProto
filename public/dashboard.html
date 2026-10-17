@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Antigravity Terminal | Institutional Multi-Asset Radar</title>
+  <title>Antigravity Terminal | Bitácora & Radar Institucional BPR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-base: #060911;
-      --bg-surface: rgba(13, 19, 33, 0.78);
-      --bg-surface-elevated: rgba(19, 27, 46, 0.90);
+      --bg-surface: rgba(13, 19, 33, 0.85);
+      --bg-surface-elevated: rgba(19, 27, 46, 0.95);
       --border-subtle: rgba(255, 255, 255, 0.08);
       --border-focus: rgba(0, 242, 254, 0.45);
       --accent-cyan: #00f2fe;
@@ -41,43 +41,42 @@
       color: var(--text-primary);
       font-family: var(--font-sans);
       min-height: 100vh;
-      padding: 10px 16px;
+      padding: 12px 18px;
       overflow-x: hidden;
     }
 
-    /* Scrollbars compactos */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-base); }
     ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); border-radius: 4px; }
 
-    /* Header Compacto */
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 8px;
-      margin-bottom: 10px;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
       border-bottom: 1px solid var(--border-subtle);
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
     }
 
     .brand-wrap { display: flex; align-items: center; gap: 10px; }
     .brand-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       background: linear-gradient(135deg, #0ea5e9, #3b82f6, #6366f1);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      box-shadow: 0 0 16px rgba(14, 165, 233, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 18px;
+      box-shadow: 0 0 18px rgba(14, 165, 233, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
 
     .brand-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
       letter-spacing: -0.02em;
       background: linear-gradient(90deg, #ffffff, #cbd5e1);
@@ -89,7 +88,7 @@
     }
 
     .brand-subtitle {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text-secondary);
       display: flex;
@@ -97,127 +96,64 @@
       gap: 6px;
     }
 
-    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
-    .clock-display {
+    .clock-pill {
       font-family: var(--font-mono);
       font-size: 11px;
+      font-weight: 700;
       color: var(--text-secondary);
       background: rgba(255, 255, 255, 0.03);
-      padding: 4px 9px;
+      padding: 4px 10px;
       border-radius: 6px;
       border: 1px solid var(--border-subtle);
     }
 
-    .live-indicator {
-      display: flex;
+    .status-pill {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      color: var(--accent-green-bright);
       padding: 4px 10px;
-      border-radius: 16px;
+      border-radius: 6px;
       font-size: 11px;
       font-weight: 700;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--accent-green-bright);
     }
-
     .radar-pulse {
       width: 7px;
       height: 7px;
+      background-color: var(--accent-green-bright);
       border-radius: 50%;
-      background: var(--accent-green-bright);
-      box-shadow: 0 0 8px var(--accent-green);
-      animation: radarPulse 1.8s infinite;
+      box-shadow: 0 0 8px var(--accent-green-bright);
+      animation: pulse 2s infinite;
     }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 
-    @keyframes radarPulse {
-      0%, 100% { transform: scale(0.9); opacity: 0.7; }
-      50% { transform: scale(1.3); opacity: 1; }
-    }
-
-    .circuit-btn {
-      background: rgba(239, 68, 68, 0.16);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 11px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-    .circuit-btn:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
-
-    /* Alerta / Banner de Operaciones Abiertas en Vivo */
-    #live-positions-bar {
-      display: none;
-      background: linear-gradient(90deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.18));
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      border-radius: 8px;
-      padding: 8px 14px;
-      margin-bottom: 10px;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .pos-info-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .pos-actions { display: flex; gap: 8px; }
-    .pos-btn-be {
-      background: rgba(0, 242, 254, 0.2);
-      border: 1px solid var(--accent-cyan);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .pos-btn-close {
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid var(--accent-red);
-      color: #fca5a5;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* KPI Grid Ultra-Compacto */
+    /* KPI Summary Row */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 8px;
-      margin-bottom: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
     }
 
     .kpi-card {
       background: var(--bg-surface);
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 7px 10px;
+      border-radius: 10px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-shadow: var(--card-shadow);
       position: relative;
     }
 
     .kpi-label {
-      font-size: 10px;
+      font-size: 10.5px;
       color: var(--text-secondary);
       font-weight: 600;
       text-transform: uppercase;
@@ -229,39 +165,39 @@
 
     .kpi-value {
       font-family: var(--font-mono);
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 800;
-      margin: 2px 0;
+      margin: 4px 0;
     }
 
     .kpi-sub {
-      font-size: 10px;
+      font-size: 10.5px;
       color: var(--text-tertiary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    /* Multi-Account Strip Compacto */
+    /* Accounts Strip */
     .accounts-strip {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
     .account-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 10px;
+      padding: 10px 14px;
     }
 
     .acc-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     .acc-id {
@@ -272,20 +208,6 @@
       align-items: center;
       gap: 6px;
     }
-
-    .acc-lots { display: flex; gap: 4px; }
-    .lot-badge {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-weight: 700;
-      padding: 1px 5px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-secondary);
-    }
-    .lot-badge.gold { color: var(--accent-gold-bright); border-color: rgba(245,158,11,0.25); }
-    .lot-badge.forex { color: var(--accent-cyan); border-color: rgba(0,242,254,0.25); }
 
     .acc-metrics-row {
       display: flex;
@@ -298,142 +220,245 @@
       font-family: var(--font-mono);
       font-size: 16px;
       font-weight: 800;
+      color: #ffffff;
     }
 
-    .progress-bar-bg {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, #0ea5e9, #10b981);
+    .acc-equity {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-cyan);
     }
 
-    /* Strip Canales VIP Activos */
-    .vip-channels-strip {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 6px 12px;
-      margin-bottom: 10px;
+    /* Tabs Bar */
+    .tabs-bar {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
       flex-wrap: wrap;
     }
 
-    .vip-channel-pill {
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover { background: rgba(255, 255, 255, 0.07); color: var(--text-primary); }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(59, 130, 246, 0.18));
+      border-color: var(--accent-cyan);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.2);
+    }
+
+    .tab-badge {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-family: var(--font-mono);
+    }
+
+    /* View Sections */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* Filters Bar */
+    .journal-filters {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-pill:hover { color: #ffffff; background: rgba(255, 255, 255, 0.08); }
+    .filter-pill.active {
+      background: rgba(0, 242, 254, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .channel-select {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    /* Table Styles */
+    .journal-table-wrap {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 16px;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    td {
+      padding: 10px 14px;
+      font-size: 11.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      vertical-align: middle;
+    }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    .badge {
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      padding: 2px 7px;
+      border-radius: 5px;
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
+      font-family: var(--font-mono);
+      white-space: nowrap;
     }
+    .badge.valid { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: var(--accent-green-bright); }
+    .badge.invalid { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; }
+    .badge.win { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: var(--accent-green-bright); font-weight: 800; }
+    .badge.loss { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-weight: 800; }
+    .badge.pending { background: rgba(0, 242, 254, 0.15); border: 1px solid rgba(0, 242, 254, 0.35); color: var(--accent-cyan); animation: pulse 1.5s infinite; }
+    .badge.cancelled { background: rgba(148, 163, 184, 0.12); border: 1px solid rgba(148, 163, 184, 0.25); color: var(--text-secondary); }
 
-    /* Barra de Control / Filtros del Radar */
+    .badge-buy { background: rgba(16, 185, 129, 0.12); color: var(--accent-green-bright); font-weight: 800; }
+    .badge-sell { background: rgba(239, 68, 68, 0.12); color: #f87171; font-weight: 800; }
+
+    /* Channel Radar Cards */
+    .channels-radar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .channel-radar-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+    .channel-radar-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+    .channel-radar-card.elite::before { background: var(--accent-green-bright); }
+    .channel-radar-card.warning::before { background: var(--accent-gold); }
+    .channel-radar-card.toxic::before { background: var(--accent-red); }
+
+    .channel-radar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .channel-radar-title { font-size: 13px; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 6px; }
+
+    .meter-wrap { margin: 8px 0; }
+    .meter-label-row { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--text-secondary); margin-bottom: 3px; }
+    .meter-bg { height: 5px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; }
+    .meter-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+    .channel-radar-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: center;
+    }
+    .radar-stat-val { font-family: var(--font-mono); font-size: 14px; font-weight: 800; }
+    .radar-stat-lbl { font-size: 9.5px; color: var(--text-tertiary); text-transform: uppercase; margin-top: 2px; }
+
+    /* BPR Institutional Checklist & Matrix Styles */
     .radar-toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .radar-selector {
-      display: flex;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 2px;
-      border-radius: 8px;
+      background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
-      gap: 3px;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
       flex-wrap: wrap;
+      gap: 8px;
     }
-
+    .radar-selector { display: flex; gap: 4px; flex-wrap: wrap; }
     .selector-btn {
-      background: transparent;
-      border: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
       color: var(--text-secondary);
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.15s;
     }
-
-    .selector-btn:hover { color: var(--text-primary); }
+    .selector-btn:hover { background: rgba(255, 255, 255, 0.08); color: #ffffff; }
     .selector-btn.active {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-    }
-    .selector-btn.focus-filter {
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--accent-green-bright);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      background: rgba(0, 242, 254, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      font-weight: 700;
     }
 
-    /* =========================================================================
-       MATRIZ ULTRA-COMPACTA DE CHECKLISTS (TODOS LOS 7 ACTIVOS SIN SCROLL)
-       ========================================================================= */
     .radar-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(295px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
       gap: 10px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
-
     .radar-card {
-      background: var(--bg-surface-elevated);
+      background: var(--bg-surface);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border-subtle);
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 10px 12px;
-      box-shadow: var(--card-shadow);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      box-shadow: var(--card-shadow);
       position: relative;
-      transition: transform 0.15s ease, border-color 0.15s ease;
     }
-
-    .radar-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-
-    /* Brillo pulsante cuando el par está en zona CE o con confluencia alta */
-    @keyframes inZoneGlow {
-      0%, 100% {
-        box-shadow: 0 0 14px rgba(16, 185, 129, 0.4), inset 0 0 10px rgba(16, 185, 129, 0.12);
-        border-color: #10b981;
-      }
-      50% {
-        box-shadow: 0 0 24px rgba(16, 185, 129, 0.7), inset 0 0 16px rgba(16, 185, 129, 0.2);
-        border-color: #34d399;
-      }
-    }
-
     .radar-card.in-zone-alert {
-      animation: inZoneGlow 1.8s infinite !important;
-      background: linear-gradient(180deg, rgba(16, 185, 129, 0.12) 0%, rgba(13, 19, 33, 0.95) 100%) !important;
+      border-color: var(--accent-green-bright);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
     }
-
-    .radar-card.high-score {
-      border-color: rgba(245, 158, 11, 0.5);
-    }
-
     .radar-card-header {
       display: flex;
       justify-content: space-between;
@@ -442,95 +467,39 @@
       padding-bottom: 4px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
-
     .radar-asset-title {
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .asset-icon { font-size: 14px; }
-    .asset-symbol {
-      font-family: var(--font-mono);
-      font-size: 13px;
       font-weight: 800;
+      font-size: 13px;
     }
-    .asset-price {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      margin-left: 2px;
-    }
-
-    .radar-card-tags {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
+    .asset-price { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+    .radar-card-tags { display: flex; align-items: center; gap: 4px; }
     .zone-type-badge {
-      font-size: 8.5px;
+      font-family: var(--font-mono);
+      font-size: 9px;
       font-weight: 800;
       padding: 1px 5px;
-      border-radius: 4px;
-      letter-spacing: 0.03em;
+      border-radius: 3px;
     }
-    .type-bullish {
-      background: rgba(16, 185, 129, 0.18);
-      color: var(--accent-green-bright);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-    }
-    .type-bearish {
-      background: rgba(239, 68, 68, 0.18);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-    }
-    .type-monitor {
-      background: rgba(148, 163, 184, 0.12);
-      color: var(--text-secondary);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-    }
+    .zone-type-badge.type-bullish { background: rgba(16, 185, 129, 0.15); color: var(--accent-green-bright); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .zone-type-badge.type-bearish { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .zone-type-badge.type-monitor { background: rgba(255, 255, 255, 0.05); color: var(--text-tertiary); border: 1px solid var(--border-subtle); }
 
     .status-tag {
-      font-size: 8.5px;
+      font-size: 9px;
       font-weight: 700;
       padding: 1px 5px;
-      border-radius: 4px;
-      text-transform: uppercase;
+      border-radius: 3px;
     }
 
-    /* Score Meter Compacto */
-    .score-meter-compact {
-      margin-bottom: 6px;
-    }
-    .score-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      margin-bottom: 3px;
-      color: var(--text-secondary);
-    }
-    .score-bar-bg {
-      height: 3px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .score-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      transition: width 0.3s ease;
-    }
+    .score-meter-compact { margin-bottom: 6px; }
+    .score-info { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 3px; color: var(--text-secondary); }
+    .score-bar-bg { height: 3px; background: rgba(255, 255, 255, 0.06); border-radius: 2px; overflow: hidden; }
+    .score-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
 
-    /* Filas Checklist Compactas */
-    .rules-list-compact {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-bottom: 6px;
-    }
-
+    .rules-list-compact { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
     .rule-row-compact {
       display: flex;
       justify-content: space-between;
@@ -539,7 +508,6 @@
       padding: 2px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.02);
     }
-
     .rule-name-compact {
       display: flex;
       align-items: center;
@@ -551,10 +519,7 @@
       text-overflow: ellipsis;
     }
     .rule-name-compact.ok { color: var(--text-primary); font-weight: 600; }
-    .rule-name-compact .check-icon {
-      font-weight: 800;
-      font-size: 9px;
-    }
+    .rule-name-compact .check-icon { font-weight: 800; font-size: 9px; }
     .rule-name-compact.ok .check-icon { color: var(--accent-green-bright); }
     .rule-name-compact:not(.ok) .check-icon { color: var(--text-tertiary); }
 
@@ -578,16 +543,9 @@
       padding-top: 4px;
       border-top: 1px solid rgba(255, 255, 255, 0.04);
     }
-
-    .ce-pill-compact {
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
+    .ce-pill-compact { font-size: 10px; display: flex; align-items: center; gap: 5px; }
     .ce-pill-compact .ce-label { color: var(--text-secondary); }
     .ce-pill-compact .ce-val { font-family: var(--font-mono); font-weight: 700; }
-
     .rr-badge {
       font-family: var(--font-mono);
       font-size: 9px;
@@ -599,232 +557,201 @@
       color: var(--accent-gold-bright);
     }
 
-    /* Bottom Split Layout */
-    .bottom-grid {
+    /* Watchlist Grid */
+    .watchlist-grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 10px;
+      margin-bottom: 16px;
     }
-    @media (max-width: 1080px) {
-      .bottom-grid { grid-template-columns: 1fr; }
-    }
-
-    .panel-box {
+    .watchlist-card {
       background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 10px 12px;
-    }
-
-    .panel-box-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .panel-box-title {
-      font-size: 12px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Table styles compactas */
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    th {
-      text-align: left;
-      padding: 4px 6px;
-      color: var(--text-tertiary);
-      font-weight: 600;
-      font-size: 9.5px;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border-subtle);
-    }
-    td {
-      padding: 5px 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      font-family: var(--font-mono);
-      font-size: 10.5px;
-      color: var(--text-secondary);
-    }
-
-    .news-list { display: flex; flex-direction: column; gap: 4px; }
-    .news-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 8px;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .news-title { font-weight: 600; font-size: 11px; color: var(--text-primary); }
-    .news-time { font-size: 9.5px; color: var(--text-tertiary); }
-    .news-badge {
-      background: rgba(239, 68, 68, 0.16);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 9px;
-      font-weight: 700;
+      border: 1px solid rgba(0, 242, 254, 0.25);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 0 16px rgba(0, 242, 254, 0.1);
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER COMPACTO -->
+  <!-- HEADER -->
   <header>
     <div class="brand-wrap">
       <div class="brand-badge">⚡</div>
       <div>
-        <div class="brand-title">
-          <span>ANTIGRAVITY TERMINAL</span>
-          <span style="font-size: 10px; font-weight: 700; background: rgba(59, 130, 246, 0.18); color: var(--accent-cyan); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(0, 242, 254, 0.3);">BPR SNIPER 7 PARES</span>
-        </div>
-        <div class="brand-subtitle">
-          <span>R:R 1:3.0 Estricto • Break-Even a 1.0R</span>
-        </div>
+        <div class="brand-title">ANTIGRAVITY TERMINAL <span style="font-size: 10px; font-weight: 700; color: var(--accent-cyan); background: rgba(0, 242, 254, 0.1); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(0, 242, 254, 0.3);">QUANT JOURNAL & RADAR</span></div>
+        <div class="brand-subtitle">Bitácora Visual, Scoring de Canales VIP y Radar Institucional BPR</div>
       </div>
     </div>
+
     <div class="header-actions">
-      <div class="clock-display" id="clock-display">00:00:00 UTC | Madrid: 00:00</div>
-      <button id="circuit-btn" class="circuit-btn" onclick="toggleCircuitBreaker()">
-        <span>🛑</span> <span id="circuit-btn-text">PAUSAR TRADING</span>
-      </button>
-      <div class="live-indicator">
+      <div class="clock-pill" id="clock-display">UTC: --:--:-- | Madrid: --:--:--</div>
+      <div class="status-pill">
         <span class="radar-pulse"></span>
-        <span id="server-status">EN VIVO (0ms)</span>
+        <span id="server-status">SISTEMA EN VIVO (0ms)</span>
       </div>
     </div>
   </header>
 
-  <!-- BANNER FLOTANTE DE POSICIONES ACTIVAS EN DIRECTO -->
-  <div id="live-positions-bar">
-    <div class="pos-info-left">
-      <span>⚡ POSICIONES FLOTANTES MT5:</span>
-      <span id="pos-summary-text" style="color: var(--accent-green-bright);">Cargando posiciones...</span>
-    </div>
-    <div class="pos-actions">
-      <button class="pos-btn-be" onclick="triggerManualBE()">🛡️ Mover a Break-Even</button>
-      <button class="pos-btn-close" onclick="triggerCloseAll()">❌ Cerrar Todas</button>
-    </div>
-  </div>
-
-  <!-- KPI SUMMARY ROW ULTRA-COMPACTA -->
+  <!-- KPI SUMMARY ROW -->
   <section class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label"><span>Balance</span><span style="color: var(--accent-cyan);">🏦</span></div>
-      <div class="kpi-value" id="kpi-balance" style="color: var(--accent-cyan);">$0.00</div>
-      <div class="kpi-sub" id="kpi-equity">Equidad: $0.00</div>
+    <div class="kpi-card" style="border-color: rgba(0, 242, 254, 0.25);">
+      <div class="kpi-label"><span>Acierto Técnico (Win Rate)</span><span style="color: var(--accent-cyan);">🎯</span></div>
+      <div class="kpi-value" id="kpi-winrate" style="color: var(--accent-cyan);">0.0%</div>
+      <div class="kpi-sub" id="kpi-winrate-sub">0 Ganadas • 0 Perdidas</div>
     </div>
 
-    <div class="kpi-card">
-      <div class="kpi-label"><span>PnL Hoy</span><span style="color: var(--accent-green);">📈</span></div>
-      <div class="kpi-value" id="kpi-pnl" style="color: var(--accent-green);">+$0.00</div>
-      <div class="kpi-sub" id="kpi-pnl-sub">Meta: +$300 | SL: -$300</div>
+    <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.25);">
+      <div class="kpi-label"><span>Pips Netos Señales</span><span style="color: var(--accent-green);">📊</span></div>
+      <div class="kpi-value" id="kpi-pips" style="color: var(--accent-green-bright);">+0.0</div>
+      <div class="kpi-sub">Calculado en ticks de mercado</div>
     </div>
 
     <div class="kpi-card" style="border-color: rgba(245, 158, 11, 0.25);">
-      <div class="kpi-label"><span style="color: var(--accent-gold-bright);">🥇 Oro</span><span style="color: var(--accent-gold); font-size: 9px;">0ms</span></div>
+      <div class="kpi-label"><span>Puntualidad Global</span><span style="color: var(--accent-gold);">⏱️</span></div>
+      <div class="kpi-value" id="kpi-timeliness" style="color: var(--accent-gold-bright);">100%</div>
+      <div class="kpi-sub" id="kpi-timeliness-sub">0 a tiempo • 0 tardías</div>
+    </div>
+
+    <div class="kpi-card" style="border-color: rgba(245, 158, 11, 0.25);">
+      <div class="kpi-label"><span style="color: var(--accent-gold-bright);">🥇 Oro (XAUUSD)</span><span style="color: var(--accent-gold); font-size: 9px;">LIVE</span></div>
       <div class="kpi-value" id="kpi-gold-price" style="color: #fef08a;">--- / ---</div>
       <div class="kpi-sub" id="kpi-gold-sub">Spread: -- pts</div>
     </div>
 
     <div class="kpi-card" style="border-color: rgba(0, 242, 254, 0.25);">
-      <div class="kpi-label"><span style="color: var(--accent-cyan);">💶 Euro</span><span style="color: var(--accent-cyan); font-size: 9px;">0ms</span></div>
+      <div class="kpi-label"><span style="color: var(--accent-cyan);">💶 EURUSD</span><span style="color: var(--accent-cyan); font-size: 9px;">LIVE</span></div>
       <div class="kpi-value" id="kpi-eurusd-price" style="color: #bae6fd;">--- / ---</div>
-      <div class="kpi-sub" id="kpi-eurusd-sub">Spread: ~0.4 pips</div>
+      <div class="kpi-sub" id="kpi-eurusd-sub">Spread: -- pips</div>
     </div>
 
     <div class="kpi-card">
-      <div class="kpi-label"><span>Riesgo / Slot</span><span style="color: var(--accent-purple);">🛡️</span></div>
-      <div class="kpi-value" id="kpi-risk" style="color: var(--accent-purple);">0.75%</div>
-      <div class="kpi-sub">Slots Libres: 4</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-label"><span>Operaciones</span><span style="color: var(--text-secondary);">⚡</span></div>
-      <div class="kpi-value" id="kpi-open-trades">0</div>
-      <div class="kpi-sub" id="kpi-open-sub">Sin riesgo flotante</div>
+      <div class="kpi-label"><span>Riesgo en Mercado</span><span style="color: var(--text-secondary);">⚡</span></div>
+      <div class="kpi-value" id="kpi-open-trades" style="color: var(--accent-green-bright);">0</div>
+      <div class="kpi-sub" id="kpi-open-sub">Sin posiciones flotantes</div>
     </div>
   </section>
 
-  <!-- CUENTAS VINCULADAS COMPACTAS -->
+  <!-- CUENTAS VINCULADAS -->
   <section class="accounts-strip" id="accounts-container"></section>
 
-  <!-- CANALES TELEGRAM VIP ACTIVOS (TP3 + AUTO-BE TP2) -->
-  <div class="vip-channels-strip">
-    <div style="font-size: 11px; font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px;">
-      <span>📡</span>
-      <span>CANALES VIP ACTIVOS (5 a TP3 • Auto-BE en TP2):</span>
-    </div>
-    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-      <span class="vip-channel-pill" style="border-color: rgba(245, 158, 11, 0.3);">🥇 Attaullah Zone (TP3)</span>
-      <span class="vip-channel-pill" style="border-color: rgba(0, 242, 254, 0.3);">💎 Marco Trading (TP3)</span>
-      <span class="vip-channel-pill" style="border-color: rgba(16, 185, 129, 0.3);">🎯 Craig Percoco (TP3)</span>
-      <span class="vip-channel-pill" style="border-color: rgba(168, 85, 247, 0.3);">🔥 Gold Pro Signal (TP3)</span>
-      <span class="vip-channel-pill" style="border-color: rgba(244, 63, 94, 0.3);">🚀 XAUUSD Forex (TP3)</span>
-    </div>
+  <!-- TABS DE NAVEGACIÓN -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('journal')" id="tab-btn-journal">
+      <span>📖</span><span>BITÁCORA EN TIEMPO REAL (Trade Journal)</span>
+      <span class="tab-badge" id="tab-badge-signals">0</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('radar-channels')" id="tab-btn-radar-channels">
+      <span>📡</span><span>RANKING DE CANALES ACTIVOS (Scoring)</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('bpr-checklist')" id="tab-btn-bpr-checklist">
+      <span>📊</span><span>CHECKLIST INSTITUCIONAL BPR M5 (7 Activos)</span>
+      <span class="tab-badge" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan);">RADAR</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('watchlist')" id="tab-btn-watchlist">
+      <span>⏳</span><span>PULLBACK WATCHLIST (Descuento en Drawdown)</span>
+      <span class="tab-badge" id="tab-badge-watchlist">0</span>
+    </button>
   </div>
 
-  <!-- TOOLBAR FILTROS DEL RADAR -->
-  <div class="radar-toolbar">
-    <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
-      <span>📡</span>
-      <span>CHECKLIST INSTITUCIONAL BPR M5 (7 ACTIVOS)</span>
-      <span id="m5-timer-badge" style="background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); color: var(--accent-cyan); padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">⏱️ Vela M5: --:--</span>
-    </div>
-    <div class="radar-selector">
-      <button class="selector-btn active" id="btn-view-all" onclick="setViewMode('all')">⚡ Todos (7)</button>
-      <button class="selector-btn focus-filter" id="btn-view-focus" onclick="setViewMode('focus')">🎯 Solo En Zona / Setup</button>
-      <button class="selector-btn" id="btn-view-XAUUSD" onclick="setViewMode('XAUUSD')">🥇 XAU</button>
-      <button class="selector-btn" id="btn-view-EURUSD" onclick="setViewMode('EURUSD')">💶 EUR</button>
-      <button class="selector-btn" id="btn-view-GBPJPY" onclick="setViewMode('GBPJPY')">💷 GBPJPY</button>
-      <button class="selector-btn" id="btn-view-USDCAD" onclick="setViewMode('USDCAD')">🍁 CAD</button>
-      <button class="selector-btn" id="btn-view-GBPUSD" onclick="setViewMode('GBPUSD')">🇬🇧 Cable</button>
-      <button class="selector-btn" id="btn-view-AUDUSD" onclick="setViewMode('AUDUSD')">🇦🇺 AUD</button>
-      <button class="selector-btn" id="btn-view-USDJPY" onclick="setViewMode('USDJPY')">🇯🇵 JPY</button>
-    </div>
-  </div>
-
-  <!-- MATRIZ DE RADARES (7 CARDS EN GRID SIN SCROLL) -->
-  <div class="radar-grid" id="institutional-radars-container">
-    <div style="text-align: center; color: var(--text-tertiary); padding: 20px; grid-column: 1 / -1;">
-      Cargando matriz institucional de 7 activos...
-    </div>
-  </div>
-
-  <!-- PANEL INFERIOR: ÓRDENES PENDIENTES & NOTICIAS -->
-  <section class="bottom-grid">
-    <div class="panel-box">
-      <div class="panel-box-header">
-        <div class="panel-box-title" style="color: var(--accent-cyan);">
-          <span>⏱️</span><span>Órdenes Pendientes (MT5 Auto-Cancel 30m)</span>
-        </div>
+  <!-- SECCIÓN 1: BITÁCORA EN TIEMPO REAL (TRADE JOURNAL) -->
+  <section id="view-journal" class="view-section active">
+    <div class="journal-filters">
+      <div class="filter-pills">
+        <button class="filter-pill active" onclick="setFilter('ALL')">⚡ Todas (<span id="count-all">0</span>)</button>
+        <button class="filter-pill" onclick="setFilter('VALID')">✅ Válidas a Tiempo (<span id="count-valid">0</span>)</button>
+        <button class="filter-pill" onclick="setFilter('INVALID')">⚠️ Tardías / Descartadas (<span id="count-invalid">0</span>)</button>
+        <button class="filter-pill" onclick="setFilter('WIN')">🎯 Ganadas (<span id="count-win">0</span>)</button>
+        <button class="filter-pill" onclick="setFilter('LOSS')">❌ Perdidas (<span id="count-loss">0</span>)</button>
+        <button class="filter-pill" onclick="setFilter('PENDING')">⏳ En Ticks (<span id="count-pending">0</span>)</button>
       </div>
+
+      <div>
+        <select class="channel-select" id="channel-filter-select" onchange="renderJournalTable()">
+          <option value="ALL">Todos los Canales Activos</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="journal-table-wrap">
       <table>
         <thead>
-          <tr><th>ID</th><th>Par</th><th>Tipo</th><th>Entrada</th><th>SL</th><th>TP</th><th>Expira</th></tr>
+          <tr>
+            <th>Hora</th>
+            <th>Canal</th>
+            <th>Par & Acción</th>
+            <th>Entrada</th>
+            <th>Stop Loss</th>
+            <th>Take Profit</th>
+            <th>Desfase al Llegar</th>
+            <th>Auditoría de Disciplina / Validez</th>
+            <th>Resultado en Ticks</th>
+            <th>Pips Netos</th>
+          </tr>
         </thead>
-        <tbody id="pending-orders-tbody">
-          <tr><td colspan="7" style="text-align:center; padding:12px; color:var(--text-tertiary);">Sin órdenes pendientes</td></tr>
+        <tbody id="journal-tbody">
+          <tr>
+            <td colspan="10" style="text-align: center; padding: 24px; color: var(--text-tertiary);">
+              Esperando señales entrantes de Telegram para auditar...
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
+  </section>
 
-    <div class="panel-box">
-      <div class="panel-box-header">
-        <div class="panel-box-title" style="color: #f87171;">
-          <span>📰</span><span>Calendario Macroeconómico (News Guard ±10m)</span>
-        </div>
+  <!-- SECCIÓN 2: AUDITORÍA Y RANKING DE CANALES ACTIVOS -->
+  <section id="view-radar-channels" class="view-section">
+    <div style="margin-bottom: 12px; font-size: 11.5px; color: var(--text-secondary);">
+      ℹ️ Se muestran <b>exclusivamente los canales activos</b> habilitados para operar. Los canales desactivados quedan ocultos del ranking.
+    </div>
+    <div class="channels-radar-grid" id="channels-radar-container">
+      <div style="text-align: center; color: var(--text-tertiary); padding: 24px; grid-column: 1 / -1;">
+        Cargando análisis cuantitativo de canales activos...
       </div>
-      <div class="news-list" id="news-container">
-        <div style="font-size:11px; color:var(--text-tertiary); text-align:center; padding:12px;">Consultando calendario...</div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 3: CHECKLIST INSTITUCIONAL BPR M5 (7 ACTIVOS) -->
+  <section id="view-bpr-checklist" class="view-section">
+    <div class="radar-toolbar">
+      <div style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: flex; align-items: center; gap: 8px;">
+        <span>📡</span>
+        <span>RADAR CUANTITATIVO BPR M5 (ACTIVOS MONITOREADOS)</span>
+        <span id="m5-timer-badge" style="background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.3); color: var(--accent-cyan); padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">⏱️ Vela M5: --:--</span>
+      </div>
+      <div class="radar-selector">
+        <button class="selector-btn active" id="btn-view-all" onclick="setViewMode('all')">⚡ Todos</button>
+        <button class="selector-btn" id="btn-view-focus" onclick="setViewMode('focus')">🎯 Solo Confluencia ≥50%</button>
+        <button class="selector-btn" id="btn-view-XAUUSD" onclick="setViewMode('XAUUSD')">🥇 XAU</button>
+        <button class="selector-btn" id="btn-view-EURUSD" onclick="setViewMode('EURUSD')">💶 EUR</button>
+        <button class="selector-btn" id="btn-view-GBPJPY" onclick="setViewMode('GBPJPY')">💷 GBPJPY</button>
+        <button class="selector-btn" id="btn-view-USDCAD" onclick="setViewMode('USDCAD')">🍁 CAD</button>
+        <button class="selector-btn" id="btn-view-GBPUSD" onclick="setViewMode('GBPUSD')">🇬🇧 Cable</button>
+        <button class="selector-btn" id="btn-view-AUDUSD" onclick="setViewMode('AUDUSD')">🇦🇺 AUD</button>
+        <button class="selector-btn" id="btn-view-USDJPY" onclick="setViewMode('USDJPY')">🇯🇵 JPY</button>
+        <button class="selector-btn" id="btn-view-XAGUSD" onclick="setViewMode('XAGUSD')">🥈 XAG</button>
+        <button class="selector-btn" id="btn-view-EURJPY" onclick="setViewMode('EURJPY')">💶 EURJPY</button>
+      </div>
+    </div>
+
+    <!-- MATRIZ DE RADARES -->
+    <div class="radar-grid" id="institutional-radars-container">
+      <div style="text-align: center; color: var(--text-tertiary); padding: 20px; grid-column: 1 / -1;">
+        Cargando matriz institucional de activos...
+      </div>
+    </div>
+  </section>
+
+  <!-- SECCIÓN 4: PULLBACK WATCHLIST (ENTRADAS EN DESCUENTO) -->
+  <section id="view-watchlist" class="view-section">
+    <div style="margin-bottom: 12px; font-size: 11.5px; color: var(--text-secondary);">
+      ℹ️ Las señales con ratio R:R inicial ajustado se vigilan durante 15 minutos (3 re-evaluaciones cada 5 min). Si el precio retrocede en Drawdown hacia el Stop Loss mejorando el R:R $\ge 1:1.00$, se ejecutan a mercado en precio de descuento.
+    </div>
+    <div class="watchlist-grid" id="watchlist-container">
+      <div style="text-align: center; color: var(--text-tertiary); padding: 24px; grid-column: 1 / -1;">
+        No hay señales en espera de retroceso en este momento.
       </div>
     </div>
   </section>
@@ -839,8 +766,24 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    let currentViewMode = 'all';
+    function updateM5Timer() {
+      const timerEl = document.getElementById('m5-timer-badge');
+      if (!timerEl) return;
+      const now = Date.now();
+      const m5Remaining = Math.max(0, 300 - Math.floor((now % 300000) / 1000));
+      const mins = Math.floor(m5Remaining / 60);
+      const secs = m5Remaining % 60;
+      timerEl.textContent = `⏱️ Vela M5: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+    setInterval(updateM5Timer, 1000);
+    updateM5Timer();
+
+    let allSignalsCache = [];
+    let allChannelsCache = [];
     let cachedRadarPairs = [];
+    let currentFilter = 'ALL';
+    let currentTab = 'journal';
+    let currentViewMode = 'all';
 
     const ASSET_META = {
       XAUUSD: { icon: '🥇', label: 'Oro', color: 'var(--accent-gold-bright)' },
@@ -849,8 +792,32 @@
       USDCAD: { icon: '🍁', label: 'Dólar / Cad', color: '#f43f5e' },
       GBPUSD: { icon: '🇬🇧', label: 'Cable', color: '#38bdf8' },
       AUDUSD: { icon: '🇦🇺', label: 'Aussie / USD', color: '#34d399' },
-      USDJPY: { icon: '🇯🇵', label: 'Dólar / Yen', color: '#fbbf24' }
+      USDJPY: { icon: '🇯🇵', label: 'Dólar / Yen', color: '#fbbf24' },
+      XAGUSD: { icon: '🥈', label: 'Plata', color: '#cbd5e1' },
+      EURJPY: { icon: '💶', label: 'EURJPY', color: '#a855f7' }
     };
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+
+      const btn = document.getElementById(`tab-btn-${tab}`);
+      const sec = document.getElementById(`view-${tab}`);
+      if (btn) btn.classList.add('active');
+      if (sec) sec.classList.add('active');
+
+      if (tab === 'bpr-checklist') {
+        fetchInstitutionalRadar();
+      }
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      event.target.classList.add('active');
+      renderJournalTable();
+    }
 
     function setViewMode(mode) {
       currentViewMode = mode;
@@ -860,217 +827,149 @@
       renderInstitutionalRadars();
     }
 
-    async function toggleAccountMode(accountId, newMode) {
-      try {
-        const risk = newMode === 'PERSONAL' ? 2.0 : 0.75;
-        await fetch('/api/accounts/mode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accountId, mode: newMode, riskPercent: risk })
-        });
-        fetchDashboard();
-      } catch (e) {}
-    }
+    function renderJournalTable() {
+      const tbody = document.getElementById('journal-tbody');
+      const chFilter = document.getElementById('channel-filter-select').value;
 
-    async function triggerManualBE() {
-      try {
-        await fetch('/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'MODIFY', modifyType: 'BREAK_EVEN', symbol: 'ALL', comment: 'Manual BE UI' })
-        });
-        alert('🛡️ Comando Break-Even enviado a todas las cuentas MT5.');
-      } catch (e) {
-        alert('Error enviando Break-Even: ' + e.message);
+      let filtered = allSignalsCache.filter(sig => {
+        if (chFilter !== 'ALL' && sig.channelId !== chFilter) return false;
+        if (currentFilter === 'VALID') return sig.isValid;
+        if (currentFilter === 'INVALID') return !sig.isValid;
+        if (currentFilter === 'WIN') return sig.outcome === 'WIN';
+        if (currentFilter === 'LOSS') return sig.outcome === 'LOSS';
+        if (currentFilter === 'PENDING') return sig.outcome === 'PENDING';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 24px; color: var(--text-tertiary);">No hay operaciones registradas con este filtro.</td></tr>`;
+        return;
       }
-    }
 
-    async function triggerCloseAll() {
-      if (!confirm('¿Seguro que deseas cerrar TODAS las posiciones de mercado en todas las cuentas MT5?')) return;
-      try {
-        await fetch('/api/close-all');
-        alert('❌ Comando CLOSE_ALL enviado a todas las terminales MT5.');
-        fetchDashboard();
-      } catch (e) {
-        alert('Error cerrando posiciones: ' + e.message);
+      let html = '';
+      for (const sig of filtered) {
+        const actionClass = sig.action.includes('BUY') ? 'badge-buy' : 'badge-sell';
+        const actionIcon = sig.action.includes('BUY') ? '📈' : '📉';
+
+        const validBadge = sig.isValid
+          ? `<span class="badge valid">✅ A TIEMPO</span>`
+          : `<span class="badge invalid" title="${sig.validationReason}">🚨 TARDÍA / DESCARTADA</span>`;
+
+        let outcomeBadge = '';
+        if (sig.outcome === 'WIN') {
+          outcomeBadge = `<span class="badge win">🎯 WIN</span>`;
+        } else if (sig.outcome === 'LOSS') {
+          outcomeBadge = `<span class="badge loss">❌ LOSS</span>`;
+        } else if (sig.outcome === 'PENDING') {
+          outcomeBadge = `<span class="badge pending">⏳ EN TICKS</span>`;
+        } else {
+          outcomeBadge = `<span class="badge cancelled">⚪ CANCELADA</span>`;
+        }
+
+        const pipsClass = sig.pips > 0 ? 'color: var(--accent-green-bright);' : (sig.pips < 0 ? 'color: var(--accent-red);' : 'color: var(--text-tertiary);');
+        const pipsStr = sig.outcome !== 'PENDING' ? `${sig.pips >= 0 ? '+' : ''}${sig.pips} pips` : '---';
+
+        const diffStr = sig.entryDiffPips > 0 
+          ? `<span style="font-family: var(--font-mono); color: ${sig.entryDiffPips > 8 ? '#f87171' : 'var(--accent-cyan)'};">+${sig.entryDiffPips} pips</span>` 
+          : `<span style="color: var(--text-tertiary);">0.0 pips</span>`;
+
+        html += `
+          <tr>
+            <td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 11px;">${sig.timeStr}</td>
+            <td style="font-weight: 700; color: #ffffff;">${sig.channelName}</td>
+            <td><span class="badge ${actionClass}">${actionIcon} ${sig.symbol} ${sig.action}</span></td>
+            <td style="font-family: var(--font-mono); font-weight: 700;">${sig.entry}</td>
+            <td style="font-family: var(--font-mono); color: #fca5a5;">${sig.sl}</td>
+            <td style="font-family: var(--font-mono); color: var(--accent-green-bright);">${sig.tp}</td>
+            <td>${diffStr}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                ${validBadge}
+                ${!sig.isValid ? `<span style="font-size: 9.5px; color: #fca5a5; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${sig.validationReason}">${sig.validationReason}</span>` : ''}
+              </div>
+            </td>
+            <td>${outcomeBadge}</td>
+            <td style="font-family: var(--font-mono); font-weight: 800; ${pipsClass}">${pipsStr}</td>
+          </tr>
+        `;
       }
+
+      tbody.innerHTML = html;
     }
 
-    async function fetchDashboard() {
-      try {
-        const res = await fetch('/api/status');
-        if (!res.ok) return;
-        const data = await res.json();
+    function renderChannelsRadar() {
+      const container = document.getElementById('channels-radar-container');
+      // Filtrar estrictamente solo canales activos
+      const activeChannels = allChannelsCache.filter(c => c.enabled !== false);
 
-        // 1. Totales de Saldo y Equidad
-        let totalBal = 0, totalEq = 0, totalOpenPos = 0;
-        if (data.accounts && data.accounts.length > 0) {
-          totalBal = data.accounts.reduce((s, a) => s + (a.balance || 0), 0);
-          totalEq = data.accounts.reduce((s, a) => s + (a.equity || a.balance || 0), 0);
-          totalOpenPos = data.accounts.reduce((s, a) => s + (a.openPositions || 0), 0);
-        } else {
-          totalBal = data.balance || 0;
-          totalEq = totalBal;
+      if (activeChannels.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-tertiary);">Sin canales activos habilitados.</div>`;
+        return;
+      }
+
+      let html = '';
+      for (const ch of activeChannels) {
+        const timeRateNum = parseFloat(ch.timelinessRate || 100);
+        const winRateNum = parseFloat(ch.winRate || 0);
+
+        let cardClass = 'elite';
+        let semaforoText = '🟢 CANAL ÉLITE';
+        let meterColor = 'var(--accent-green-bright)';
+
+        if (timeRateNum < 60 || (ch.lossCount > ch.winCount && ch.totalSignals > 2)) {
+          cardClass = 'toxic';
+          semaforoText = '🔴 ALERTA / TARDÍO';
+          meterColor = 'var(--accent-red)';
+        } else if (timeRateNum < 85 || winRateNum < 50) {
+          cardClass = 'warning';
+          semaforoText = '🟡 VOLÁTIL / DESCUENTO';
+          meterColor = 'var(--accent-gold)';
         }
 
-        document.getElementById('kpi-balance').textContent = `$${totalBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        document.getElementById('kpi-equity').textContent = `Equidad: $${totalEq.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-        // PnL Diario
-        const pnl = typeof data.dailyPnL === 'number' ? data.dailyPnL : 0;
-        const pnlEl = document.getElementById('kpi-pnl');
-        pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)} (${data.dailyPnLPercent || '0%'})`;
-        pnlEl.style.color = pnl >= 0 ? 'var(--accent-green-bright)' : 'var(--accent-red)';
-        document.getElementById('kpi-pnl-sub').textContent = `Meta: +$${data.dailyTargetProfitUSD || 300} | SL: -$${data.dailyMaxLossUSD || 300}`;
-
-        // Precio Oro Live
-        const goldEl = document.getElementById('kpi-gold-price');
-        const goldSub = document.getElementById('kpi-gold-sub');
-        if (data.tick && data.tick.bid > 0) {
-          const gSpread = Math.round((data.tick.ask - data.tick.bid) * 100);
-          goldEl.textContent = `${data.tick.bid.toFixed(2)}`;
-          goldSub.textContent = `Spread: ${gSpread} pts | Ask: ${data.tick.ask.toFixed(2)}`;
-        } else {
-          goldEl.textContent = 'MT5 Esperando';
-          goldSub.textContent = 'Tick no disponible';
-        }
-
-        // Precio EURUSD Live
-        const eurusdEl = document.getElementById('kpi-eurusd-price');
-        const eurusdSub = document.getElementById('kpi-eurusd-sub');
-        const eurTick = data.tickEURUSD || (data.ticks && data.ticks['EURUSD']);
-        if (eurTick && eurTick.bid > 0) {
-          const eSpread = ((eurTick.ask - eurTick.bid) * 10000).toFixed(1);
-          eurusdEl.textContent = `${eurTick.bid.toFixed(5)}`;
-          eurusdSub.textContent = `Spread: ${eSpread} pips`;
-        } else {
-          eurusdEl.textContent = '1.09250';
-          eurusdSub.textContent = 'Spread: ~0.4 pips';
-        }
-
-        // Riesgo y Posiciones
-        document.getElementById('kpi-risk').textContent = `${data.riskPercent || 0.75}%`;
-        document.getElementById('kpi-open-trades').textContent = totalOpenPos;
-        document.getElementById('kpi-open-sub').textContent = totalOpenPos > 0 ? `${totalOpenPos} posición(es) abierta(s)` : 'Sin riesgo flotante';
-
-        // Banner flotante de posiciones activas
-        const posBar = document.getElementById('live-positions-bar');
-        const posText = document.getElementById('pos-summary-text');
-        if (totalOpenPos > 0) {
-          posBar.style.display = 'flex';
-          const floatPnL = totalEq - totalBal;
-          posText.textContent = `${totalOpenPos} Operación(es) Abierta(s) en Broker | Flotante Estimado: ${floatPnL >= 0 ? '+' : ''}$${floatPnL.toFixed(2)} USD`;
-        } else {
-          posBar.style.display = 'none';
-        }
-
-        // Banner Stop Trading / Circuit Breaker
-        const circuitBtnText = document.getElementById('circuit-btn-text');
-        const circuitBtn = document.getElementById('circuit-btn');
-        if (data.tradingPaused) {
-          circuitBtnText.textContent = 'REANUDAR TRADING';
-          circuitBtn.style.background = 'rgba(16, 185, 129, 0.2)';
-          circuitBtn.style.borderColor = 'var(--accent-green)';
-          circuitBtn.style.color = 'var(--accent-green-bright)';
-        } else {
-          circuitBtnText.textContent = 'PAUSAR TRADING';
-          circuitBtn.style.background = 'rgba(239, 68, 68, 0.16)';
-          circuitBtn.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-          circuitBtn.style.color = '#fca5a5';
-        }
-
-        // Render Cuentas Multi-Cuenta
-        const accsContainer = document.getElementById('accounts-container');
-        if (data.accounts && data.accounts.length > 0) {
-          accsContainer.innerHTML = data.accounts.map(acc => {
-            const isOnline = acc.isOnline;
-            const isPersonal = (acc.mode === 'PERSONAL');
-            const targetBalance = acc.targetProfitBalance || (acc.balance * 1.10);
-            const initial = acc.initialBalance || acc.balance;
-            const gain = acc.balance - initial;
-            const gainPct = initial > 0 ? ((gain / initial) * 100).toFixed(2) : '0.00';
-            const progress = isPersonal ? 100 : Math.min(100, Math.max(0, (gain / (targetBalance - initial)) * 100));
-
-            return `
-              <div class="account-card" style="${isPersonal ? 'border-color: rgba(16,185,129,0.35);' : ''}">
-                <div class="acc-header">
-                  <div class="acc-id">
-                    <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:${isOnline ? 'var(--accent-green)' : 'var(--accent-red)'};"></span>
-                    <span>#${acc.id} (${acc.broker.split(' ')[0]})</span>
-                    <span style="font-size:9px; color:${isPersonal ? 'var(--accent-green-bright)' : 'var(--accent-gold)'}; font-weight:700;">${isPersonal ? '🌱 PROPIA' : '🏛️ PROP'}</span>
-                  </div>
-                  <div class="acc-lots">
-                    <span class="lot-badge gold">${(acc.goldLot != null ? acc.goldLot : 0.01).toFixed(2)}L</span>
-                    <span class="lot-badge forex">${(acc.forexLot || 1.0).toFixed(2)}L</span>
-                  </div>
-                </div>
-                <div class="acc-metrics-row">
-                  <div>
-                    <span class="acc-balance">$${acc.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    <span style="font-size:10px; color:var(--text-tertiary); margin-left:4px;">Eq: $${(acc.equity || acc.balance).toFixed(2)}</span>
-                  </div>
-                  <div style="font-size:11px; font-weight:700; color:${gain >= 0 ? 'var(--accent-green-bright)' : 'var(--accent-red)'};">
-                    ${gain >= 0 ? '+' : ''}$${gain.toFixed(2)} (${gainPct}%)
-                  </div>
-                </div>
-                <div class="progress-bar-bg">
-                  <div class="progress-bar-fill" style="width: ${progress}%;"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-
-        // Render Órdenes Pendientes
-        const pTable = document.getElementById('pending-orders-tbody');
-        if (data.pendingOrders && data.pendingOrders.length > 0) {
-          const now = Date.now();
-          pTable.innerHTML = data.pendingOrders.map(o => {
-            const timeLeftSec = Math.max(0, Math.round((o.expiresAt - now) / 1000));
-            const min = Math.floor(timeLeftSec / 60);
-            const sec = timeLeftSec % 60;
-            return `
-              <tr>
-                <td>#${String(o.id).slice(-4)}</td>
-                <td><b style="color:var(--accent-gold);">${o.symbol}</b></td>
-                <td style="color:${o.action.includes('BUY') ? 'var(--accent-green)' : 'var(--accent-red)'}; font-weight:700;">${o.action}</td>
-                <td>${o.entryPrice}</td>
-                <td style="color:var(--accent-red);">${o.sl || '--'}</td>
-                <td style="color:var(--accent-green);">${o.tp || '--'}</td>
-                <td style="color:var(--accent-gold); font-weight:700;">${min}m ${sec}s</td>
-              </tr>
-            `;
-          }).join('');
-        } else {
-          pTable.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:10px; color:var(--text-tertiary);">Sin órdenes pendientes en mercado</td></tr>`;
-        }
-
-        // Render Noticias
-        const newsContainer = document.getElementById('news-container');
-        if (data.news && data.news.length > 0) {
-          newsContainer.innerHTML = data.news.slice(0, 3).map(n => `
-            <div class="news-item">
-              <div>
-                <div class="news-title">${n.title}</div>
-                <div class="news-time">📅 ${n.formattedTime} (${n.country})</div>
-              </div>
-              <span class="news-badge">ALTO IMPACTO</span>
+        html += `
+          <div class="channel-radar-card ${cardClass}">
+            <div class="channel-radar-header">
+              <div class="channel-radar-title">📡 ${ch.name}</div>
+              <span class="badge ${cardClass === 'elite' ? 'valid' : (cardClass === 'warning' ? 'pending' : 'invalid')}">${semaforoText}</span>
             </div>
-          `).join('');
-        } else {
-          newsContainer.innerHTML = `<div style="font-size:10px; color:var(--accent-green-bright); text-align:center; padding:10px;">🟢 Sin noticias de alto impacto próximas</div>`;
-        }
 
-      } catch (err) {
-        console.error('Error fetching status:', err);
+            <div class="meter-wrap">
+              <div class="meter-label-row">
+                <span>Puntualidad de Envío (A Tiempo):</span>
+                <span style="font-weight: 700; color: ${meterColor};">${ch.timelinessRate || '100%'}</span>
+              </div>
+              <div class="meter-bg">
+                <div class="meter-fill" style="width: ${timeRateNum}%; background: ${meterColor};"></div>
+              </div>
+            </div>
+
+            <div class="channel-radar-stats">
+              <div>
+                <div class="radar-stat-val" style="color: var(--accent-cyan);">${ch.winRate || '0.0%'}</div>
+                <div class="radar-stat-lbl">Win Rate Real</div>
+              </div>
+              <div>
+                <div class="radar-stat-val" style="color: ${parseFloat(ch.pipsGained || 0) >= 0 ? 'var(--accent-green-bright)' : 'var(--accent-red)'};">${ch.pipsGained || '0.0'}</div>
+                <div class="radar-stat-lbl">Pips Netos</div>
+              </div>
+              <div>
+                <div class="radar-stat-val" style="color: #ffffff;">${ch.totalSignals || 0}</div>
+                <div class="radar-stat-lbl">Señales (${ch.validSignalsCount || 0}V / ${ch.invalidSignalsCount || 0}T)</div>
+              </div>
+            </div>
+          </div>
+        `;
       }
 
-      // 2. Consulta de Radar Institucional de los 7 Pares
+      container.innerHTML = html;
+    }
+
+    async function fetchInstitutionalRadar() {
       try {
-        const radarRes = await fetch('/api/institutional-radar');
-        if (radarRes.ok) {
-          const rData = await radarRes.json();
-          cachedRadarPairs = rData.pairs || [];
+        const res = await fetch('/api/institutional-radar');
+        const data = await res.json();
+        if (data && data.pairs) {
+          cachedRadarPairs = data.pairs;
           renderInstitutionalRadars();
         }
       } catch (err) {
@@ -1084,7 +983,6 @@
 
       let pairsToShow = cachedRadarPairs;
       if (currentViewMode === 'focus') {
-        // Solo pares con al menos 2 reglas activas (>=50%) o dentro de zona
         pairsToShow = cachedRadarPairs.filter(p => (p.checklist?.scorePercent >= 50) || p.checklist?.inZone);
       } else if (currentViewMode !== 'all') {
         pairsToShow = cachedRadarPairs.filter(p => p.symbol === currentViewMode);
@@ -1092,8 +990,8 @@
 
       if (!pairsToShow || pairsToShow.length === 0) {
         container.innerHTML = `
-          <div style="text-align: center; color: var(--text-tertiary); padding: 20px; grid-column: 1 / -1; background: rgba(255,255,255,0.02); border-radius: 8px;">
-            ${currentViewMode === 'focus' ? '🎯 Ningún par con confluencia ≥50% en este momento. Escaneando los 7 pares...' : `Esperando datos para ${currentViewMode}...`}
+          <div style="text-align: center; color: var(--text-tertiary); padding: 24px; grid-column: 1 / -1; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            ${currentViewMode === 'focus' ? '🎯 Ningún par con confluencia ≥50% en este momento. Escaneando los 7 activos...' : `Esperando datos para ${currentViewMode}...`}
           </div>
         `;
         return;
@@ -1121,11 +1019,11 @@
           </div>
         `).join('');
 
-        const distCE = chk.distToCE || (chk.rules && chk.rules[2] ? chk.rules[2].detail : '0.0 pts');
+        const distCE = chk.distToCE || (chk.rules && chk.rules[3] ? chk.rules[3].detail : '0.0 pts');
         const isInZone = !!chk.inZone;
 
         return `
-          <div class="radar-card ${isInZone ? 'in-zone-alert' : ''} ${scorePct >= 75 ? 'high-score' : ''}">
+          <div class="radar-card ${isInZone ? 'in-zone-alert' : ''}">
             <div>
               <div class="radar-card-header">
                 <div class="radar-asset-title">
@@ -1163,39 +1061,187 @@
                   ${isInZone ? '🎯 DENTRO' : distCE}
                 </span>
               </div>
-              <span class="rr-badge">1:3.0 RR</span>
+              <span class="rr-badge">1:2.0 RR</span>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    let isPaused = false;
-    async function toggleCircuitBreaker() {
-      isPaused = !isPaused;
-      await fetch('/api/circuit-breaker', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ togglePause: isPaused })
-      });
-      fetchDashboard();
+    function renderWatchlist(watchlist) {
+      const container = document.getElementById('watchlist-container');
+      const badge = document.getElementById('tab-badge-watchlist');
+      const count = watchlist ? (watchlist.activeWatchingCount || 0) : 0;
+      badge.textContent = count;
+
+      if (!watchlist || !watchlist.items || watchlist.items.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--text-tertiary); padding: 24px; grid-column: 1 / -1;">No hay señales en espera de retroceso en este momento.</div>`;
+        return;
+      }
+
+      let html = '';
+      for (const it of watchlist.items) {
+        const secLeft = Math.round(it.nextAttemptInMs / 1000);
+        html += `
+          <div class="watchlist-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-weight: 800; color: #ffffff;">${it.channel}</span>
+              <span class="badge pending">⏳ INTENTO ${it.attemptsDone + 1}/3</span>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">
+              ${it.symbol} ${it.action}
+            </div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 6px;">
+              R:R inicial rechazado: 1:${Number(it.initialRR || 0).toFixed(2)} (Mínimo: 1:1.00)
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--accent-gold-bright);">
+              ⏱️ Próxima re-evaluación en: ${secLeft > 0 ? secLeft + 's' : 'Ahora'}
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
     }
 
-    function updateM5Timer() {
-      const timerEl = document.getElementById('m5-timer-badge');
-      if (!timerEl) return;
-      const now = Date.now();
-      const m5Remaining = Math.max(0, 300 - Math.floor((now % 300000) / 1000));
-      const mins = Math.floor(m5Remaining / 60);
-      const secs = m5Remaining % 60;
-      timerEl.textContent = `⏱️ Vela M5: ${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        // 1. Precios Live
+        const goldEl = document.getElementById('kpi-gold-price');
+        const goldSub = document.getElementById('kpi-gold-sub');
+        if (data.tick && data.tick.bid > 0) {
+          const gSpread = Math.round((data.tick.ask - data.tick.bid) * 100);
+          goldEl.textContent = `${data.tick.bid.toFixed(2)}`;
+          goldSub.textContent = `Spread: ${gSpread} pts | Ask: ${data.tick.ask.toFixed(2)}`;
+        } else {
+          goldEl.textContent = 'MT5 Esperando';
+          goldSub.textContent = 'Tick no disponible';
+        }
+
+        const eurusdEl = document.getElementById('kpi-eurusd-price');
+        const eurusdSub = document.getElementById('kpi-eurusd-sub');
+        const eurTick = data.tickEURUSD || (data.ticks && data.ticks['EURUSD']);
+        if (eurTick && eurTick.bid > 0) {
+          const eSpread = ((eurTick.ask - eurTick.bid) * 10000).toFixed(1);
+          eurusdEl.textContent = `${eurTick.bid.toFixed(5)}`;
+          eurusdSub.textContent = `Spread: ${eSpread} pips`;
+        }
+
+        // 2. Cuentas MT5
+        const accContainer = document.getElementById('accounts-container');
+        let totalOpenPos = 0;
+        if (data.accounts && data.accounts.length > 0) {
+          totalOpenPos = data.accounts.reduce((s, a) => s + (a.openPositions || 0), 0);
+          accContainer.innerHTML = data.accounts.map(a => `
+            <div class="account-card">
+              <div class="acc-header">
+                <div class="acc-id">
+                  <span>${a.broker || 'MetaTrader 5'}</span>
+                  <span style="color:var(--text-tertiary);">#${a.id}</span>
+                </div>
+                <span class="badge ${a.isOnline ? 'valid' : 'invalid'}">${a.isOnline ? '● CONECTADO' : '○ INACTIVO'}</span>
+              </div>
+              <div class="acc-metrics-row">
+                <div class="acc-balance">$${Number(a.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+                <div class="acc-equity">Eq: $${Number(a.equity || a.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</div>
+              </div>
+              <div style="font-size: 10px; color: var(--text-tertiary); display:flex; justify-content:space-between;">
+                <span>Posiciones abiertas: <b style="color:#ffffff;">${a.openPositions || 0}</b></span>
+                <span>Lote Oro: <b style="color:var(--accent-gold-bright);">${a.goldLot || '0.01'}</b></span>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        document.getElementById('kpi-open-trades').textContent = totalOpenPos;
+        document.getElementById('kpi-open-sub').textContent = totalOpenPos > 0 ? `${totalOpenPos} posición(es) abierta(s)` : 'Sin riesgo flotante';
+
+        // 3. Procesar Canales ACTIVOS y Señales
+        allChannelsCache = data.channels || [];
+        allSignalsCache = [];
+        let totalSigs = 0, totalValids = 0, totalInvalids = 0;
+        let totalWins = 0, totalLosses = 0, totalPips = 0;
+
+        const select = document.getElementById('channel-filter-select');
+        const prevSelected = select.value;
+
+        let selectHtml = '<option value="ALL">Todos los Canales Activos</option>';
+
+        // Solo canales habilitados
+        for (const ch of allChannelsCache) {
+          if (ch.enabled === false) continue;
+
+          selectHtml += `<option value="${ch.id}" ${prevSelected === ch.id ? 'selected' : ''}>${ch.name}</option>`;
+          totalSigs += (ch.totalSignals || 0);
+          totalValids += (ch.validSignalsCount || 0);
+          totalInvalids += (ch.invalidSignalsCount || 0);
+          totalWins += (ch.winCount || 0);
+          totalLosses += (ch.lossCount || 0);
+          totalPips += parseFloat(ch.pipsGained || 0);
+
+          if (ch.lastSignals) {
+            for (const s of ch.lastSignals) {
+              allSignalsCache.push({
+                ...s,
+                channelId: ch.id,
+                channelName: ch.name
+              });
+            }
+          }
+        }
+        select.innerHTML = selectHtml;
+
+        // Ordenar señales por timestamp descendente
+        allSignalsCache.sort((a, b) => b.timestamp - a.timestamp);
+
+        // Actualizar KPIs de Auditoría
+        const resolved = totalWins + totalLosses;
+        const globalWR = resolved > 0 ? ((totalWins / resolved) * 100).toFixed(1) : '0.0';
+        document.getElementById('kpi-winrate').textContent = `${globalWR}%`;
+        document.getElementById('kpi-winrate-sub').textContent = `${totalWins} Ganadas • ${totalLosses} Perdidas`;
+
+        document.getElementById('kpi-pips').textContent = `${totalPips >= 0 ? '+' : ''}${totalPips.toFixed(1)}`;
+        document.getElementById('kpi-pips').style.color = totalPips >= 0 ? 'var(--accent-green-bright)' : 'var(--accent-red)';
+
+        const globalTimeliness = totalSigs > 0 ? ((totalValids / totalSigs) * 100).toFixed(1) : '100.0';
+        document.getElementById('kpi-timeliness').textContent = `${globalTimeliness}%`;
+        document.getElementById('kpi-timeliness-sub').textContent = `${totalValids} a tiempo • ${totalInvalids} tardías`;
+
+        // Contadores de Filtros
+        document.getElementById('count-all').textContent = allSignalsCache.length;
+        document.getElementById('count-valid').textContent = allSignalsCache.filter(s => s.isValid).length;
+        document.getElementById('count-invalid').textContent = allSignalsCache.filter(s => !s.isValid).length;
+        document.getElementById('count-win').textContent = allSignalsCache.filter(s => s.outcome === 'WIN').length;
+        document.getElementById('count-loss').textContent = allSignalsCache.filter(s => s.outcome === 'LOSS').length;
+        document.getElementById('count-pending').textContent = allSignalsCache.filter(s => s.outcome === 'PENDING').length;
+        document.getElementById('tab-badge-signals').textContent = allSignalsCache.length;
+
+        // Renderizar vistas
+        renderJournalTable();
+        renderChannelsRadar();
+        renderWatchlist(data.watchlist);
+
+        if (currentTab === 'bpr-checklist') {
+          fetchInstitutionalRadar();
+        }
+
+      } catch (err) {
+        console.error('Error actualizando dashboard:', err);
+      }
     }
 
-    setInterval(updateM5Timer, 1000);
-    updateM5Timer();
+    setInterval(fetchStatus, 2000);
+    fetchStatus();
+    fetchInstitutionalRadar();
 
-    setInterval(fetchDashboard, 1500);
-    fetchDashboard();
+    // Poller para el radar institucional cada 3s
+    setInterval(() => {
+      if (currentTab === 'bpr-checklist') {
+        fetchInstitutionalRadar();
+      }
+    }, 3000);
   </script>
 </body>
 </html>

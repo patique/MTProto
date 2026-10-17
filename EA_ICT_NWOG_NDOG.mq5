@@ -1,0 +1,765 @@
+//+------------------------------------------------------------------+
+//|                                           EA_ICT_NWOG_NDOG.mq5  |
+//|               Estrategia Institucional ICT NWOG / NDOG & EHPDA   |
+//|                   Copyright 2026, Antigravity Quant Lab          |
+//|                       https://github.com/telegram-mtproto        |
+//+------------------------------------------------------------------+
+#property copyright "Antigravity Quant Lab & ICT Concepts"
+#property link      "https://github.com/telegram-mtproto"
+#property version   "1.00"
+#property strict
+#property description "EA Institucional ICT: New Week Opening Gap (NWOG), New Day Opening Gap (NDOG) y EHPDA"
+#property description "Entradas confirmadas en el 50% Consequent Encroachment (CE) con RR y Riesgo Dinámico"
+
+#include <Trade\Trade.mqh>
+#include <Trade\PositionInfo.mqh>
+#include <Trade\AccountInfo.mqh>
+
+//--- ENUMERACIONES ---
+enum ENUM_GAP_TYPE
+{
+   GAP_NWOG_ONLY, // Solo NWOG (Semanal)
+   GAP_NDOG_ONLY, // Solo NDOG (Diario)
+   GAP_BOTH       // Ambos (NWOG + NDOG)
+};
+
+enum ENUM_RISK_MODE
+{
+   RISK_PERCENT_BALANCE, // % del Balance
+   RISK_PERCENT_EQUITY,  // % de la Equidad
+   RISK_FIXED_USD,       // Riesgo Fijo en USD ($)
+   RISK_FIXED_LOT        // Lotaje Fijo Manual
+};
+
+enum ENUM_TRIGGER_MODE
+{
+   TRIGGER_CE_50_REJECTION, // Confirmación en el CE 50% (Mecha de absorción)
+   TRIGGER_ZONE_RETEST      // Retesteo de la caja del Gap
+};
+
+//--- PARÁMETROS DE ENTRADA (INPUTS) ---
+input group "=== 📊 1. CONFIGURACIÓN DE GAPS ICT (NWOG / NDOG) ===";
+input ENUM_GAP_TYPE      InpGapType              = GAP_BOTH;             // Tipo de Gaps a Detectar
+input int                InpMaxGapsToTrack       = 5;                    // Cantidad Máxima de Gaps a Monitorear
+input double             InpMinGapPoints         = 30.0;                 // Distancia Mínima de Gap en Puntos (ej. 30 pts en Oro)
+input bool               InpUseEHPDA             = true;                 // Calcular y Dibujar EHPDA (Event Horizon)
+
+input group "=== ⚖️ 2. GESTIÓN DE RIESGO DINÁMICO & R:R ===";
+input ENUM_RISK_MODE     InpRiskMode             = RISK_PERCENT_BALANCE; // Modo de Cálculo de Riesgo
+input double             InpRiskPercent          = 1.0;                  // Riesgo por Operación (%)
+input double             InpFixedRiskUSD         = 50.0;                 // Riesgo Fijo por Operación ($ si modo USD)
+input double             InpFixedLotSize         = 0.01;                 // Lotaje Fijo (si modo Fixed Lot)
+input double             InpRiskRewardRatio      = 2.0;                  // Ratio Riesgo:Beneficio (R:R Dinámico)
+
+input group "=== 🎯 3. GATILLO DE ENTRADA & CONFIRMACIÓN ===";
+input ENUM_TIMEFRAMES    InpEntryTF              = PERIOD_M5;            // Temporalidad de Entrada y Rechazo (M5)
+input ENUM_TRIGGER_MODE  InpTriggerMode          = TRIGGER_CE_50_REJECTION;// Modo de Gatillo Institucional
+input double             InpMinRejectionWickPct  = 25.0;                 // Mecha de Rechazo Mínima (%) para Confirmar
+input double             InpSLBufferPoints       = 15.0;                 // Holgura de SL tras el Extremo del Gap (puntos)
+input int                InpMaxActiveTrades      = 1;                    // Máximo de Operaciones Simultáneas
+
+input group "=== 🛡️ 4. AUTO BREAK-EVEN (50% DEL TP) ===";
+input bool               InpEnableAutoBE         = true;                 // Activar Auto Break-Even al 50% del TP
+input double             InpBETriggerPercent     = 50.0;                 // Recorrido hacia el TP para Activar BE (%)
+input double             InpBEOffsetPips         = 0.5;                  // Offset de Seguridad sobre Precio Entrada (pips)
+
+input group "=== ⏱️ 5. SESIONES & KILLZONES ICT (HORA ESPAÑA/CET) ===";
+input bool               InpUseSessionFilter     = true;                 // Operar Solo en Killzones
+input int                InpLondonStartHour      = 8;                    // Apertura Londres (08:00 CET)
+input int                InpLondonEndHour        = 12;                   // Cierre Londres (12:00 CET)
+input int                InpNYStartHour          = 13;                   // Apertura New York (13:30 CET)
+input int                InpNYEndHour            = 17;                   // Cierre New York (17:00 CET)
+input bool               InpCloseFriday          = true;                 // Cierre Preventivo Viernes
+input int                InpFridayCloseHour      = 21;                   // Hora Cierre Viernes
+input int                InpFridayCloseMin       = 30;                   // Minuto Cierre Viernes
+
+input group "=== 🎨 6. IDENTIFICACIÓN Y GRÁFICO ===";
+input ulong              InpMagicNumber          = 889901;               // Magic Number
+input string             InpTradeComment         = "ICT_NWOG_NDOG";      // Comentario de Trade
+input bool               InpDrawVisuals          = true;                 // Dibujar Cajas de Gaps y Niveles CE
+input bool               InpShowHUD              = true;                 // Mostrar Panel HUD en Gráfico
+input color              InpBullColor            = C'91,156,246';        // Color Gap Alcista
+input color              InpBearColor            = C'186,104,200';       // Color Gap Bajista
+input color              InpEhpdaColor           = C'148,163,184';       // Color EHPDA
+
+//--- ESTRUCTURAS DE DATOS ---
+struct GapData
+{
+   datetime time;
+   double   top;
+   double   bottom;
+   double   ce50;       // Consequent Encroachment (top + bottom) / 2
+   bool     isBullish;  // true si open > close[1]
+   bool     mitigated;
+   string   typeStr;    // "NWOG" o "NDOG"
+   string   boxName;
+   string   ceLineName;
+};
+
+//--- VARIABLES GLOBALES ---
+CTrade         m_trade;
+CPositionInfo  m_pos;
+CAccountInfo   m_acc;
+
+GapData        m_gaps[];
+double         m_ehpdaLevels[];
+datetime       m_lastBarTime = 0;
+datetime       m_lastW1Time  = 0;
+datetime       m_lastD1Time  = 0;
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   m_trade.SetExpertMagicNumber(InpMagicNumber);
+   m_trade.SetMarginMode();
+   m_trade.SetTypeFillingBySymbol(_Symbol);
+
+   ArrayResize(m_gaps, 0);
+   ArrayResize(m_ehpdaLevels, 0);
+
+   PrintFormat("🚀 [EA_ICT_NWOG_NDOG] Inicializado con éxito en %s | R:R Dinámico: 1:%.2f | Riesgo: %.2f%% | Auto-BE: %s",
+               _Symbol, InpRiskRewardRatio, InpRiskPercent, InpEnableAutoBE ? "50% TP" : "OFF");
+
+   // Escaneo inicial de Gaps históricos
+   ScanGapsHistorical();
+
+   if(InpShowHUD)
+      CreateHUD();
+
+   EventSetMillisecondTimer(250);
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   EventKillTimer();
+
+   if(InpDrawVisuals)
+   {
+      ObjectsDeleteAll(0, "ICT_GAP_");
+      ObjectsDeleteAll(0, "ICT_EHPDA_");
+   }
+
+   if(InpShowHUD)
+      DestroyHUD();
+}
+
+//+------------------------------------------------------------------+
+//| Timer function (250 ms)                                          |
+//+------------------------------------------------------------------+
+void OnTimer()
+{
+   // 1. Auto Break-Even dinámico al 50% del TP
+   if(InpEnableAutoBE)
+      ManageAutoBreakEven();
+
+   // 2. Cierre preventivo de viernes
+   if(InpCloseFriday)
+      CheckFridayCloseGuard();
+
+   // 3. Actualizar HUD cada segundo
+   static datetime lastHudUpdate = 0;
+   if(TimeCurrent() - lastHudUpdate >= 1)
+   {
+      lastHudUpdate = TimeCurrent();
+      if(InpShowHUD)
+         UpdateHUD();
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Tick function                                                    |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // 1. Verificar si hay nueva vela en la temporalidad de entrada
+   datetime currentBarTime = iTime(_Symbol, InpEntryTF, 0);
+   bool isNewBar = (currentBarTime != m_lastBarTime);
+
+   // 2. Detectar nuevos Gaps al cambiar de semana o de día
+   CheckForNewGaps();
+
+   // 3. Auto Break-Even reactivo por cada tick
+   if(InpEnableAutoBE)
+      ManageAutoBreakEven();
+
+   // 4. Buscar gatillo de entrada al cierre de vela (o nuevo bar)
+   if(isNewBar)
+   {
+      m_lastBarTime = currentBarTime;
+      EvaluateInstitutionalEntry();
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Detectar apertura de nueva vela W1 y D1 para registrar Gaps       |
+//+------------------------------------------------------------------+
+void CheckForNewGaps()
+{
+   // 1. Gaps Semanales (NWOG)
+   if(InpGapType == GAP_NWOG_ONLY || InpGapType == GAP_BOTH)
+   {
+      datetime currentW1Time = iTime(_Symbol, PERIOD_W1, 0);
+      if(currentW1Time != m_lastW1Time && currentW1Time > 0)
+      {
+         m_lastW1Time = currentW1Time;
+         RegisterGap(PERIOD_W1, "NWOG");
+      }
+   }
+
+   // 2. Gaps Diarios (NDOG)
+   if(InpGapType == GAP_NDOG_ONLY || InpGapType == GAP_BOTH)
+   {
+      datetime currentD1Time = iTime(_Symbol, PERIOD_D1, 0);
+      if(currentD1Time != m_lastD1Time && currentD1Time > 0)
+      {
+         m_lastD1Time = currentD1Time;
+         RegisterGap(PERIOD_D1, "NDOG");
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Escanear Gaps recientes al inicializar el EA                     |
+//+------------------------------------------------------------------+
+void ScanGapsHistorical()
+{
+   if(InpGapType == GAP_NWOG_ONLY || InpGapType == GAP_BOTH)
+   {
+      for(int shift = InpMaxGapsToTrack; shift >= 1; shift--)
+      {
+         MqlRates rates[];
+         ArraySetAsSeries(rates, true);
+         if(CopyRates(_Symbol, PERIOD_W1, shift, 2, rates) == 2)
+         {
+            double prevClose = rates[1].close;
+            double currOpen  = rates[0].open;
+            double gapSize   = MathAbs(currOpen - prevClose);
+
+            if(gapSize >= InpMinGapPoints * _Point)
+            {
+               AddGapData(rates[0].time, currOpen, prevClose, "NWOG");
+            }
+         }
+      }
+   }
+
+   if(InpGapType == GAP_NDOG_ONLY || InpGapType == GAP_BOTH)
+   {
+      for(int shift = InpMaxGapsToTrack; shift >= 1; shift--)
+      {
+         MqlRates rates[];
+         ArraySetAsSeries(rates, true);
+         if(CopyRates(_Symbol, PERIOD_D1, shift, 2, rates) == 2)
+         {
+            double prevClose = rates[1].close;
+            double currOpen  = rates[0].open;
+            double gapSize   = MathAbs(currOpen - prevClose);
+
+            if(gapSize >= InpMinGapPoints * _Point)
+            {
+               AddGapData(rates[0].time, currOpen, prevClose, "NDOG");
+            }
+         }
+      }
+   }
+
+   CalculateEHPDA();
+   RedrawAllGaps();
+}
+
+//+------------------------------------------------------------------+
+//| Registrar un Gap recién formado en tiempo real                   |
+//+------------------------------------------------------------------+
+void RegisterGap(ENUM_TIMEFRAMES tf, string typeStr)
+{
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, tf, 0, 2, rates) == 2)
+   {
+      double prevClose = rates[1].close;
+      double currOpen  = rates[0].open;
+      double gapSize   = MathAbs(currOpen - prevClose);
+
+      if(gapSize >= InpMinGapPoints * _Point)
+      {
+         AddGapData(rates[0].time, currOpen, prevClose, typeStr);
+         CalculateEHPDA();
+         RedrawAllGaps();
+         PrintFormat("💎 [ICT %s DETECTADO] Apertura: %.5f | Cierre Anterior: %.5f | Tamaño: %.1f pips",
+                     typeStr, currOpen, prevClose, gapSize / (_Point * 10));
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Añadir datos del Gap al array y limitar por InpMaxGapsToTrack    |
+//+------------------------------------------------------------------+
+void AddGapData(datetime t, double currOpen, double prevClose, string typeStr)
+{
+   GapData newGap;
+   newGap.time      = t;
+   newGap.top       = MathMax(currOpen, prevClose);
+   newGap.bottom    = MathMin(currOpen, prevClose);
+   newGap.ce50      = NormalizeDouble((newGap.top + newGap.bottom) / 2.0, _Digits);
+   newGap.isBullish = (currOpen > prevClose);
+   newGap.mitigated = false;
+   newGap.typeStr   = typeStr;
+   newGap.boxName   = StringFormat("ICT_GAP_%s_%d", typeStr, (int)t);
+   newGap.ceLineName= StringFormat("ICT_GAP_CE_%s_%d", typeStr, (int)t);
+
+   int size = ArraySize(m_gaps);
+   ArrayResize(m_gaps, size + 1);
+   m_gaps[size] = newGap;
+
+   // Mantener únicamente los últimos N gaps
+   if(ArraySize(m_gaps) > InpMaxGapsToTrack * 2)
+   {
+      // Eliminar el más antiguo
+      if(InpDrawVisuals)
+      {
+         ObjectDelete(0, m_gaps[0].boxName);
+         ObjectDelete(0, m_gaps[0].ceLineName);
+      }
+      for(int i = 0; i < ArraySize(m_gaps) - 1; i++)
+         m_gaps[i] = m_gaps[i+1];
+      ArrayResize(m_gaps, ArraySize(m_gaps) - 1);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Calcular niveles EHPDA (Event Horizon Premium/Discount Array)    |
+//+------------------------------------------------------------------+
+void CalculateEHPDA()
+{
+   int count = ArraySize(m_gaps);
+   if(!InpUseEHPDA || count < 2) return;
+
+   // Ordenar gaps por su CE 50%
+   double sortedCE[];
+   ArrayResize(sortedCE, count);
+   for(int i = 0; i < count; i++)
+      sortedCE[i] = m_gaps[i].ce50;
+   ArraySort(sortedCE);
+
+   ArrayResize(m_ehpdaLevels, count - 1);
+   for(int i = 0; i < count - 1; i++)
+   {
+      m_ehpdaLevels[i] = NormalizeDouble((sortedCE[i] + sortedCE[i+1]) / 2.0, _Digits);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Dibujar todos los Gaps y niveles EHPDA en el gráfico             |
+//+------------------------------------------------------------------+
+void RedrawAllGaps()
+{
+   if(!InpDrawVisuals) return;
+
+   datetime chartEnd = TimeCurrent() + PeriodSeconds(PERIOD_D1) * 3;
+
+   for(int i = 0; i < ArraySize(m_gaps); i++)
+   {
+      color gapColor = m_gaps[i].isBullish ? InpBullColor : InpBearColor;
+
+      // 1. Caja del Gap
+      if(ObjectFind(0, m_gaps[i].boxName) < 0)
+      {
+         ObjectCreate(0, m_gaps[i].boxName, OBJ_RECTANGLE, 0, m_gaps[i].time, m_gaps[i].top, chartEnd, m_gaps[i].bottom);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_COLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_BGCOLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_FILL, true);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_BACK, true);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_STYLE, STYLE_SOLID);
+      }
+      else
+      {
+         ObjectSetDouble(0, m_gaps[i].boxName, OBJPROP_PRICE, 0, m_gaps[i].top);
+         ObjectSetDouble(0, m_gaps[i].boxName, OBJPROP_PRICE, 1, m_gaps[i].bottom);
+         ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_TIME, 1, chartEnd);
+      }
+
+      // 2. Línea discontinua central CE 50%
+      if(ObjectFind(0, m_gaps[i].ceLineName) < 0)
+      {
+         ObjectCreate(0, m_gaps[i].ceLineName, OBJ_TREND, 0, m_gaps[i].time, m_gaps[i].ce50, chartEnd, m_gaps[i].ce50);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_COLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_STYLE, STYLE_DOT);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_WIDTH, 1);
+         ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_RAY_RIGHT, true);
+      }
+   }
+
+   // 3. Dibujar niveles EHPDA
+   if(InpUseEHPDA)
+   {
+      for(int e = 0; e < ArraySize(m_ehpdaLevels); e++)
+      {
+         string ehName = StringFormat("ICT_EHPDA_LVL_%d", e);
+         if(ObjectFind(0, ehName) < 0)
+         {
+            ObjectCreate(0, ehName, OBJ_HLINE, 0, 0, m_ehpdaLevels[e]);
+            ObjectSetInteger(0, ehName, OBJPROP_COLOR, InpEhpdaColor);
+            ObjectSetInteger(0, ehName, OBJPROP_STYLE, STYLE_DASHDOT);
+            ObjectSetInteger(0, ehName, OBJPROP_WIDTH, 1);
+            ObjectSetString(0, ehName, OBJPROP_TEXT, "EHPDA Event Horizon");
+         }
+         else
+         {
+            ObjectSetDouble(0, ehName, OBJPROP_PRICE, m_ehpdaLevels[e]);
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Evaluación Institucional y Disparo a Mercado                     |
+//+------------------------------------------------------------------+
+void EvaluateInstitutionalEntry()
+{
+   // 1. Validar límite de posiciones activas del EA
+   if(GetActivePositionsCount() >= InpMaxActiveTrades)
+      return;
+
+   // 2. Filtro de Killzones / Sesiones de Liquidez
+   if(!IsInKillzone())
+      return;
+
+   int gapsCount = ArraySize(m_gaps);
+   if(gapsCount == 0) return;
+
+   // Obtener la vela previa cerrada de M5
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, InpEntryTF, 1, 1, rates) < 1) return;
+
+   double cOpen  = rates[0].open;
+   double cClose = rates[0].close;
+   double cHigh  = rates[0].high;
+   double cLow   = rates[0].low;
+   double cRange = cHigh - cLow;
+   if(cRange <= 0) return;
+
+   double lowerWick = MathMin(cOpen, cClose) - cLow;
+   double upperWick = cHigh - MathMax(cOpen, cClose);
+   double lowerWickPct = (lowerWick / cRange) * 100.0;
+   double upperWickPct = (upperWick / cRange) * 100.0;
+
+   // Iterar por los gaps activos (del más reciente al más antiguo)
+   for(int i = gapsCount - 1; i >= 0; i--)
+   {
+      double top    = m_gaps[i].top;
+      double bottom = m_gaps[i].bottom;
+      double ce50   = m_gaps[i].ce50;
+
+      // -----------------------------------------------------------
+      // A) SETUP DE COMPRA (Soporte / Demanda en el Gap)
+      // El precio penetró en la zona del gap o testeó el CE 50%
+      // y rechazó dejando mecha inferior >= InpMinRejectionWickPct
+      // -----------------------------------------------------------
+      bool testedDemand = (cLow <= top && cLow >= bottom - (InpSLBufferPoints * _Point));
+      if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
+         testedDemand = (cLow <= ce50 && cClose > ce50);
+
+      if(testedDemand && cClose > cOpen && lowerWickPct >= InpMinRejectionWickPct)
+      {
+         double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+         double sl  = NormalizeDouble(bottom - (InpSLBufferPoints * _Point), _Digits);
+         double slDist = ask - sl;
+
+         if(slDist > (InpSLBufferPoints * _Point))
+         {
+            double tp = NormalizeDouble(ask + (slDist * InpRiskRewardRatio), _Digits);
+            double lot = CalculateLotSize(ask, sl);
+
+            PrintFormat("🎯 [SEÑAL COMPRA ICT] Testeado %s CE 50%: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
+                        m_gaps[i].typeStr, ce50, lowerWickPct, sl, InpRiskRewardRatio, tp, lot);
+
+            string orderComment = StringFormat("%s_%s_BUY", InpTradeComment, m_gaps[i].typeStr);
+            if(m_trade.Buy(lot, _Symbol, ask, sl, tp, orderComment))
+            {
+               Print("✅ [ORDEN COMPRA EJECUTADA CON ÉXITO]");
+               return;
+            }
+         }
+      }
+
+      // -----------------------------------------------------------
+      // B) SETUP DE VENTA (Resistencia / Oferta en el Gap)
+      // El precio subió a la zona del gap o testeó el CE 50%
+      // y rechazó dejando mecha superior >= InpMinRejectionWickPct
+      // -----------------------------------------------------------
+      bool testedSupply = (cHigh >= bottom && cHigh <= top + (InpSLBufferPoints * _Point));
+      if(InpTriggerMode == TRIGGER_CE_50_REJECTION)
+         testedSupply = (cHigh >= ce50 && cClose < ce50);
+
+      if(testedSupply && cClose < cOpen && upperWickPct >= InpMinRejectionWickPct)
+      {
+         double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+         double sl  = NormalizeDouble(top + (InpSLBufferPoints * _Point), _Digits);
+         double slDist = sl - bid;
+
+         if(slDist > (InpSLBufferPoints * _Point))
+         {
+            double tp = NormalizeDouble(bid - (slDist * InpRiskRewardRatio), _Digits);
+            double lot = CalculateLotSize(bid, sl);
+
+            PrintFormat("🎯 [SEÑAL VENTA ICT] Testeado %s CE 50%: %.5f | Rechazo Mecha: %.1f%% | SL: %.5f | TP (R:R 1:%.2f): %.5f | Lot: %.2f",
+                        m_gaps[i].typeStr, ce50, upperWickPct, sl, InpRiskRewardRatio, tp, lot);
+
+            string orderComment = StringFormat("%s_%s_SELL", InpTradeComment, m_gaps[i].typeStr);
+            if(m_trade.Sell(lot, _Symbol, bid, sl, tp, orderComment))
+            {
+               Print("✅ [ORDEN VENTA EJECUTADA CON ÉXITO]");
+               return;
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Cálculo Dinámico de Lotaje por Distancia al Stop Loss            |
+//+------------------------------------------------------------------+
+double CalculateLotSize(double entryPrice, double slPrice)
+{
+   if(InpRiskMode == RISK_FIXED_LOT)
+      return InpFixedLotSize;
+
+   double riskUSD = 0.0;
+   if(InpRiskMode == RISK_PERCENT_BALANCE)
+   {
+      double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+      riskUSD = balance * (InpRiskPercent / 100.0);
+   }
+   else if(InpRiskMode == RISK_PERCENT_EQUITY)
+   {
+      double equity = AccountInfoDouble(ACCOUNT_EQUITY);
+      riskUSD = equity * (InpRiskPercent / 100.0);
+   }
+   else if(InpRiskMode == RISK_FIXED_USD)
+   {
+      riskUSD = InpFixedRiskUSD;
+   }
+
+   double slPoints = MathAbs(entryPrice - slPrice) / _Point;
+   if(slPoints <= 0.0) return SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+
+   double tickValue = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE);
+   double tickSize  = SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE);
+   double pointVal  = (tickSize > 0) ? (tickValue * (_Point / tickSize)) : tickValue;
+   if(pointVal <= 0.0) pointVal = 1.0;
+
+   double riskPerLot = slPoints * pointVal;
+   if(riskPerLot <= 0.0) return SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+
+   double calculatedLot = riskUSD / riskPerLot;
+
+   double minLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN);
+   double maxLot  = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX);
+   double lotStep = SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP);
+
+   calculatedLot = MathFloor(calculatedLot / lotStep) * lotStep;
+   if(calculatedLot < minLot) calculatedLot = minLot;
+   if(calculatedLot > maxLot) calculatedLot = maxLot;
+
+   return NormalizeDouble(calculatedLot, 2);
+}
+
+//+------------------------------------------------------------------+
+//| Gestor de Auto Break-Even al 50% del Recorrido al TP             |
+//+------------------------------------------------------------------+
+void ManageAutoBreakEven()
+{
+   int total = PositionsTotal();
+   for(int i = total - 1; i >= 0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket == 0) continue;
+
+      if(PositionGetInteger(POSITION_MAGIC) != InpMagicNumber || PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+
+      double sl = PositionGetDouble(POSITION_SL);
+      double tp = PositionGetDouble(POSITION_TP);
+      double openPrice = PositionGetDouble(POSITION_PRICE_OPEN);
+      ENUM_POSITION_TYPE posType = (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
+
+      if(tp <= 0) continue;
+
+      double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
+      double pipUnit = (_Digits == 3 || _Digits == 5) ? (point * 10) : point;
+      double offsetPrice = InpBEOffsetPips * pipUnit;
+
+      if(posType == POSITION_TYPE_BUY)
+      {
+         double tpDistance = tp - openPrice;
+         if(tpDistance <= 0) continue;
+
+         double triggerPrice = openPrice + (tpDistance * (InpBETriggerPercent / 100.0));
+         double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+
+         if(bid >= triggerPrice)
+         {
+            double newSL = NormalizeDouble(openPrice + offsetPrice, _Digits);
+            if(sl < newSL - 0.00001)
+            {
+               PrintFormat("🛡️ [AUTO BREAK-EVEN 50%%] Posición BUY #%d alcanzó el %.1f%% del TP. SL movido a Entrada: %.5f",
+                           ticket, InpBETriggerPercent, newSL);
+               m_trade.PositionModify(ticket, newSL, tp);
+            }
+         }
+      }
+      else if(posType == POSITION_TYPE_SELL)
+      {
+         double tpDistance = openPrice - tp;
+         if(tpDistance <= 0) continue;
+
+         double triggerPrice = openPrice - (tpDistance * (InpBETriggerPercent / 100.0));
+         double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+
+         if(ask <= triggerPrice)
+         {
+            double newSL = NormalizeDouble(openPrice - offsetPrice, _Digits);
+            if(sl > newSL + 0.00001 || sl <= 0)
+            {
+               PrintFormat("🛡️ [AUTO BREAK-EVEN 50%%] Posición SELL #%d alcanzó el %.1f%% del TP. SL movido a Entrada: %.5f",
+                           ticket, InpBETriggerPercent, newSL);
+               m_trade.PositionModify(ticket, newSL, tp);
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Filtro de Horarios / Killzones Institucionales                   |
+//+------------------------------------------------------------------+
+bool IsInKillzone()
+{
+   if(!InpUseSessionFilter) return true;
+
+   MqlDateTime dt;
+   TimeCurrent(dt);
+
+   bool isLondon = (dt.hour >= InpLondonStartHour && dt.hour < InpLondonEndHour);
+   bool isNY     = (dt.hour >= InpNYStartHour && dt.hour < InpNYEndHour);
+
+   return (isLondon || isNY);
+}
+
+//+------------------------------------------------------------------+
+//| Cierre Preventivo Viernes 21:30 CET                              |
+//+------------------------------------------------------------------+
+void CheckFridayCloseGuard()
+{
+   MqlDateTime dt;
+   TimeCurrent(dt);
+
+   if(dt.day_of_week == 5) // Viernes
+   {
+      if(dt.hour > InpFridayCloseHour || (dt.hour == InpFridayCloseHour && dt.min >= InpFridayCloseMin))
+      {
+         int total = PositionsTotal();
+         for(int i = total - 1; i >= 0; i--)
+         {
+            ulong ticket = PositionGetTicket(i);
+            if(ticket > 0 && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber && PositionGetString(POSITION_SYMBOL) == _Symbol)
+            {
+               Print("🔒 [FRIDAY CLOSE GUARD] Cierre preventivo de fin de semana para posición #", ticket);
+               m_trade.PositionClose(ticket);
+            }
+         }
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Contar Posiciones Activas del EA                                 |
+//+------------------------------------------------------------------+
+int GetActivePositionsCount()
+{
+   int count = 0;
+   int total = PositionsTotal();
+   for(int i = 0; i < total; i++)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket > 0 && PositionGetInteger(POSITION_MAGIC) == InpMagicNumber && PositionGetString(POSITION_SYMBOL) == _Symbol)
+         count++;
+   }
+   return count;
+}
+
+//+------------------------------------------------------------------+
+//| Panel Visual HUD en Gráfico                                      |
+//+------------------------------------------------------------------+
+void CreateHUD()
+{
+   string prefix = "ICT_HUD_";
+   ObjectsDeleteAll(0, prefix);
+
+   int x = 20, y = 30;
+   CreateLabel(prefix + "BG", " ", x, y, 260, 150, C'15,23,42', C'51,65,85');
+   CreateLabel(prefix + "TITLE", "⚡ ICT NWOG/NDOG RADAR", x + 12, y + 10, 0, 0, clrWhite, clrNONE, 10, true);
+   CreateLabel(prefix + "RR", StringFormat("R:R Dinámico: 1:%.2f", InpRiskRewardRatio), x + 12, y + 34, 0, 0, C'56,189,248', clrNONE, 9);
+   CreateLabel(prefix + "RISK", StringFormat("Riesgo: %.2f%% (%s)", InpRiskPercent, EnumToString(InpRiskMode)), x + 12, y + 54, 0, 0, C'245,158,11', clrNONE, 9);
+   CreateLabel(prefix + "GAPS", StringFormat("Gaps Monitoreados: %d", ArraySize(m_gaps)), x + 12, y + 74, 0, 0, clrLightGray, clrNONE, 9);
+   CreateLabel(prefix + "SESSION", "Sesión: Evaluando...", x + 12, y + 94, 0, 0, C'52,211,153', clrNONE, 9);
+   CreateLabel(prefix + "STATUS", "Estado: Escaneando CE 50%...", x + 12, y + 114, 0, 0, clrGold, clrNONE, 9);
+}
+
+void UpdateHUD()
+{
+   string prefix = "ICT_HUD_";
+   bool inKillzone = IsInKillzone();
+   string sessStr = inKillzone ? "🟢 KILLZONE ACTIVA" : "⚪ FUERA DE KILLZONE";
+   color sessColor = inKillzone ? C'52,211,153' : C'148,163,184';
+
+   ObjectSetString(0, prefix + "SESSION", OBJPROP_TEXT, "Sesión: " + sessStr);
+   ObjectSetInteger(0, prefix + "SESSION", OBJPROP_COLOR, sessColor);
+
+   ObjectSetString(0, prefix + "GAPS", OBJPROP_TEXT, StringFormat("Gaps Monitoreados: %d activos", ArraySize(m_gaps)));
+
+   int activePos = GetActivePositionsCount();
+   string statusStr = activePos > 0 ? StringFormat("⚡ %d OPERACIÓN ACTIVA (En Curso)", activePos) : "🎯 ESCANEANDO RECHAZO CE 50%";
+   color statusColor = activePos > 0 ? C'56,189,248' : clrGold;
+
+   ObjectSetString(0, prefix + "STATUS", OBJPROP_TEXT, "Estado: " + statusStr);
+   ObjectSetInteger(0, prefix + "STATUS", OBJPROP_COLOR, statusColor);
+}
+
+void DestroyHUD()
+{
+   ObjectsDeleteAll(0, "ICT_HUD_");
+}
+
+void CreateLabel(string name, string text, int x, int y, int w, int h, color col, color bgCol, int fontSize = 9, bool isBold = false)
+{
+   if(w > 0 && h > 0)
+   {
+      ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+      ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+      ObjectSetInteger(0, name, OBJPROP_XSIZE, w);
+      ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+      ObjectSetInteger(0, name, OBJPROP_BGCOLOR, col);
+      ObjectSetInteger(0, name, OBJPROP_BORDER_COLOR, bgCol);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+   }
+   else
+   {
+      ObjectCreate(0, name, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+      ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+      ObjectSetString(0, name, OBJPROP_TEXT, text);
+      ObjectSetString(0, name, OBJPROP_FONT, "Segoe UI");
+      ObjectSetInteger(0, name, OBJPROP_FONTSIZE, fontSize);
+      ObjectSetInteger(0, name, OBJPROP_COLOR, col);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+   }
+}

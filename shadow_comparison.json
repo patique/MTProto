@@ -1,23 +1,23 @@
 {
   "summary": {
-    "totalTrades": 378,
+    "totalTrades": 654,
     "option1_morning": {
       "name": "1. De la Mañana (100% TP2)",
-      "profitUSD": -2153.669999999999,
-      "pips": -21536.8,
-      "wins": 189
+      "profitUSD": -1477.3200000000045,
+      "pips": -14773.300000000025,
+      "wins": 295
     },
     "option2_live5050": {
       "name": "2. En Vivo Real (50/50)",
-      "profitUSD": -5258.65,
-      "pips": -52586.5,
-      "wins": 189
+      "profitUSD": -9907.519999999982,
+      "pips": -99075.19999999991,
+      "wins": 295
     },
     "option3_new7030": {
       "name": "3. Nueva Propuesta (70/30)",
-      "profitUSD": -7383.249999999998,
-      "pips": -73832.39999999997,
-      "wins": 189
+      "profitUSD": -14424.66999999999,
+      "pips": -144246.60000000003,
+      "wins": 295
     }
   },
   "history": [
@@ -8336,7 +8336,6079 @@
         "pips": 1606,
         "isWin": true
       }
+    },
+    {
+      "position": 561081106,
+      "channel": "-1001936020052",
+      "symbol": "XAUUSD",
+      "timestamp": 1791778412802,
+      "dateStr": "12/10/2026, 6:13:32",
+      "option1_morning": {
+        "profitUSD": -764.73,
+        "pips": -7647.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -764.73,
+        "pips": -7647.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -764.73,
+        "pips": -7647.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146558417,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791825272209,
+      "dateStr": "12/10/2026, 19:14:32",
+      "option1_morning": {
+        "profitUSD": -2.96,
+        "pips": -29.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.96,
+        "pips": -29.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.96,
+        "pips": -29.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146560789,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791826281469,
+      "dateStr": "12/10/2026, 19:31:21",
+      "option1_morning": {
+        "profitUSD": 7.88,
+        "pips": 78.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 5.91,
+        "pips": 59.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 4.33,
+        "pips": 43.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146561379,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791826282221,
+      "dateStr": "12/10/2026, 19:31:22",
+      "option1_morning": {
+        "profitUSD": 4.64,
+        "pips": 46.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.48,
+        "pips": 34.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.55,
+        "pips": 25.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 561699229,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD",
+      "timestamp": 1791829734534,
+      "dateStr": "12/10/2026, 20:28:54",
+      "option1_morning": {
+        "profitUSD": 1334.77,
+        "pips": 13347.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1056.69,
+        "pips": 10566.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 789.74,
+        "pips": 7897.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146563559,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "GBPUSD-STD",
+      "timestamp": 1791830747348,
+      "dateStr": "12/10/2026, 20:45:47",
+      "option1_morning": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146563738,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791831099721,
+      "dateStr": "12/10/2026, 20:51:39",
+      "option1_morning": {
+        "profitUSD": 0.13,
+        "pips": 1.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.1,
+        "pips": 1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.07,
+        "pips": 0.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146565809,
+      "channel": "[sl 4167.01]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791831099734,
+      "dateStr": "12/10/2026, 20:51:39",
+      "option1_morning": {
+        "profitUSD": -0.57,
+        "pips": -5.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.57,
+        "pips": -5.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.57,
+        "pips": -5.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146585893,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791832059578,
+      "dateStr": "12/10/2026, 21:07:39",
+      "option1_morning": {
+        "profitUSD": -9.25,
+        "pips": -92.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -9.25,
+        "pips": -92.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -9.25,
+        "pips": -92.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146586606,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791832060434,
+      "dateStr": "12/10/2026, 21:07:40",
+      "option1_morning": {
+        "profitUSD": -9.11,
+        "pips": -91.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -9.11,
+        "pips": -91.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -9.11,
+        "pips": -91.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 561698951,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "GBPUSD",
+      "timestamp": 1791834304318,
+      "dateStr": "12/10/2026, 21:45:04",
+      "option1_morning": {
+        "profitUSD": -11.96,
+        "pips": -119.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -11.96,
+        "pips": -119.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -11.96,
+        "pips": -119.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146629469,
+      "channel": "[tp 4174.11]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791847342156,
+      "dateStr": "13/10/2026, 1:22:22",
+      "option1_morning": {
+        "profitUSD": 16.73,
+        "pips": 167.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 12.55,
+        "pips": 125.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 9.2,
+        "pips": 92,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146715865,
+      "channel": "-1002493671900",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791868656129,
+      "dateStr": "13/10/2026, 7:17:36",
+      "option1_morning": {
+        "profitUSD": -9.08,
+        "pips": -90.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -9.08,
+        "pips": -90.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -9.08,
+        "pips": -90.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 561967176,
+      "channel": "-1002493671900",
+      "symbol": "XAUUSD",
+      "timestamp": 1791868656143,
+      "dateStr": "13/10/2026, 7:17:36",
+      "option1_morning": {
+        "profitUSD": -774.78,
+        "pips": -7747.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -774.78,
+        "pips": -7747.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -774.78,
+        "pips": -7747.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146798251,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791880673595,
+      "dateStr": "13/10/2026, 10:37:53",
+      "option1_morning": {
+        "profitUSD": -11.55,
+        "pips": -115.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -11.55,
+        "pips": -115.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -11.55,
+        "pips": -115.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146802080,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791881255716,
+      "dateStr": "13/10/2026, 10:47:35",
+      "option1_morning": {
+        "profitUSD": -2.54,
+        "pips": -25.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.54,
+        "pips": -25.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.54,
+        "pips": -25.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146802088,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791881257093,
+      "dateStr": "13/10/2026, 10:47:37",
+      "option1_morning": {
+        "profitUSD": -1.68,
+        "pips": -16.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.68,
+        "pips": -16.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.68,
+        "pips": -16.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146806274,
+      "channel": "[sl 4185.59]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791881483441,
+      "dateStr": "13/10/2026, 10:51:23",
+      "option1_morning": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146806263,
+      "channel": "[sl 4185.16]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791881596342,
+      "dateStr": "13/10/2026, 10:53:16",
+      "option1_morning": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.52,
+        "pips": -125.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146808724,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791882664504,
+      "dateStr": "13/10/2026, 11:11:04",
+      "option1_morning": {
+        "profitUSD": 6.59,
+        "pips": 65.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 4.94,
+        "pips": 49.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 3.62,
+        "pips": 36.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146815943,
+      "channel": "[sl 4187.07]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791885091385,
+      "dateStr": "13/10/2026, 11:51:31",
+      "option1_morning": {
+        "profitUSD": 1.09,
+        "pips": 10.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.82,
+        "pips": 8.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.6,
+        "pips": 6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146815684,
+      "channel": "[sl 4187.18]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791885094008,
+      "dateStr": "13/10/2026, 11:51:34",
+      "option1_morning": {
+        "profitUSD": 0.57,
+        "pips": 5.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.43,
+        "pips": 4.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.32,
+        "pips": 3.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146835662,
+      "channel": "[sl 4188.01]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791886115300,
+      "dateStr": "13/10/2026, 12:08:35",
+      "option1_morning": {
+        "profitUSD": -7.55,
+        "pips": -75.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -7.55,
+        "pips": -75.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -7.55,
+        "pips": -75.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146835620,
+      "channel": "[sl 4188.06]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791886115318,
+      "dateStr": "13/10/2026, 12:08:35",
+      "option1_morning": {
+        "profitUSD": -8.05,
+        "pips": -80.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -8.05,
+        "pips": -80.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -8.05,
+        "pips": -80.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146842314,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791889342122,
+      "dateStr": "13/10/2026, 13:02:22",
+      "option1_morning": {
+        "profitUSD": 29.65,
+        "pips": 296.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 22.24,
+        "pips": 222.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 16.31,
+        "pips": 163.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146842417,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791889343112,
+      "dateStr": "13/10/2026, 13:02:23",
+      "option1_morning": {
+        "profitUSD": 21.36,
+        "pips": 213.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 16.02,
+        "pips": 160.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 11.75,
+        "pips": 117.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146862551,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791890101267,
+      "dateStr": "13/10/2026, 13:15:01",
+      "option1_morning": {
+        "profitUSD": 4.6,
+        "pips": 46,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.69,
+        "pips": 26.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.71,
+        "pips": 17.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146843881,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "USDCAD-STD",
+      "timestamp": 1791891970989,
+      "dateStr": "13/10/2026, 13:46:10",
+      "option1_morning": {
+        "profitUSD": -0.8,
+        "pips": -8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.8,
+        "pips": -8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.8,
+        "pips": -8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562173373,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "USDCAD",
+      "timestamp": 1791892013289,
+      "dateStr": "13/10/2026, 13:46:53",
+      "option1_morning": {
+        "profitUSD": -279.02,
+        "pips": -2790.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -279.02,
+        "pips": -2790.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -279.02,
+        "pips": -2790.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146890625,
+      "channel": "[sl 4187.63]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791893108020,
+      "dateStr": "13/10/2026, 14:05:08",
+      "option1_morning": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562264227,
+      "channel": "-1002174340947",
+      "symbol": "XAUUSD",
+      "timestamp": 1791894735526,
+      "dateStr": "13/10/2026, 14:32:15",
+      "option1_morning": {
+        "profitUSD": 39.93,
+        "pips": 399.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 20.14,
+        "pips": 201.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 16.31,
+        "pips": 163.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146906286,
+      "channel": "-1002174340947",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791894736955,
+      "dateStr": "13/10/2026, 14:32:16",
+      "option1_morning": {
+        "profitUSD": -0.29,
+        "pips": -2.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.29,
+        "pips": -2.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.29,
+        "pips": -2.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562200271,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD",
+      "timestamp": 1791895824364,
+      "dateStr": "13/10/2026, 14:50:24",
+      "option1_morning": {
+        "profitUSD": 44.64,
+        "pips": 446.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 26.1,
+        "pips": 261,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 16.64,
+        "pips": 166.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 146871831,
+      "channel": "-1002912763769",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791896770066,
+      "dateStr": "13/10/2026, 15:06:10",
+      "option1_morning": {
+        "profitUSD": 17.21,
+        "pips": 172.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 10.6,
+        "pips": 106,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 7.73,
+        "pips": 77.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 562331094,
+      "channel": "-1002174340947",
+      "symbol": "XAUUSD",
+      "timestamp": 1791898188773,
+      "dateStr": "13/10/2026, 15:29:48",
+      "option1_morning": {
+        "profitUSD": -753.92,
+        "pips": -7539.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -753.92,
+        "pips": -7539.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -753.92,
+        "pips": -7539.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146952273,
+      "channel": "-1002174340947",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791898189087,
+      "dateStr": "13/10/2026, 15:29:49",
+      "option1_morning": {
+        "profitUSD": -10.26,
+        "pips": -102.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -10.26,
+        "pips": -102.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -10.26,
+        "pips": -102.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 146962454,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791899862888,
+      "dateStr": "13/10/2026, 15:57:42",
+      "option1_morning": {
+        "profitUSD": -13.56,
+        "pips": -135.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -13.56,
+        "pips": -135.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -13.56,
+        "pips": -135.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147013898,
+      "channel": "[sl 4166.32]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791901006250,
+      "dateStr": "13/10/2026, 16:16:46",
+      "option1_morning": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.51,
+        "pips": -125.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147021255,
+      "channel": "[sl 4168.80]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791901819384,
+      "dateStr": "13/10/2026, 16:30:19",
+      "option1_morning": {
+        "profitUSD": -13.44,
+        "pips": -134.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -13.44,
+        "pips": -134.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -13.44,
+        "pips": -134.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147034669,
+      "channel": "[sl 4167.64]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791902698574,
+      "dateStr": "13/10/2026, 16:44:58",
+      "option1_morning": {
+        "profitUSD": -0.72,
+        "pips": -7.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.72,
+        "pips": -7.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.72,
+        "pips": -7.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147002519,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791902698605,
+      "dateStr": "13/10/2026, 16:44:58",
+      "option1_morning": {
+        "profitUSD": 0.12,
+        "pips": 1.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.07,
+        "pips": 0.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.04,
+        "pips": 0.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 562466332,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "EURUSD",
+      "timestamp": 1791902799821,
+      "dateStr": "13/10/2026, 16:46:39",
+      "option1_morning": {
+        "profitUSD": 43.41,
+        "pips": 434.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 32.56,
+        "pips": 325.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 23.88,
+        "pips": 238.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147034652,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "EURUSD-STD",
+      "timestamp": 1791902825470,
+      "dateStr": "13/10/2026, 16:47:05",
+      "option1_morning": {
+        "profitUSD": 0.12,
+        "pips": 1.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.09,
+        "pips": 0.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.07,
+        "pips": 0.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147039435,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791903408147,
+      "dateStr": "13/10/2026, 16:56:48",
+      "option1_morning": {
+        "profitUSD": 2.89,
+        "pips": 28.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.71,
+        "pips": 17.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147041042,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791903479921,
+      "dateStr": "13/10/2026, 16:57:59",
+      "option1_morning": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147047112,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791904863676,
+      "dateStr": "13/10/2026, 17:21:03",
+      "option1_morning": {
+        "profitUSD": 19.29,
+        "pips": 192.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.47,
+        "pips": 144.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.61,
+        "pips": 106.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147060360,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791905340611,
+      "dateStr": "13/10/2026, 17:29:00",
+      "option1_morning": {
+        "profitUSD": 6.83,
+        "pips": 68.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 5.41,
+        "pips": 54.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 4.04,
+        "pips": 40.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147065675,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791905551595,
+      "dateStr": "13/10/2026, 17:32:31",
+      "option1_morning": {
+        "profitUSD": 3.01,
+        "pips": 30.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.26,
+        "pips": 22.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.66,
+        "pips": 16.6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147066109,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791905552576,
+      "dateStr": "13/10/2026, 17:32:32",
+      "option1_morning": {
+        "profitUSD": 1.81,
+        "pips": 18.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.36,
+        "pips": 13.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1,
+        "pips": 10,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147067128,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791905557154,
+      "dateStr": "13/10/2026, 17:32:37",
+      "option1_morning": {
+        "profitUSD": -0.62,
+        "pips": -6.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.62,
+        "pips": -6.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.62,
+        "pips": -6.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147067147,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791905557883,
+      "dateStr": "13/10/2026, 17:32:37",
+      "option1_morning": {
+        "profitUSD": -0.79,
+        "pips": -7.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.79,
+        "pips": -7.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.79,
+        "pips": -7.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147077227,
+      "channel": "[sl 4156.75]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791907464557,
+      "dateStr": "13/10/2026, 18:04:24",
+      "option1_morning": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147074703,
+      "channel": "[sl 4155.70]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791907512879,
+      "dateStr": "13/10/2026, 18:05:12",
+      "option1_morning": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562424449,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1791910389349,
+      "dateStr": "13/10/2026, 18:53:09",
+      "option1_morning": {
+        "profitUSD": -745.74,
+        "pips": -7457.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -745.74,
+        "pips": -7457.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -745.74,
+        "pips": -7457.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147102198,
+      "channel": "[sl 4153.32]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791910713924,
+      "dateStr": "13/10/2026, 18:58:33",
+      "option1_morning": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147103441,
+      "channel": "[sl 4151.61]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791910828870,
+      "dateStr": "13/10/2026, 19:00:28",
+      "option1_morning": {
+        "profitUSD": -3.64,
+        "pips": -36.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.64,
+        "pips": -36.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.64,
+        "pips": -36.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147047428,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791910829182,
+      "dateStr": "13/10/2026, 19:00:29",
+      "option1_morning": {
+        "profitUSD": -16.98,
+        "pips": -169.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -16.98,
+        "pips": -169.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -16.98,
+        "pips": -169.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562487043,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1791910829317,
+      "dateStr": "13/10/2026, 19:00:29",
+      "option1_morning": {
+        "profitUSD": -725.04,
+        "pips": -7250.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -725.04,
+        "pips": -7250.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -725.04,
+        "pips": -7250.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147115363,
+      "channel": "[sl 4150.59]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791913794435,
+      "dateStr": "13/10/2026, 19:49:54",
+      "option1_morning": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.13,
+        "pips": -31.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147267906,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791957386770,
+      "dateStr": "14/10/2026, 7:56:26",
+      "option1_morning": {
+        "profitUSD": -11.04,
+        "pips": -110.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -11.04,
+        "pips": -110.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -11.04,
+        "pips": -110.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562853028,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD",
+      "timestamp": 1791957489088,
+      "dateStr": "14/10/2026, 7:58:09",
+      "option1_morning": {
+        "profitUSD": -719.95,
+        "pips": -7199.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -719.95,
+        "pips": -7199.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -719.95,
+        "pips": -7199.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147293324,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791957492283,
+      "dateStr": "14/10/2026, 7:58:12",
+      "option1_morning": {
+        "profitUSD": -7.89,
+        "pips": -78.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -7.89,
+        "pips": -78.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -7.89,
+        "pips": -78.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147081791,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791957496725,
+      "dateStr": "14/10/2026, 7:58:16",
+      "option1_morning": {
+        "profitUSD": -8.39,
+        "pips": -83.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -8.39,
+        "pips": -83.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -8.39,
+        "pips": -83.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147233834,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791957585223,
+      "dateStr": "14/10/2026, 7:59:45",
+      "option1_morning": {
+        "profitUSD": -5.76,
+        "pips": -57.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.76,
+        "pips": -57.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.76,
+        "pips": -57.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147339733,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791961756405,
+      "dateStr": "14/10/2026, 9:09:16",
+      "option1_morning": {
+        "profitUSD": -2.68,
+        "pips": -26.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.68,
+        "pips": -26.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.68,
+        "pips": -26.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147339890,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791961756986,
+      "dateStr": "14/10/2026, 9:09:16",
+      "option1_morning": {
+        "profitUSD": -4.57,
+        "pips": -45.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -4.57,
+        "pips": -45.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -4.57,
+        "pips": -45.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147343816,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791962711660,
+      "dateStr": "14/10/2026, 9:25:11",
+      "option1_morning": {
+        "profitUSD": 11.85,
+        "pips": 118.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 8.89,
+        "pips": 88.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 6.52,
+        "pips": 65.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147344375,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791962712913,
+      "dateStr": "14/10/2026, 9:25:12",
+      "option1_morning": {
+        "profitUSD": 6,
+        "pips": 60,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 4.5,
+        "pips": 45,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 3.3,
+        "pips": 33,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147348991,
+      "channel": "[sl 4145.64]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791964012049,
+      "dateStr": "14/10/2026, 9:46:52",
+      "option1_morning": {
+        "profitUSD": 0.15,
+        "pips": 1.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.11,
+        "pips": 1.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.08,
+        "pips": 0.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147365902,
+      "channel": "[sl 4148.62]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791966728750,
+      "dateStr": "14/10/2026, 10:32:08",
+      "option1_morning": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147364174,
+      "channel": "[sl 4148.22]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791966869189,
+      "dateStr": "14/10/2026, 10:34:29",
+      "option1_morning": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.5,
+        "pips": -125,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147347264,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791967004115,
+      "dateStr": "14/10/2026, 10:36:44",
+      "option1_morning": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.43,
+        "pips": -4.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147347493,
+      "channel": "-1001936020052",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791967004760,
+      "dateStr": "14/10/2026, 10:36:44",
+      "option1_morning": {
+        "profitUSD": -0.04,
+        "pips": -0.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.04,
+        "pips": -0.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.04,
+        "pips": -0.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147349472,
+      "channel": "-1002493671900",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791967005338,
+      "dateStr": "14/10/2026, 10:36:45",
+      "option1_morning": {
+        "profitUSD": -0.44,
+        "pips": -4.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.44,
+        "pips": -4.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.44,
+        "pips": -4.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147352466,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791967006146,
+      "dateStr": "14/10/2026, 10:36:46",
+      "option1_morning": {
+        "profitUSD": -2.3,
+        "pips": -23,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.3,
+        "pips": -23,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.3,
+        "pips": -23,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147370189,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "XAGUSD-STD",
+      "timestamp": 1791968351456,
+      "dateStr": "14/10/2026, 10:59:11",
+      "option1_morning": {
+        "profitUSD": 15.6,
+        "pips": 156,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 11.7,
+        "pips": 117,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 8.58,
+        "pips": 85.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147395561,
+      "channel": "[sl 4142.88]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791968498185,
+      "dateStr": "14/10/2026, 11:01:38",
+      "option1_morning": {
+        "profitUSD": 1.48,
+        "pips": 14.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.11,
+        "pips": 11.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.81,
+        "pips": 8.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147396462,
+      "channel": "[sl 4142.88]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791968498206,
+      "dateStr": "14/10/2026, 11:01:38",
+      "option1_morning": {
+        "profitUSD": 0.28,
+        "pips": 2.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.21,
+        "pips": 2.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.15,
+        "pips": 1.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147398243,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791969781201,
+      "dateStr": "14/10/2026, 11:23:01",
+      "option1_morning": {
+        "profitUSD": 2.39,
+        "pips": 23.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.79,
+        "pips": 17.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.31,
+        "pips": 13.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147398277,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791969782296,
+      "dateStr": "14/10/2026, 11:23:02",
+      "option1_morning": {
+        "profitUSD": 0.52,
+        "pips": 5.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.39,
+        "pips": 3.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.29,
+        "pips": 2.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147407715,
+      "channel": "[sl 4142.87]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791971961809,
+      "dateStr": "14/10/2026, 11:59:21",
+      "option1_morning": {
+        "profitUSD": 0.24,
+        "pips": 2.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.18,
+        "pips": 1.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.13,
+        "pips": 1.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147413305,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791971965142,
+      "dateStr": "14/10/2026, 11:59:25",
+      "option1_morning": {
+        "profitUSD": -3,
+        "pips": -30,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3,
+        "pips": -30,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3,
+        "pips": -30,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147417055,
+      "channel": "[sl 4141.23]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791973605319,
+      "dateStr": "14/10/2026, 12:26:45",
+      "option1_morning": {
+        "profitUSD": 0.24,
+        "pips": 2.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.18,
+        "pips": 1.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.13,
+        "pips": 1.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147418797,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791973615511,
+      "dateStr": "14/10/2026, 12:26:55",
+      "option1_morning": {
+        "profitUSD": -6.54,
+        "pips": -65.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.54,
+        "pips": -65.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.54,
+        "pips": -65.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 562798589,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD",
+      "timestamp": 1791973644406,
+      "dateStr": "14/10/2026, 12:27:24",
+      "option1_morning": {
+        "profitUSD": -730.56,
+        "pips": -7305.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -730.56,
+        "pips": -7305.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -730.56,
+        "pips": -7305.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147428171,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791973832293,
+      "dateStr": "14/10/2026, 12:30:32",
+      "option1_morning": {
+        "profitUSD": -1.57,
+        "pips": -15.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.57,
+        "pips": -15.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.57,
+        "pips": -15.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147430250,
+      "channel": "[sl 4142.47]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791974566517,
+      "dateStr": "14/10/2026, 12:42:46",
+      "option1_morning": {
+        "profitUSD": 0.33,
+        "pips": 3.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.25,
+        "pips": 2.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.18,
+        "pips": 1.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147432799,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791975092084,
+      "dateStr": "14/10/2026, 12:51:32",
+      "option1_morning": {
+        "profitUSD": -3.07,
+        "pips": -30.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.07,
+        "pips": -30.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.07,
+        "pips": -30.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147435554,
+      "channel": "[sl 4142.47]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791976655851,
+      "dateStr": "14/10/2026, 13:17:35",
+      "option1_morning": {
+        "profitUSD": 0.67,
+        "pips": 6.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.5,
+        "pips": 5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.37,
+        "pips": 3.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147451319,
+      "channel": "[sl 4142.02]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791976957694,
+      "dateStr": "14/10/2026, 13:22:37",
+      "option1_morning": {
+        "profitUSD": -0.46,
+        "pips": -4.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.46,
+        "pips": -4.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.46,
+        "pips": -4.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147453699,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791977353513,
+      "dateStr": "14/10/2026, 13:29:13",
+      "option1_morning": {
+        "profitUSD": 2.81,
+        "pips": 28.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.11,
+        "pips": 21.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.55,
+        "pips": 15.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147460187,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791978769065,
+      "dateStr": "14/10/2026, 13:52:49",
+      "option1_morning": {
+        "profitUSD": -5.43,
+        "pips": -54.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.43,
+        "pips": -54.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.43,
+        "pips": -54.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147461927,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791980441815,
+      "dateStr": "14/10/2026, 14:20:41",
+      "option1_morning": {
+        "profitUSD": 43.69,
+        "pips": 436.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 32.77,
+        "pips": 327.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 24.03,
+        "pips": 240.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147465159,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791980442778,
+      "dateStr": "14/10/2026, 14:20:42",
+      "option1_morning": {
+        "profitUSD": 14.76,
+        "pips": 147.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 7.46,
+        "pips": 74.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 5.93,
+        "pips": 59.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147465159,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791980442792,
+      "dateStr": "14/10/2026, 14:20:42",
+      "option1_morning": {
+        "profitUSD": 14.76,
+        "pips": 147.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 7.46,
+        "pips": 74.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 5.93,
+        "pips": 59.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147461442,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791980443896,
+      "dateStr": "14/10/2026, 14:20:43",
+      "option1_morning": {
+        "profitUSD": 16.8,
+        "pips": 168,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 9.15,
+        "pips": 91.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 6.2,
+        "pips": 62,
+        "isWin": true
+      }
+    },
+    {
+      "position": 562971088,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "XAUUSD",
+      "timestamp": 1791981003600,
+      "dateStr": "14/10/2026, 14:30:03",
+      "option1_morning": {
+        "profitUSD": -1147.7,
+        "pips": -11477,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1147.7,
+        "pips": -11477,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1147.7,
+        "pips": -11477,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147342522,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "GBPUSD-STD",
+      "timestamp": 1791982763936,
+      "dateStr": "14/10/2026, 14:59:23",
+      "option1_morning": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.32,
+        "pips": -53.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147652245,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791985682338,
+      "dateStr": "14/10/2026, 15:48:02",
+      "option1_morning": {
+        "profitUSD": 7.19,
+        "pips": 71.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 5.69,
+        "pips": 56.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 4.25,
+        "pips": 42.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147560818,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791985914262,
+      "dateStr": "14/10/2026, 15:51:54",
+      "option1_morning": {
+        "profitUSD": 1.72,
+        "pips": 17.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.95,
+        "pips": 9.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.64,
+        "pips": 6.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147657206,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791986039285,
+      "dateStr": "14/10/2026, 15:53:59",
+      "option1_morning": {
+        "profitUSD": 7.72,
+        "pips": 77.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 5.79,
+        "pips": 57.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 4.25,
+        "pips": 42.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147641044,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791992505873,
+      "dateStr": "14/10/2026, 17:41:45",
+      "option1_morning": {
+        "profitUSD": 40.12,
+        "pips": 401.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 22.21,
+        "pips": 222.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 14.89,
+        "pips": 148.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147745720,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791992538190,
+      "dateStr": "14/10/2026, 17:42:18",
+      "option1_morning": {
+        "profitUSD": 43.27,
+        "pips": 432.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 32.45,
+        "pips": 324.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 23.8,
+        "pips": 238,
+        "isWin": true
+      }
+    },
+    {
+      "position": 563293762,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1791993715111,
+      "dateStr": "14/10/2026, 18:01:55",
+      "option1_morning": {
+        "profitUSD": -700.92,
+        "pips": -7009.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -700.92,
+        "pips": -7009.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -700.92,
+        "pips": -7009.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147805462,
+      "channel": "[sl 4083.32]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791998420958,
+      "dateStr": "14/10/2026, 19:20:20",
+      "option1_morning": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147813673,
+      "channel": "[sl 4089.06]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1791999026875,
+      "dateStr": "14/10/2026, 19:30:26",
+      "option1_morning": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.57,
+        "pips": -125.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147429647,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "GBPJPY-STD",
+      "timestamp": 1792001058893,
+      "dateStr": "14/10/2026, 20:04:18",
+      "option1_morning": {
+        "profitUSD": -8.53,
+        "pips": -85.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -8.53,
+        "pips": -85.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -8.53,
+        "pips": -85.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 563102063,
+      "channel": "PROPRIETARY_BPR_INSTITUTIONAL_",
+      "symbol": "GBPJPY",
+      "timestamp": 1792001062676,
+      "dateStr": "14/10/2026, 20:04:22",
+      "option1_morning": {
+        "profitUSD": -438.51,
+        "pips": -4385.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -438.51,
+        "pips": -4385.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -438.51,
+        "pips": -4385.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147817384,
+      "channel": "[sl 4089.61]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792001607172,
+      "dateStr": "14/10/2026, 20:13:27",
+      "option1_morning": {
+        "profitUSD": 1.39,
+        "pips": 13.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.04,
+        "pips": 10.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.76,
+        "pips": 7.6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 147840505,
+      "channel": "[sl 4094.54]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792002486068,
+      "dateStr": "14/10/2026, 20:28:06",
+      "option1_morning": {
+        "profitUSD": -12.56,
+        "pips": -125.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.56,
+        "pips": -125.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.56,
+        "pips": -125.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147860579,
+      "channel": "[sl 4098.56]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792005300102,
+      "dateStr": "14/10/2026, 21:15:00",
+      "option1_morning": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147847854,
+      "channel": "[sl 4102.65]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792005414145,
+      "dateStr": "14/10/2026, 21:16:54",
+      "option1_morning": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.55,
+        "pips": -125.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147871858,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792009158304,
+      "dateStr": "14/10/2026, 22:19:18",
+      "option1_morning": {
+        "profitUSD": 21.71,
+        "pips": 217.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 16.28,
+        "pips": 162.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 11.94,
+        "pips": 119.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148005634,
+      "channel": "-1002493671900",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792043838214,
+      "dateStr": "15/10/2026, 7:57:18",
+      "option1_morning": {
+        "profitUSD": -13.2,
+        "pips": -132,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -13.2,
+        "pips": -132,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -13.2,
+        "pips": -132,
+        "isWin": false
+      }
+    },
+    {
+      "position": 563914349,
+      "channel": "-1002493671900",
+      "symbol": "XAUUSD",
+      "timestamp": 1792043838575,
+      "dateStr": "15/10/2026, 7:57:18",
+      "option1_morning": {
+        "profitUSD": -714.4,
+        "pips": -7144,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -714.4,
+        "pips": -7144,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -714.4,
+        "pips": -7144,
+        "isWin": false
+      }
+    },
+    {
+      "position": 563895725,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD",
+      "timestamp": 1792044492550,
+      "dateStr": "15/10/2026, 8:08:12",
+      "option1_morning": {
+        "profitUSD": -693.25,
+        "pips": -6932.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -693.25,
+        "pips": -6932.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -693.25,
+        "pips": -6932.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 147995556,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792044494482,
+      "dateStr": "15/10/2026, 8:08:14",
+      "option1_morning": {
+        "profitUSD": -10.35,
+        "pips": -103.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -10.35,
+        "pips": -103.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -10.35,
+        "pips": -103.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148014320,
+      "channel": "closePosition",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792045420503,
+      "dateStr": "15/10/2026, 8:23:40",
+      "option1_morning": {
+        "profitUSD": -8.43,
+        "pips": -84.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -8.43,
+        "pips": -84.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -8.43,
+        "pips": -84.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148012398,
+      "channel": "closePosition",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792045426192,
+      "dateStr": "15/10/2026, 8:23:46",
+      "option1_morning": {
+        "profitUSD": -9.18,
+        "pips": -91.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -9.18,
+        "pips": -91.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -9.18,
+        "pips": -91.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148046969,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792047615057,
+      "dateStr": "15/10/2026, 9:00:15",
+      "option1_morning": {
+        "profitUSD": 0.39,
+        "pips": 3.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.29,
+        "pips": 2.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.21,
+        "pips": 2.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148047031,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792047617642,
+      "dateStr": "15/10/2026, 9:00:17",
+      "option1_morning": {
+        "profitUSD": 0.28,
+        "pips": 2.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.21,
+        "pips": 2.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.15,
+        "pips": 1.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148066865,
+      "channel": "[sl 4143.72]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792049057711,
+      "dateStr": "15/10/2026, 9:24:17",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148061188,
+      "channel": "[sl 4144.77]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792049169752,
+      "dateStr": "15/10/2026, 9:26:09",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148076908,
+      "channel": "[sl 4145.96]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792051178825,
+      "dateStr": "15/10/2026, 9:59:38",
+      "option1_morning": {
+        "profitUSD": -7.1,
+        "pips": -71,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -7.1,
+        "pips": -71,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -7.1,
+        "pips": -71,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148006204,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792051280224,
+      "dateStr": "15/10/2026, 10:01:20",
+      "option1_morning": {
+        "profitUSD": 5.82,
+        "pips": 58.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.37,
+        "pips": 33.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.25,
+        "pips": 22.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148015751,
+      "channel": "-1001823957090",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792051281324,
+      "dateStr": "15/10/2026, 10:01:21",
+      "option1_morning": {
+        "profitUSD": -1.82,
+        "pips": -18.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.82,
+        "pips": -18.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.82,
+        "pips": -18.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148070932,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792051284906,
+      "dateStr": "15/10/2026, 10:01:24",
+      "option1_morning": {
+        "profitUSD": -5.48,
+        "pips": -54.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.48,
+        "pips": -54.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.48,
+        "pips": -54.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148081708,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792052786521,
+      "dateStr": "15/10/2026, 10:26:26",
+      "option1_morning": {
+        "profitUSD": 52.16,
+        "pips": 521.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 39.12,
+        "pips": 391.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 28.69,
+        "pips": 286.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148085268,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792052787614,
+      "dateStr": "15/10/2026, 10:26:27",
+      "option1_morning": {
+        "profitUSD": 39.09,
+        "pips": 390.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 29.32,
+        "pips": 293.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 21.5,
+        "pips": 215,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148103181,
+      "channel": "[sl 4154.86]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792054255122,
+      "dateStr": "15/10/2026, 10:50:55",
+      "option1_morning": {
+        "profitUSD": 2.19,
+        "pips": 21.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.64,
+        "pips": 16.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.2,
+        "pips": 12,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148106587,
+      "channel": "[sl 4154.86]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792054255173,
+      "dateStr": "15/10/2026, 10:50:55",
+      "option1_morning": {
+        "profitUSD": 0.09,
+        "pips": 0.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.07,
+        "pips": 0.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.05,
+        "pips": 0.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148125660,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792055643019,
+      "dateStr": "15/10/2026, 11:14:03",
+      "option1_morning": {
+        "profitUSD": -8.56,
+        "pips": -85.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -8.56,
+        "pips": -85.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -8.56,
+        "pips": -85.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148125678,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792055643727,
+      "dateStr": "15/10/2026, 11:14:03",
+      "option1_morning": {
+        "profitUSD": -7.81,
+        "pips": -78.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -7.81,
+        "pips": -78.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -7.81,
+        "pips": -78.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148127829,
+      "channel": "[sl 4155.46]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792057633771,
+      "dateStr": "15/10/2026, 11:47:13",
+      "option1_morning": {
+        "profitUSD": -12.48,
+        "pips": -124.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.48,
+        "pips": -124.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.48,
+        "pips": -124.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148121469,
+      "channel": "[sl 4154.91]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792057651429,
+      "dateStr": "15/10/2026, 11:47:31",
+      "option1_morning": {
+        "profitUSD": 0.91,
+        "pips": 9.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.68,
+        "pips": 6.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.5,
+        "pips": 5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148121724,
+      "channel": "[sl 4154.81]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792057660065,
+      "dateStr": "15/10/2026, 11:47:40",
+      "option1_morning": {
+        "profitUSD": -2.78,
+        "pips": -27.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.78,
+        "pips": -27.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.78,
+        "pips": -27.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148143714,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059302438,
+      "dateStr": "15/10/2026, 12:15:02",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148143761,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059302472,
+      "dateStr": "15/10/2026, 12:15:02",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142769,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059440505,
+      "dateStr": "15/10/2026, 12:17:20",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142670,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059444575,
+      "dateStr": "15/10/2026, 12:17:24",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142200,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059444985,
+      "dateStr": "15/10/2026, 12:17:24",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142154,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059506783,
+      "dateStr": "15/10/2026, 12:18:26",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142307,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059509072,
+      "dateStr": "15/10/2026, 12:18:29",
+      "option1_morning": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.12,
+        "pips": -31.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148141843,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059520206,
+      "dateStr": "15/10/2026, 12:18:40",
+      "option1_morning": {
+        "profitUSD": -2.27,
+        "pips": -22.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.27,
+        "pips": -22.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.27,
+        "pips": -22.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142271,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059520236,
+      "dateStr": "15/10/2026, 12:18:40",
+      "option1_morning": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148142238,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059520273,
+      "dateStr": "15/10/2026, 12:18:40",
+      "option1_morning": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.98,
+        "pips": -29.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148141949,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792059520290,
+      "dateStr": "15/10/2026, 12:18:40",
+      "option1_morning": {
+        "profitUSD": -2.66,
+        "pips": -26.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.66,
+        "pips": -26.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.66,
+        "pips": -26.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148155348,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188402,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -0.47,
+        "pips": -4.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.47,
+        "pips": -4.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.47,
+        "pips": -4.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148155362,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188434,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -0.35,
+        "pips": -3.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.35,
+        "pips": -3.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.35,
+        "pips": -3.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148155279,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188458,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -0.26,
+        "pips": -2.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.26,
+        "pips": -2.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.26,
+        "pips": -2.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148155781,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188487,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -0.84,
+        "pips": -8.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.84,
+        "pips": -8.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.84,
+        "pips": -8.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148155793,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188533,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -0.89,
+        "pips": -8.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.89,
+        "pips": -8.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.89,
+        "pips": -8.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148156526,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792060188566,
+      "dateStr": "15/10/2026, 12:29:48",
+      "option1_morning": {
+        "profitUSD": -1.49,
+        "pips": -14.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.49,
+        "pips": -14.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.49,
+        "pips": -14.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148160307,
+      "channel": "[sl 4156.38]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792062015793,
+      "dateStr": "15/10/2026, 13:00:15",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148160176,
+      "channel": "[sl 4156.94]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792062019349,
+      "dateStr": "15/10/2026, 13:00:19",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148165454,
+      "channel": "[sl 4157.91]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792062036290,
+      "dateStr": "15/10/2026, 13:00:36",
+      "option1_morning": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148172852,
+      "channel": "[tp 4148.62]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065380883,
+      "dateStr": "15/10/2026, 13:56:20",
+      "option1_morning": {
+        "profitUSD": 19.04,
+        "pips": 190.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.28,
+        "pips": 142.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.47,
+        "pips": 104.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148159378,
+      "channel": "-1002912763769",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065679768,
+      "dateStr": "15/10/2026, 14:01:19",
+      "option1_morning": {
+        "profitUSD": 14,
+        "pips": 140,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 8.8,
+        "pips": 88,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 6.22,
+        "pips": 62.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148171747,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065680806,
+      "dateStr": "15/10/2026, 14:01:20",
+      "option1_morning": {
+        "profitUSD": 29.75,
+        "pips": 297.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 22.31,
+        "pips": 223.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 16.36,
+        "pips": 163.6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148171751,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065681277,
+      "dateStr": "15/10/2026, 14:01:21",
+      "option1_morning": {
+        "profitUSD": 29.63,
+        "pips": 296.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 22.22,
+        "pips": 222.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 16.29,
+        "pips": 162.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148171765,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065681982,
+      "dateStr": "15/10/2026, 14:01:21",
+      "option1_morning": {
+        "profitUSD": 28.6,
+        "pips": 286,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 21.45,
+        "pips": 214.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 15.73,
+        "pips": 157.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148173053,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792065682839,
+      "dateStr": "15/10/2026, 14:01:22",
+      "option1_morning": {
+        "profitUSD": 17.9,
+        "pips": 179,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 9.92,
+        "pips": 99.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 6.84,
+        "pips": 68.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564141425,
+      "channel": "-1002912763769",
+      "symbol": "XAUUSD",
+      "timestamp": 1792067403630,
+      "dateStr": "15/10/2026, 14:30:03",
+      "option1_morning": {
+        "profitUSD": 1595.48,
+        "pips": 15954.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1003.1,
+        "pips": 10031,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 709.02,
+        "pips": 7090.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564159540,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1792067404904,
+      "dateStr": "15/10/2026, 14:30:04",
+      "option1_morning": {
+        "profitUSD": 1819.7,
+        "pips": 18197,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1008.48,
+        "pips": 10084.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 695.35,
+        "pips": 6953.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148324935,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792072264615,
+      "dateStr": "15/10/2026, 15:51:04",
+      "option1_morning": {
+        "profitUSD": -3.27,
+        "pips": -32.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.27,
+        "pips": -32.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.27,
+        "pips": -32.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148332030,
+      "channel": "-1001823957090",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792073859059,
+      "dateStr": "15/10/2026, 16:17:39",
+      "option1_morning": {
+        "profitUSD": -7.43,
+        "pips": -74.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -7.43,
+        "pips": -74.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -7.43,
+        "pips": -74.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148289711,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792080693600,
+      "dateStr": "15/10/2026, 18:11:33",
+      "option1_morning": {
+        "profitUSD": 26.78,
+        "pips": 267.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.17,
+        "pips": 141.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.97,
+        "pips": 109.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564297638,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD",
+      "timestamp": 1792080697518,
+      "dateStr": "15/10/2026, 18:11:37",
+      "option1_morning": {
+        "profitUSD": 1369.94,
+        "pips": 13699.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 724.96,
+        "pips": 7249.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 561.48,
+        "pips": 5614.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148436679,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081687299,
+      "dateStr": "15/10/2026, 18:28:07",
+      "option1_morning": {
+        "profitUSD": 4.16,
+        "pips": 41.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.12,
+        "pips": 31.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148436789,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081688988,
+      "dateStr": "15/10/2026, 18:28:08",
+      "option1_morning": {
+        "profitUSD": 4.16,
+        "pips": 41.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.12,
+        "pips": 31.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148436831,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081694237,
+      "dateStr": "15/10/2026, 18:28:14",
+      "option1_morning": {
+        "profitUSD": 4.16,
+        "pips": 41.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.12,
+        "pips": 31.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148436914,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081707076,
+      "dateStr": "15/10/2026, 18:28:27",
+      "option1_morning": {
+        "profitUSD": 4.16,
+        "pips": 41.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.12,
+        "pips": 31.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148437232,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081707320,
+      "dateStr": "15/10/2026, 18:28:27",
+      "option1_morning": {
+        "profitUSD": 4.16,
+        "pips": 41.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 3.12,
+        "pips": 31.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 2.29,
+        "pips": 22.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148437383,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081710646,
+      "dateStr": "15/10/2026, 18:28:30",
+      "option1_morning": {
+        "profitUSD": 8.33,
+        "pips": 83.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 6.25,
+        "pips": 62.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 4.58,
+        "pips": 45.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148439231,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081874288,
+      "dateStr": "15/10/2026, 18:31:14",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148439194,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081874362,
+      "dateStr": "15/10/2026, 18:31:14",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148439256,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792081954301,
+      "dateStr": "15/10/2026, 18:32:34",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148443430,
+      "channel": "closePosition",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792082182272,
+      "dateStr": "15/10/2026, 18:36:22",
+      "option1_morning": {
+        "profitUSD": -0.93,
+        "pips": -9.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.93,
+        "pips": -9.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.93,
+        "pips": -9.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148439967,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792082742216,
+      "dateStr": "15/10/2026, 18:45:42",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148443581,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792082800466,
+      "dateStr": "15/10/2026, 18:46:40",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148440533,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792082814683,
+      "dateStr": "15/10/2026, 18:46:54",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148443893,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792082853300,
+      "dateStr": "15/10/2026, 18:47:33",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148441170,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792083696289,
+      "dateStr": "15/10/2026, 19:01:36",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148447519,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792083696357,
+      "dateStr": "15/10/2026, 19:01:36",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148444339,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792083697602,
+      "dateStr": "15/10/2026, 19:01:37",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148447483,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792083697650,
+      "dateStr": "15/10/2026, 19:01:37",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148441895,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792083714311,
+      "dateStr": "15/10/2026, 19:01:54",
+      "option1_morning": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.25,
+        "pips": -62.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148457066,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792085401485,
+      "dateStr": "15/10/2026, 19:30:01",
+      "option1_morning": {
+        "profitUSD": -6.55,
+        "pips": -65.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.55,
+        "pips": -65.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.55,
+        "pips": -65.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148455868,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093280605,
+      "dateStr": "15/10/2026, 21:41:20",
+      "option1_morning": {
+        "profitUSD": 38.11,
+        "pips": 381.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 28.58,
+        "pips": 285.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 20.96,
+        "pips": 209.6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148426179,
+      "channel": "-1002429125771",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093280657,
+      "dateStr": "15/10/2026, 21:41:20",
+      "option1_morning": {
+        "profitUSD": 24.84,
+        "pips": 248.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.75,
+        "pips": 147.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.17,
+        "pips": 101.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148455464,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093280793,
+      "dateStr": "15/10/2026, 21:41:20",
+      "option1_morning": {
+        "profitUSD": 42.88,
+        "pips": 428.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 32.16,
+        "pips": 321.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 23.58,
+        "pips": 235.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148455812,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093280888,
+      "dateStr": "15/10/2026, 21:41:20",
+      "option1_morning": {
+        "profitUSD": 38.15,
+        "pips": 381.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 28.61,
+        "pips": 286.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 20.98,
+        "pips": 209.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148462776,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093280917,
+      "dateStr": "15/10/2026, 21:41:20",
+      "option1_morning": {
+        "profitUSD": 33.49,
+        "pips": 334.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 25.12,
+        "pips": 251.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 18.42,
+        "pips": 184.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148454629,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792093281023,
+      "dateStr": "15/10/2026, 21:41:21",
+      "option1_morning": {
+        "profitUSD": 40.17,
+        "pips": 401.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 30.13,
+        "pips": 301.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 22.1,
+        "pips": 221,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564484216,
+      "channel": "-1002429125771",
+      "symbol": "XAUUSD",
+      "timestamp": 1792093281541,
+      "dateStr": "15/10/2026, 21:41:21",
+      "option1_morning": {
+        "profitUSD": 1741.88,
+        "pips": 17418.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1034.24,
+        "pips": 10342.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 713.08,
+        "pips": 7130.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148577512,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792119114890,
+      "dateStr": "16/10/2026, 4:51:54",
+      "option1_morning": {
+        "profitUSD": 34.4,
+        "pips": 344,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 19.32,
+        "pips": 193.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 13.1,
+        "pips": 131,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564697005,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD",
+      "timestamp": 1792119115435,
+      "dateStr": "16/10/2026, 4:51:55",
+      "option1_morning": {
+        "profitUSD": 2223.52,
+        "pips": 22235.2,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1248.74,
+        "pips": 12487.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 846.62,
+        "pips": 8466.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148598146,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792123512730,
+      "dateStr": "16/10/2026, 6:05:12",
+      "option1_morning": {
+        "profitUSD": -6.76,
+        "pips": -67.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.76,
+        "pips": -67.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.76,
+        "pips": -67.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 564735944,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1792123512824,
+      "dateStr": "16/10/2026, 6:05:12",
+      "option1_morning": {
+        "profitUSD": -736.19,
+        "pips": -7361.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -736.19,
+        "pips": -7361.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -736.19,
+        "pips": -7361.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148599262,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792124009258,
+      "dateStr": "16/10/2026, 6:13:29",
+      "option1_morning": {
+        "profitUSD": 3.47,
+        "pips": 34.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.6,
+        "pips": 26,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.91,
+        "pips": 19.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148622645,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792124009308,
+      "dateStr": "16/10/2026, 6:13:29",
+      "option1_morning": {
+        "profitUSD": 0.69,
+        "pips": 6.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.52,
+        "pips": 5.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.38,
+        "pips": 3.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148627079,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792125349205,
+      "dateStr": "16/10/2026, 6:35:49",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148628306,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792126017996,
+      "dateStr": "16/10/2026, 6:46:57",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148632240,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792127263884,
+      "dateStr": "16/10/2026, 7:07:43",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148632493,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792127265079,
+      "dateStr": "16/10/2026, 7:07:45",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148637120,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792129329848,
+      "dateStr": "16/10/2026, 7:42:09",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148635680,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792129361865,
+      "dateStr": "16/10/2026, 7:42:41",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148635879,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792130918657,
+      "dateStr": "16/10/2026, 8:08:38",
+      "option1_morning": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148634776,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792130942935,
+      "dateStr": "16/10/2026, 8:09:02",
+      "option1_morning": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148644730,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792131125924,
+      "dateStr": "16/10/2026, 8:12:05",
+      "option1_morning": {
+        "profitUSD": -6.65,
+        "pips": -66.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.65,
+        "pips": -66.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.65,
+        "pips": -66.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148644675,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792131126282,
+      "dateStr": "16/10/2026, 8:12:06",
+      "option1_morning": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.24,
+        "pips": -62.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148644691,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792131126351,
+      "dateStr": "16/10/2026, 8:12:06",
+      "option1_morning": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.56,
+        "pips": -65.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148631945,
+      "channel": "-1004307971022",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792133546123,
+      "dateStr": "16/10/2026, 8:52:26",
+      "option1_morning": {
+        "profitUSD": 4.75,
+        "pips": 47.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 2.48,
+        "pips": 24.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.92,
+        "pips": 19.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148651008,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792133547398,
+      "dateStr": "16/10/2026, 8:52:27",
+      "option1_morning": {
+        "profitUSD": 19.15,
+        "pips": 191.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.36,
+        "pips": 143.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.53,
+        "pips": 105.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148651019,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792133548126,
+      "dateStr": "16/10/2026, 8:52:28",
+      "option1_morning": {
+        "profitUSD": 19.13,
+        "pips": 191.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.35,
+        "pips": 143.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.52,
+        "pips": 105.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148651026,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792133548813,
+      "dateStr": "16/10/2026, 8:52:28",
+      "option1_morning": {
+        "profitUSD": 19.04,
+        "pips": 190.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 14.28,
+        "pips": 142.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 10.47,
+        "pips": 104.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148652662,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792133549855,
+      "dateStr": "16/10/2026, 8:52:29",
+      "option1_morning": {
+        "profitUSD": 9.76,
+        "pips": 97.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 7.32,
+        "pips": 73.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 5.37,
+        "pips": 53.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148663158,
+      "channel": "[sl 4178.89]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134037110,
+      "dateStr": "16/10/2026, 9:00:37",
+      "option1_morning": {
+        "profitUSD": -2.28,
+        "pips": -22.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.28,
+        "pips": -22.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.28,
+        "pips": -22.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148662923,
+      "channel": "[sl 4179.12]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134046757,
+      "dateStr": "16/10/2026, 9:00:46",
+      "option1_morning": {
+        "profitUSD": -1.71,
+        "pips": -17.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.71,
+        "pips": -17.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.71,
+        "pips": -17.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148662990,
+      "channel": "[sl 4179.24]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134047616,
+      "dateStr": "16/10/2026, 9:00:47",
+      "option1_morning": {
+        "profitUSD": -1.94,
+        "pips": -19.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.94,
+        "pips": -19.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.94,
+        "pips": -19.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148664124,
+      "channel": "[sl 4180.42]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134274371,
+      "dateStr": "16/10/2026, 9:04:34",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148666672,
+      "channel": "[sl 4183.54]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134562618,
+      "dateStr": "16/10/2026, 9:09:22",
+      "option1_morning": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.23,
+        "pips": -62.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148669724,
+      "channel": "[sl 4186.92]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134953843,
+      "dateStr": "16/10/2026, 9:15:53",
+      "option1_morning": {
+        "profitUSD": -5.13,
+        "pips": -51.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -5.13,
+        "pips": -51.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -5.13,
+        "pips": -51.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148669362,
+      "channel": "[sl 4186.92]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134953888,
+      "dateStr": "16/10/2026, 9:15:53",
+      "option1_morning": {
+        "profitUSD": -3.49,
+        "pips": -34.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.49,
+        "pips": -34.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.49,
+        "pips": -34.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148669530,
+      "channel": "[sl 4186.92]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792134953925,
+      "dateStr": "16/10/2026, 9:15:53",
+      "option1_morning": {
+        "profitUSD": -3.31,
+        "pips": -33.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.31,
+        "pips": -33.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.31,
+        "pips": -33.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148662712,
+      "channel": "-1002912763769",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135346225,
+      "dateStr": "16/10/2026, 9:22:26",
+      "option1_morning": {
+        "profitUSD": -6.4,
+        "pips": -64,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -6.4,
+        "pips": -64,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -6.4,
+        "pips": -64,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148674045,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135346975,
+      "dateStr": "16/10/2026, 9:22:26",
+      "option1_morning": {
+        "profitUSD": 1.24,
+        "pips": 12.4,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.93,
+        "pips": 9.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.68,
+        "pips": 6.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148674266,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135348027,
+      "dateStr": "16/10/2026, 9:22:28",
+      "option1_morning": {
+        "profitUSD": -0.59,
+        "pips": -5.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.59,
+        "pips": -5.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.59,
+        "pips": -5.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 564845281,
+      "channel": "-1002912763769",
+      "symbol": "XAUUSD",
+      "timestamp": 1792135530950,
+      "dateStr": "16/10/2026, 9:25:30",
+      "option1_morning": {
+        "profitUSD": -731.46,
+        "pips": -7314.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -731.46,
+        "pips": -7314.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -731.46,
+        "pips": -7314.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148676752,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135820909,
+      "dateStr": "16/10/2026, 9:30:20",
+      "option1_morning": {
+        "profitUSD": 0.36,
+        "pips": 3.6,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.27,
+        "pips": 2.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.2,
+        "pips": 2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148676794,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135821267,
+      "dateStr": "16/10/2026, 9:30:21",
+      "option1_morning": {
+        "profitUSD": 0.95,
+        "pips": 9.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.71,
+        "pips": 7.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.52,
+        "pips": 5.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148677071,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135824986,
+      "dateStr": "16/10/2026, 9:30:24",
+      "option1_morning": {
+        "profitUSD": 1.33,
+        "pips": 13.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1,
+        "pips": 10,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.73,
+        "pips": 7.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148677160,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135830932,
+      "dateStr": "16/10/2026, 9:30:30",
+      "option1_morning": {
+        "profitUSD": 0.49,
+        "pips": 4.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.37,
+        "pips": 3.7,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.27,
+        "pips": 2.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148682659,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792135837602,
+      "dateStr": "16/10/2026, 9:30:37",
+      "option1_morning": {
+        "profitUSD": -1.9,
+        "pips": -19,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.9,
+        "pips": -19,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.9,
+        "pips": -19,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148685802,
+      "channel": "[sl 4188.53]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141126302,
+      "dateStr": "16/10/2026, 10:58:46",
+      "option1_morning": {
+        "profitUSD": 2.31,
+        "pips": 23.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 1.73,
+        "pips": 17.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 1.27,
+        "pips": 12.7,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148700326,
+      "channel": "[sl 4188.53]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141126335,
+      "dateStr": "16/10/2026, 10:58:46",
+      "option1_morning": {
+        "profitUSD": -1.33,
+        "pips": -13.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.33,
+        "pips": -13.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.33,
+        "pips": -13.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148684849,
+      "channel": "[sl 4188.57]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141127127,
+      "dateStr": "16/10/2026, 10:58:47",
+      "option1_morning": {
+        "profitUSD": -0.22,
+        "pips": -2.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.22,
+        "pips": -2.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.22,
+        "pips": -2.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148701184,
+      "channel": "[sl 4188.57]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141127179,
+      "dateStr": "16/10/2026, 10:58:47",
+      "option1_morning": {
+        "profitUSD": -3.2,
+        "pips": -32,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -3.2,
+        "pips": -32,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -3.2,
+        "pips": -32,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148687386,
+      "channel": "[sl 4188.60]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141127276,
+      "dateStr": "16/10/2026, 10:58:47",
+      "option1_morning": {
+        "profitUSD": -0.69,
+        "pips": -6.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.69,
+        "pips": -6.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.69,
+        "pips": -6.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148727641,
+      "channel": "[sl 4189.70]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141654833,
+      "dateStr": "16/10/2026, 11:07:34",
+      "option1_morning": {
+        "profitUSD": -10.88,
+        "pips": -108.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -10.88,
+        "pips": -108.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -10.88,
+        "pips": -108.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148727469,
+      "channel": "[sl 4189.69]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792141654860,
+      "dateStr": "16/10/2026, 11:07:34",
+      "option1_morning": {
+        "profitUSD": -16.63,
+        "pips": -166.3,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -16.63,
+        "pips": -166.3,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -16.63,
+        "pips": -166.3,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148731289,
+      "channel": "[sl 4191.70]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792142100435,
+      "dateStr": "16/10/2026, 11:15:00",
+      "option1_morning": {
+        "profitUSD": -14.39,
+        "pips": -143.9,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -14.39,
+        "pips": -143.9,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -14.39,
+        "pips": -143.9,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148734301,
+      "channel": "MT5",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792144329691,
+      "dateStr": "16/10/2026, 11:52:09",
+      "option1_morning": {
+        "profitUSD": 111.49,
+        "pips": 1114.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 83.62,
+        "pips": 836.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 61.32,
+        "pips": 613.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148760608,
+      "channel": "[sl 4176.36]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792148022126,
+      "dateStr": "16/10/2026, 12:53:42",
+      "option1_morning": {
+        "profitUSD": 0.57,
+        "pips": 5.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.43,
+        "pips": 4.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.32,
+        "pips": 3.2,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148762856,
+      "channel": "[sl 4176.31]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792148022197,
+      "dateStr": "16/10/2026, 12:53:42",
+      "option1_morning": {
+        "profitUSD": -4.8,
+        "pips": -48,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -4.8,
+        "pips": -48,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -4.8,
+        "pips": -48,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148760104,
+      "channel": "[sl 4176.19]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792148022263,
+      "dateStr": "16/10/2026, 12:53:42",
+      "option1_morning": {
+        "profitUSD": -0.16,
+        "pips": -1.6,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -0.16,
+        "pips": -1.6,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -0.16,
+        "pips": -1.6,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148790552,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792148774342,
+      "dateStr": "16/10/2026, 13:06:14",
+      "option1_morning": {
+        "profitUSD": 0.15,
+        "pips": 1.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.11,
+        "pips": 1.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.08,
+        "pips": 0.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148794903,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792151631403,
+      "dateStr": "16/10/2026, 13:53:51",
+      "option1_morning": {
+        "profitUSD": -1.31,
+        "pips": -13.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.31,
+        "pips": -13.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.31,
+        "pips": -13.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148796797,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792151868552,
+      "dateStr": "16/10/2026, 13:57:48",
+      "option1_morning": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148795747,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792151869597,
+      "dateStr": "16/10/2026, 13:57:49",
+      "option1_morning": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -12.44,
+        "pips": -124.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148813577,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792154726323,
+      "dateStr": "16/10/2026, 14:45:26",
+      "option1_morning": {
+        "profitUSD": 0.37,
+        "pips": 3.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 0.28,
+        "pips": 2.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 0.21,
+        "pips": 2.1,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148778414,
+      "channel": "[sl 4172.00]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792155157163,
+      "dateStr": "16/10/2026, 14:52:37",
+      "option1_morning": {
+        "profitUSD": -2.38,
+        "pips": -23.8,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.38,
+        "pips": -23.8,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.38,
+        "pips": -23.8,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148757823,
+      "channel": "[sl 4167.27]",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792155339131,
+      "dateStr": "16/10/2026, 14:55:39",
+      "option1_morning": {
+        "profitUSD": -9.32,
+        "pips": -93.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -9.32,
+        "pips": -93.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -9.32,
+        "pips": -93.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148750993,
+      "channel": "-1001823957090",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792155339208,
+      "dateStr": "16/10/2026, 14:55:39",
+      "option1_morning": {
+        "profitUSD": -13.54,
+        "pips": -135.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -13.54,
+        "pips": -135.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -13.54,
+        "pips": -135.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148777125,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792155339325,
+      "dateStr": "16/10/2026, 14:55:39",
+      "option1_morning": {
+        "profitUSD": -15.14,
+        "pips": -151.4,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -15.14,
+        "pips": -151.4,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -15.14,
+        "pips": -151.4,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148862916,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792156637466,
+      "dateStr": "16/10/2026, 15:17:17",
+      "option1_morning": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148862987,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792156637866,
+      "dateStr": "16/10/2026, 15:17:17",
+      "option1_morning": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -15.57,
+        "pips": -155.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148856937,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792159260392,
+      "dateStr": "16/10/2026, 16:01:00",
+      "option1_morning": {
+        "profitUSD": 39.49,
+        "pips": 394.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 20.72,
+        "pips": 207.2,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 14.84,
+        "pips": 148.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 564737409,
+      "channel": "-1002157727490",
+      "symbol": "XAUUSD",
+      "timestamp": 1792159266299,
+      "dateStr": "16/10/2026, 16:01:06",
+      "option1_morning": {
+        "profitUSD": -698.7,
+        "pips": -6987,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -698.7,
+        "pips": -6987,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -698.7,
+        "pips": -6987,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148882096,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792159391823,
+      "dateStr": "16/10/2026, 16:03:11",
+      "option1_morning": {
+        "profitUSD": 180.79,
+        "pips": 1807.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 135.59,
+        "pips": 1355.9,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 99.43,
+        "pips": 994.3,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148879608,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792159391847,
+      "dateStr": "16/10/2026, 16:03:11",
+      "option1_morning": {
+        "profitUSD": 191.8,
+        "pips": 1918,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 143.85,
+        "pips": 1438.5,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 105.49,
+        "pips": 1054.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148890525,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792159391884,
+      "dateStr": "16/10/2026, 16:03:11",
+      "option1_morning": {
+        "profitUSD": 156.51,
+        "pips": 1565.1,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 117.38,
+        "pips": 1173.8,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 86.08,
+        "pips": 860.8,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148968094,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792162311534,
+      "dateStr": "16/10/2026, 16:51:51",
+      "option1_morning": {
+        "profitUSD": -15.55,
+        "pips": -155.5,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -15.55,
+        "pips": -155.5,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -15.55,
+        "pips": -155.5,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148971381,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792163424859,
+      "dateStr": "16/10/2026, 17:10:24",
+      "option1_morning": {
+        "profitUSD": -1.97,
+        "pips": -19.7,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -1.97,
+        "pips": -19.7,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -1.97,
+        "pips": -19.7,
+        "isWin": false
+      }
+    },
+    {
+      "position": 148982377,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792164363045,
+      "dateStr": "16/10/2026, 17:26:03",
+      "option1_morning": {
+        "profitUSD": 56.97,
+        "pips": 569.7,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 42.73,
+        "pips": 427.3,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 31.34,
+        "pips": 313.4,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148982391,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792164363101,
+      "dateStr": "16/10/2026, 17:26:03",
+      "option1_morning": {
+        "profitUSD": 58.19,
+        "pips": 581.9,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 43.64,
+        "pips": 436.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 32,
+        "pips": 320,
+        "isWin": true
+      }
+    },
+    {
+      "position": 148967698,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792166284996,
+      "dateStr": "16/10/2026, 17:58:04",
+      "option1_morning": {
+        "profitUSD": 27.3,
+        "pips": 273,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 15.01,
+        "pips": 150.1,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 11.06,
+        "pips": 110.6,
+        "isWin": true
+      }
+    },
+    {
+      "position": 565239267,
+      "channel": "-1002402499107",
+      "symbol": "XAUUSD",
+      "timestamp": 1792166285745,
+      "dateStr": "16/10/2026, 17:58:05",
+      "option1_morning": {
+        "profitUSD": 1598.23,
+        "pips": 15982.3,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 878.74,
+        "pips": 8787.4,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 647.35,
+        "pips": 6473.5,
+        "isWin": true
+      }
+    },
+    {
+      "position": 149007547,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792166551052,
+      "dateStr": "16/10/2026, 18:02:31",
+      "option1_morning": {
+        "profitUSD": -2.91,
+        "pips": -29.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -2.91,
+        "pips": -29.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -2.91,
+        "pips": -29.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 565309372,
+      "channel": "PROPRIETARY_NY_SNIPER_XAUUSD",
+      "symbol": "XAUUSD",
+      "timestamp": 1792166551599,
+      "dateStr": "16/10/2026, 18:02:31",
+      "option1_morning": {
+        "profitUSD": -785.01,
+        "pips": -7850.1,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -785.01,
+        "pips": -7850.1,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -785.01,
+        "pips": -7850.1,
+        "isWin": false
+      }
+    },
+    {
+      "position": 149037869,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792169165751,
+      "dateStr": "16/10/2026, 18:46:05",
+      "option1_morning": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": 0,
+        "pips": 0,
+        "isWin": false
+      }
+    },
+    {
+      "position": 149044208,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792170166839,
+      "dateStr": "16/10/2026, 19:02:46",
+      "option1_morning": {
+        "profitUSD": -18.72,
+        "pips": -187.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -18.72,
+        "pips": -187.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -18.72,
+        "pips": -187.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 149053749,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792175473593,
+      "dateStr": "16/10/2026, 20:31:13",
+      "option1_morning": {
+        "profitUSD": -19.82,
+        "pips": -198.2,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -19.82,
+        "pips": -198.2,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -19.82,
+        "pips": -198.2,
+        "isWin": false
+      }
+    },
+    {
+      "position": 149050050,
+      "channel": "positionOrder",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792175473682,
+      "dateStr": "16/10/2026, 20:31:13",
+      "option1_morning": {
+        "profitUSD": -18.7,
+        "pips": -187,
+        "isWin": false
+      },
+      "option2_live5050": {
+        "profitUSD": -18.7,
+        "pips": -187,
+        "isWin": false
+      },
+      "option3_new7030": {
+        "profitUSD": -18.7,
+        "pips": -187,
+        "isWin": false
+      }
+    },
+    {
+      "position": 149083014,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792178675953,
+      "dateStr": "16/10/2026, 21:24:35",
+      "option1_morning": {
+        "profitUSD": 48.35,
+        "pips": 483.5,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 36.26,
+        "pips": 362.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 26.59,
+        "pips": 265.9,
+        "isWin": true
+      }
+    },
+    {
+      "position": 149083001,
+      "channel": "batchClose",
+      "symbol": "XAUUSD-STD",
+      "timestamp": 1792178676040,
+      "dateStr": "16/10/2026, 21:24:36",
+      "option1_morning": {
+        "profitUSD": 50.48,
+        "pips": 504.8,
+        "isWin": true
+      },
+      "option2_live5050": {
+        "profitUSD": 37.86,
+        "pips": 378.6,
+        "isWin": true
+      },
+      "option3_new7030": {
+        "profitUSD": 27.76,
+        "pips": 277.6,
+        "isWin": true
+      }
     }
   ],
-  "lastUpdated": "2026-10-09T19:30:04.509Z"
+  "lastUpdated": "2026-10-16T19:24:36.040Z"
 }

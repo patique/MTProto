@@ -36,11 +36,11 @@ enum ENUM_BOS_BIAS
 // 1. GESTIÓN DE RIESGO Y CAPITAL
 input group "=== 1. GESTIÓN DE RIESGO & CAPITAL ===";
 input ENUM_RISK_MODE InpRiskMode             = RISK_PERCENT;  // Modo de Riesgo
-input double         InpRiskPercent          = 0.75;          // Riesgo por Operación (% Balance para Prop Firm)
+input double         InpRiskPercent          = 1.0;           // Riesgo por Operación (% Balance)
 input double         InpFixedLotSize         = 0.01;          // Lotaje Fijo (si modo es RISK_FIXED_LOT)
-input double         InpRiskRewardRatio      = 3.0;           // Ratio Riesgo/Beneficio (1:3.0 Institucional)
+input double         InpRiskRewardRatio      = 2.0;           // Ratio Riesgo/Beneficio (1:2.0 Calibrado)
 input int            InpMaxOpenTrades        = 1;             // Máximo de operaciones activas simultáneas
-input double         InpMaxSpreadPoints      = 35.0;          // Spread máximo permitido (en puntos)
+input double         InpMaxSpreadPoints      = 40.0;          // Spread máximo permitido (en puntos)
 
 // 2. FILTROS INSTITUCIONALES (BSL / SSL + BOS + BPR)
 input group "=== 2. MECÁNICA ICT: BSL/SSL + BOS + BPR ===";
@@ -49,16 +49,18 @@ input int            InpSwingLookback        = 8;             // Lookback para S
 input ENUM_ENTRY_TRIGGER InpEntryTrigger     = ENTRY_CE_50;   // Tipo de Entrada (CE 50% o Toque de Caja)
 input bool           InpRequireRejectionWick = true;          // Exigir Vela de Rechazo (Mecha >= 20%)
 input double         InpMinWickPercent       = 20.0;          // Porcentaje Mínimo de Mecha de Rechazo (%)
-input ENUM_TIMEFRAMES InpWickTimeframe       = PERIOD_M2;     // Temporalidad de Gatillo de Mecha (PERIOD_M2 o PERIOD_CURRENT)
+input ENUM_TIMEFRAMES InpWickTimeframe       = PERIOD_CURRENT;// Temporalidad de Gatillo de Mecha (PERIOD_CURRENT o PERIOD_M2)
 input int            InpAtrPeriod            = 14;            // Periodo ATR
 input double         InpMinFvgAtrMult        = 0.20;          // Tamaño mínimo de cada FVG (en múltiplos ATR)
 input double         InpMinOverlapAtrMult    = 0.15;          // Solape mínimo BPR entre FVG Alcista y Bajista (ATR)
-input double         InpSlBufferAtrMult      = 0.20;          // Buffer de aire tras el Swing de Liquidez (en ATR)
+input double         InpSlBufferAtrMult      = 0.20;          // Buffer de aire tras la caja BPR (en ATR)
+input double         InpMinSlPoints          = 150.0;         // SL Mínimo en puntos (150 pts = 15 pips Oro, 50 pts Forex)
+input double         InpMaxSlPoints          = 300.0;         // SL Máximo en puntos (300 pts = 30 pips Oro, 120 pts Forex)
 input int            InpZoneExpirationBars   = 150;           // Caducidad de la zona BPR en barras si no es mitigada (150 barras)
 
 // 3. GESTIÓN DINÁMICA DE SALIDA (BREAK-EVEN & TRAILING)
 input group "=== 3. GESTIÓN DE SALIDA & PROTECCIÓN ===";
-input bool           InpUseBreakEven         = true;          // Activar Break-Even automático
+input bool           InpUseBreakEven         = false;         // Activar Break-Even (false = permitir desarrollo completo a TP)
 input double         InpBreakEvenTriggerR    = 1.0;           // R de beneficio para mover a BE (ej. 1.0R)
 input double         InpBreakEvenBufferPts   = 10.0;          // Buffer de ganancia sobre la entrada en BE (en puntos)
 input bool           InpUseTrailing          = false;         // Activar Trailing Stop dinámico
@@ -68,8 +70,8 @@ input double         InpTrailingStepPoints   = 50.0;          // Distancia de pa
 // 4. FILTRO DE SESIONES HORARIAS
 input group "=== 4. FILTRO DE SESIONES (SERVER TIME) ===";
 input bool           InpUseSessionFilter     = true;          // Activar Filtro de Horario Operativo
-input int            InpSessionStartHour     = 4;             // Hora Inicio Servidor (04:00 Broker = 03:00 AM España / 01:00 UTC)
-input int            InpSessionEndHour       = 23;            // Hora Fin Servidor (23:55 Broker = 22:55 PM España / 20:55 UTC)
+input int            InpSessionStartHour     = 8;             // Hora Inicio Servidor (08:00 Broker = Sesión Europea)
+input int            InpSessionEndHour       = 22;            // Hora Fin Servidor (22:00 Broker = Cierre Wall Street)
 
 // 5. AJUSTES TÉCNICOS
 input group "=== 5. AJUSTES GENERALES ===";
@@ -467,20 +469,33 @@ void OnNewBarScan()
                   zone.creationTime = TimeCurrent();
                   zone.creationBar  = 0;
 
-                  // Stop Loss detrás del Swing Origin + Buffer ATR
+                  // Stop Loss anclado directamente a la caja BPR + Buffer ATR
                   double buffer = InpSlBufferAtrMult * atr[1];
+                  double minSlDist = InpMinSlPoints * _Point;
+                  double maxSlDist = InpMaxSlPoints * _Point;
+
                   if(isBuyBpr)
                   {
-                     double slRef = (activeSSL.price > 0) ? activeSSL.price : overlapBottom;
+                     double slRef = overlapBottom;
                      zone.slPrice = NormalizeDouble(slRef - buffer, _Digits);
+
+                     double currentDist = MathAbs(zone.ce50 - zone.slPrice);
+                     if(currentDist < minSlDist) zone.slPrice = NormalizeDouble(zone.ce50 - minSlDist, _Digits);
+                     else if(currentDist > maxSlDist) zone.slPrice = NormalizeDouble(zone.ce50 - maxSlDist, _Digits);
+
                      double riskDist = MathAbs(zone.ce50 - zone.slPrice);
                      zone.tpPrice = NormalizeDouble(zone.ce50 + (riskDist * InpRiskRewardRatio), _Digits);
                      zone.graphicName = "BPR_BUY_" + TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
                   }
                   else
                   {
-                     double slRef = (activeBSL.price > 0) ? activeBSL.price : overlapTop;
+                     double slRef = overlapTop;
                      zone.slPrice = NormalizeDouble(slRef + buffer, _Digits);
+
+                     double currentDist = MathAbs(zone.slPrice - zone.ce50);
+                     if(currentDist < minSlDist) zone.slPrice = NormalizeDouble(zone.ce50 + minSlDist, _Digits);
+                     else if(currentDist > maxSlDist) zone.slPrice = NormalizeDouble(zone.ce50 - maxSlDist, _Digits);
+
                      double riskDist = MathAbs(zone.slPrice - zone.ce50);
                      zone.tpPrice = NormalizeDouble(zone.ce50 - (riskDist * InpRiskRewardRatio), _Digits);
                      zone.graphicName = "BPR_SELL_" + TimeToString(TimeCurrent(), TIME_DATE|TIME_MINUTES);
@@ -518,8 +533,8 @@ void CheckRetestAndExecute()
    if(!IsInTradingSession()) return;
    if(CountOpenPositions() >= InpMaxOpenTrades) return;
 
-   double spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-   if(spread > InpMaxSpreadPoints) return;
+   long spread = SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if((double)spread > InpMaxSpreadPoints) return;
 
    double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);

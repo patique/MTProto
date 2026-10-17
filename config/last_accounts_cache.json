@@ -3,15 +3,23 @@
     "id": "1290919",
     "broker": "VT Markets (Pty) Ltd",
     "balance": 97.59,
-    "equity": 96.32,
-    "openPositions": 7,
+    "equity": 93.71,
+    "openPositions": 8,
+    "currency": "USD"
+  },
+  "34614465": {
+    "id": "34614465",
+    "broker": "VT Markets (Pty) Ltd",
+    "balance": 680.88,
+    "equity": 702.34,
+    "openPositions": 0,
     "currency": "USD"
   },
   "1514879094": {
     "id": "1514879094",
     "broker": "FTMO Global Markets Ltd",
-    "balance": 100453.94,
-    "equity": 100453.94,
+    "balance": 95192.21,
+    "equity": 95192.21,
     "openPositions": 0,
     "currency": "USD"
   }

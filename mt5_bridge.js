@@ -211,110 +211,17 @@ function getLatestTick(symbol = '') {
 // =====================================================================
 // 🛡️ MONITOR EN TIEMPO REAL DE AUTO BREAK-EVEN EN TP2 (CANALES TELEGRAM)
 // =====================================================================
-const activeChannelTrades = [
-  // Registrar las posiciones activas abiertas de XAUUSD FOREX TRADING para Auto-BE en TP2 (4120.0)
-  {
-    id: 1791452000000,
-    channelId: '-1002493671900',
-    channelName: 'XAUUSD FOREX TRADING',
-    symbol: 'XAUUSD',
-    action: 'SELL',
-    entryPrice: 4129.75,
-    tp2: 4120.0,
-    tp3: 4115.0,
-    beTriggered: false,
-    timestamp: Date.now()
-  }
-];
+const activeChannelTrades = [];
 
 function registerChannelTrade(plan, originalSignal) {
-  if (!plan || !plan.channelId || String(plan.channelId).startsWith('PROPRIETARY')) return;
-  const cfg = CHANNELS_CONFIG[plan.channelId] || findChannelConfig(plan.channelId, plan.channelName);
-  if (!cfg || !cfg.enabled) return;
-
-  const beTrigger = plan.breakEvenTrigger || cfg.breakEvenTrigger;
-  if (!beTrigger) return;
-
-  const normSym = normalizeMarketSymbol(plan.symbol || 'XAUUSD');
-  const isBuy = (plan.action || plan.orderType || 'BUY').toUpperCase().includes('BUY');
-  const entryP = typeof plan.entryPrice === 'number' && plan.entryPrice > 0 ? plan.entryPrice : null;
-  const tp2P = plan.tp2 || originalSignal?.tp2 || null;
-
-  if (!tp2P) return;
-
-  // Evitar duplicados inmediatos en la misma ventana de 5 minutos
-  const existing = activeChannelTrades.find(t => 
-    t.channelId === plan.channelId && 
-    normalizeMarketSymbol(t.symbol) === normSym &&
-    !t.beTriggered &&
-    (Date.now() - t.timestamp < 300000)
-  );
-  if (existing) return;
-
-  activeChannelTrades.push({
-    id: Date.now() + Math.floor(Math.random() * 1000),
-    channelId: plan.channelId,
-    channelName: plan.channelName || cfg.name || 'Canal',
-    symbol: plan.symbol || 'XAUUSD',
-    action: isBuy ? 'BUY' : 'SELL',
-    entryPrice: entryP,
-    tp2: tp2P,
-    tp3: plan.targetTP || plan.tp || null,
-    beTriggered: false,
-    timestamp: Date.now()
-  });
-
-  console.log(`🛡️ [Auto-BE Monitor Registrado] Canal: "${plan.channelName || cfg.name}" | Par: ${plan.symbol} (${isBuy ? 'BUY' : 'SELL'}) | TP2 Trigger: ${tp2P} | Target: ${plan.targetTP || 'TP3'}`);
+  // 🛡️ BREAK-EVEN DESACTIVADO POR SOLICITUD DEL USUARIO
+  // Las operaciones corren con su Stop Loss técnico y Take Profit objetivo completos sin cortes prematuros.
+  return;
 }
 
 function checkChannelTradesAutoBE(tick) {
-  if (!tick || !tick.symbol || !tick.bid || !tick.ask) return;
-  const symNorm = normalizeMarketSymbol(tick.symbol);
-  const now = Date.now();
-
-  for (const trade of activeChannelTrades) {
-    if (trade.beTriggered) continue;
-    // Purgar trades de más de 48h
-    if (now - trade.timestamp > 48 * 3600 * 1000) {
-      trade.beTriggered = true;
-      continue;
-    }
-
-    if (normalizeMarketSymbol(trade.symbol) !== symNorm) continue;
-
-    let hitTP2 = false;
-    if (trade.action === 'BUY') {
-      if (trade.tp2 && tick.bid >= trade.tp2) {
-        hitTP2 = true;
-      }
-    } else if (trade.action === 'SELL') {
-      if (trade.tp2 && tick.ask <= trade.tp2) {
-        hitTP2 = true;
-      }
-    }
-
-    if (hitTP2) {
-      trade.beTriggered = true;
-      console.log(`\n======================================================`);
-      console.log(`🛡️ [AUTO-BE EN TP2 ACTIVADO] Canal "${trade.channelName}" (${trade.symbol} ${trade.action})`);
-      console.log(`   🎯 TP2 (${trade.tp2}) alcanzado con precio actual: ${trade.action === 'BUY' ? tick.bid : tick.ask}`);
-      console.log(`   🚀 Moviendo Stop Loss a Precio de Entrada (Break-Even) en todas las cuentas MT5...`);
-      console.log(`======================================================\n`);
-
-      const beModItem = {
-        id: Date.now(),
-        symbol: trade.symbol,
-        action: 'MODIFY',
-        modifyType: 'BREAK_EVEN',
-        entryPrice: trade.entryPrice || 0,
-        comment: `Auto-BE TP2 by ${trade.channelName}`,
-        timestamp: Date.now()
-      };
-      broadcastToAllAccounts(beModItem);
-
-      notificationService.notifyBreakEven(trade.symbol, trade.channelName, trade.entryPrice || 'Entrada (TP2 Hit)').catch(() => {});
-    }
-  }
+  // 🛡️ BREAK-EVEN DESACTIVADO POR SOLICITUD DEL USUARIO
+  return;
 }
 
 /**
@@ -448,7 +355,14 @@ function checkAndSendPeriodicAccountReport(acc) {
 
   const bal = acc.balance || 0;
   const eq = acc.equity || bal;
-  const floating = eq - bal;
+  const credit = acc.credit || 0;
+
+  // Flotante real de las operaciones abiertas (NUNCA incluir el crédito/bono ampliado por el broker)
+  const floating = (acc.floatingProfit !== undefined && !isNaN(acc.floatingProfit))
+    ? acc.floatingProfit
+    : (eq - bal - credit);
+
+  const realEquity = bal + floating;
   const floatingEmoji = floating >= 0 ? '🟢' : '🔴';
   const floatingSign = floating >= 0 ? '+' : '';
   const nowTimeStr = new Date().toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
@@ -456,16 +370,17 @@ function checkAndSendPeriodicAccountReport(acc) {
   const msg = [
     `📊 *ACTUALIZACIÓN PERIÓDICA (Cuenta Real #${acc.id})*`,
     `━━━━━━━━━━━━━━━━━━━━`,
-    `💰 *Balance:* \`$${bal.toFixed(2)} ${acc.currency}\``,
-    `📈 *Equidad:* \`$${eq.toFixed(2)} ${acc.currency}\``,
-    `${floatingEmoji} *Flotante Vivo:* \`${floatingSign}$${floating.toFixed(2)} ${acc.currency}\``,
+    `💰 *Balance Real:* \`$${bal.toFixed(2)} ${acc.currency}\``,
+    `📈 *Equidad Propia:* \`$${realEquity.toFixed(2)} ${acc.currency}\``,
+    `${floatingEmoji} *Flotante Vivo (Real):* \`${floatingSign}$${floating.toFixed(2)} ${acc.currency}\``,
+    credit > 0 ? `💳 *Bono/Crédito Broker:* \`+$${credit.toFixed(2)} ${acc.currency}\`` : null,
     `🎯 *Operaciones Vivas:* \`${openPos}\``,
     `🏦 *Broker:* ${acc.broker}`,
     `⏱️ *Hora:* ${nowTimeStr} CET`,
     `━━━━━━━━━━━━━━━━━━━━`
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
-  console.log(`\n📢 [Reporte Periódico 10m] Enviando actualización de Cuenta #${acc.id} a Telegram...`);
+  console.log(`\n📢 [Reporte Periódico 10m] Enviando actualización de Cuenta #${acc.id} a Telegram (Flotante Real: ${floatingSign}$${floating.toFixed(2)})...`);
   notificationService.send(msg).catch(err => {
     console.error(`⚠️ Error enviando reporte periódico a Telegram:`, err.message);
   });
@@ -505,7 +420,9 @@ function startLocalServer(port = 3000) {
       let totalLosses = 0;
       let totalPips = 0;
 
-      const channelsData = Object.entries(CHANNELS_CONFIG).map(([id, cfg]) => {
+      const channelsData = Object.entries(CHANNELS_CONFIG)
+        .filter(([id, cfg]) => cfg.enabled !== false)
+        .map(([id, cfg]) => {
         const metrics = analyticsEngine.getChannelMetrics(id);
         totalWins += metrics.winCount;
         totalLosses += metrics.lossCount;
@@ -517,11 +434,15 @@ function startLocalServer(port = 3000) {
           strategy: cfg.strategy,
           enabled: !!cfg.enabled,
           totalSignals: metrics.totalSignals,
+          validSignalsCount: metrics.validSignalsCount,
+          invalidSignalsCount: metrics.invalidSignalsCount,
+          timelinessRate: metrics.timelinessRate,
           winCount: metrics.winCount,
           lossCount: metrics.lossCount,
           winRate: metrics.winRate,
           pipsGained: metrics.pipsGained,
-          status: metrics.status
+          status: metrics.status,
+          lastSignals: metrics.lastSignals
         };
       });
 
@@ -560,7 +481,15 @@ function startLocalServer(port = 3000) {
         pauseReason: riskEngine.pauseReason,
         channels: channelsData,
         news: upcomingNews,
-        accounts: accountsData
+        accounts: accountsData,
+        watchlist: (() => {
+          try {
+            const { signalWatchlistManager } = require('./core/SignalWatchlistManager');
+            return signalWatchlistManager ? signalWatchlistManager.getStatusSummary() : { activeWatchingCount: 0, items: [] };
+          } catch (e) {
+            return { activeWatchingCount: 0, items: [] };
+          }
+        })()
       };
 
       res.writeHead(200);
@@ -922,10 +851,16 @@ function startLocalServer(port = 3000) {
       const broker = parsedUrl.query.broker ? String(parsedUrl.query.broker).trim() : 'Unknown';
       const liveBal = parsedUrl.query.balance ? parseFloat(parsedUrl.query.balance) : null;
       const liveEq = parsedUrl.query.equity ? parseFloat(parsedUrl.query.equity) : null;
+      const liveCredit = parsedUrl.query.credit ? parseFloat(parsedUrl.query.credit) : 0;
+      const liveFloating = parsedUrl.query.floatingProfit !== undefined ? parseFloat(parsedUrl.query.floatingProfit) : null;
       const openPos = parsedUrl.query.openPositions !== undefined ? parseInt(parsedUrl.query.openPositions, 10) : 0;
       const riskPos = parsedUrl.query.riskPositions !== undefined ? parseInt(parsedUrl.query.riskPositions, 10) : openPos;
 
       const acc = getOrCreateAccount(accountId, broker, liveBal, liveEq, openPos);
+      acc.credit = liveCredit;
+      if (liveFloating !== null && !isNaN(liveFloating)) {
+        acc.floatingProfit = liveFloating;
+      }
       acc.riskPositions = riskPos;
 
       // Designar cuenta principal (la primera en conectar) para las métricas globales del Dashboard
@@ -1036,6 +971,9 @@ function startLocalServer(port = 3000) {
               try {
                 proprietaryStrategyManager.processTick(multiTick);
               } catch (e) {}
+              try {
+                analyticsEngine.evaluatePriceTick(multiTick);
+              } catch (e) {}
               checkChannelTradesAutoBE(multiTick);
             }
           }
@@ -1093,8 +1031,6 @@ function startLocalServer(port = 3000) {
           }
 
           const pipsEst = typeof data.pips === 'number' ? data.pips : Math.abs(profit || 0) * 10.0;
-          // Registrar en el motor de analíticas y snapshots
-          analyticsEngine.recordOutcome(targetChannelId, outcome || (profit >= 0 ? 'WIN' : 'LOSS'), pipsEst, position);
           marketSnapshotCollector.resolveSnapshot(targetChannelId, outcome || (profit >= 0 ? 'WIN' : 'LOSS'), pipsEst, profit);
           
           // Marcar operación en monitor Auto-BE como finalizada
@@ -1239,7 +1175,7 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
     }
   }
 
-  // ⚖️ FILTRO UNIVERSAL DE RATIO RIESGO / BENEFICIO MÍNIMO (Mínimo 1:1.3)
+  // ⚖️ FILTRO UNIVERSAL DE RATIO RIESGO / BENEFICIO MÍNIMO (Mínimo configurable por canal, default 1:1.0)
   // Aplica a TODAS las fuentes: Canales de Telegram y Estrategias Algorítmicas
   if (!plan.isCancelAction && plan.action !== 'MODIFY') {
     const entryP = plan.entryPrice || plan.entry;
@@ -1250,8 +1186,10 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
       const rewardDist = Math.abs(tpP - entryP);
       if (riskDist > 0) {
         const rr = rewardDist / riskDist;
-        if (rr < 1.3) {
-          console.log(`⚠️ [MT5 Bridge - FILTRO R:R UNIVERSAL BLOQUEADO] "${plan.channelName || plan.symbol}": Ratio 1:${rr.toFixed(2)} es inferior al mínimo 1:1.3. Riesgo: ${riskDist.toFixed(2)} | Recompensa: ${rewardDist.toFixed(2)}. Operación cancelada.`);
+        const cfg = (plan.channelId && CHANNELS_CONFIG[plan.channelId]) || findChannelConfig(plan.channelId, plan.channelName);
+        const minRR = (cfg && typeof cfg.minRiskReward === 'number') ? cfg.minRiskReward : 1.0;
+        if (rr < minRR) {
+          console.log(`⚠️ [MT5 Bridge - FILTRO R:R UNIVERSAL BLOQUEADO] "${plan.channelName || plan.symbol}": Ratio 1:${rr.toFixed(2)} es inferior al mínimo 1:${minRR.toFixed(2)}. Riesgo: ${riskDist.toFixed(2)} | Recompensa: ${rewardDist.toFixed(2)}. Operación cancelada.`);
           return false;
         }
       }
@@ -1557,9 +1495,6 @@ async function executeTradePlan(plan, originalSignal = null, options = {}) {
       console.log(`      📦 Orden a Mercado: ${tailoredLot} Lotes ${itemPayload.action} | SL: ${itemPayload.sl} | TP: ${itemPayload.tp}`);
     }
   }
-
-  // Registrar en analíticas
-  analyticsEngine.recordSignal(plan.channelId, dispChannel, plan, plan);
 
   // Enviar notificación push de ejecución
   notificationService.notifyTradeExecuted(plan).catch(() => {});
