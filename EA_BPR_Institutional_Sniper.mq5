@@ -1,12 +1,12 @@
 //+------------------------------------------------------------------+
 //|                                EA_BPR_Institutional_Sniper.mq5   |
 //|                 Algorithmic Limit Trading System (BPR Multi-TF)  |
-//|                 Dynamic N-Timeframe Confluence + Ratchet Lock    |
+//|                 Dynamic Confluence + Ratchet + Anti-Knife v3.0   |
 //+------------------------------------------------------------------+
 #property copyright   "Antigravity Quantitative Trading"
 #property link        "https://t.me/WarriorTraderClub"
-#property version     "2.00"
-#property description "EA institucional basado en órdenes Limit al 50% CE de BPRs con Confluencia Dinámica N-Timeframe y Trinquete de Beneficios (Ratchet)."
+#property version     "3.00"
+#property description "EA institucional BPR: Limit en CE 50%, Confluencia N-Timeframe, Descarte Único de BPR, Filtro Anti-Cuchillo y Trinquete Ratchet."
 
 #include <Trade\Trade.mqh>
 #include <Trade\PositionInfo.mqh>
@@ -25,9 +25,9 @@ enum ENUM_RISK_MODE
 //--- PARÁMETROS DE ENTRADA (INPUTS) ---
 input group "=== 🎯 1. CONFLUENCIA DINÁMICA MULTI-TIMEFRAME ===";
 input ENUM_TIMEFRAMES      InpWorkTimeframe        = PERIOD_M15;           // Temporalidad Base de Entrada
-input int                  InpBarsSince            = 10;                   // Barras de Lookback entre FVGs (bars_since)
+input int                  InpBarsSince            = 10;                   // Barras Lookback entre FVGs
 input double               InpBprThreshold         = 0.0;                  // Umbral Mínimo de Solape en Puntos
-input bool                 InpOnlyVirginBprs       = true;                 // Solo BPRs Vírgenes (No Mitigados)
+input bool                 InpOnlyVirginBprs       = true;                 // Solo BPRs Vírgenes (No Mitigados Previamente)
 input bool                 InpScanM1               = false;                // Incluir M1 en Escáner
 input bool                 InpScanM5               = true;                 // Incluir M5 en Escáner
 input bool                 InpScanM15              = true;                 // Incluir M15 en Escáner
@@ -36,15 +36,22 @@ input bool                 InpScanH1               = true;                 // In
 input bool                 InpScanH4               = true;                 // Incluir H4 en Escáner
 input int                  InpMinConfluences       = 2;                    // Confluencias Mínimas Requeridas (1=Todos, 2=Recomendado, 3=Ultra Alta Prob)
 
-input group "=== ⚖️ 2. GESTIÓN DE RIESGO ASIMÉTRICO (0.3% - 0.5%) ===";
+input group "=== 🛡️ 2. FILTRO ANTI-CUCHILLO & ENFRIAMIENTO ===";
+input bool                 InpUseAntiKnifeFilter   = true;                 // Evitar Entrar Frente a Velas de Expansión Violentas
+input double               InpMaxImpulseCandleRatio= 2.0;                  // Ratio Máximo Vela Impulsiva vs Promedio (2.0x)
+input int                  InpLossCooldownBars     = 3;                    // Barras de Enfriamiento tras un Stop Loss
+input bool                 InpOneTradePerBpr       = true;                 // Descarte Estricto: 1 Solo Trade por BPR en su Historia
+
+input group "=== ⚖️ 3. GESTIÓN DE RIESGO REALISTA & STOP LOSS ===";
 input ENUM_RISK_MODE       InpRiskMode             = RISK_PERCENT_BALANCE; // Modo de Gestión de Capital
 input double               InpRiskPercent          = 0.30;                 // Riesgo por Operación (% recomendado: 0.3% o 0.5%)
 input double               InpFixedRiskUSD         = 30.0;                 // Riesgo Fijo en USD (si modo Fixed USD)
 input double               InpFixedLotSize         = 0.01;                 // Lotaje Fijo Manual (si modo Fixed Lot)
-input double               InpSLBufferUnits        = 1.00;                 // Holgura tras el Extremo del BPR (1.00$ en Oro / Pips en FX)
+input double               InpSLBufferUnits        = 3.00;                 // Holgura tras el Extremo ($3.00 en Oro / 30 pips FX)
+input double               InpMinSLPoints          = 250.0;                // Stop Loss Mínimo Seguro en Puntos (250 pts = $2.50 Oro)
 input int                  InpMaxActiveTrades      = 1;                    // Máximo de Operaciones Simultáneas
 
-input group "=== 🛡️ 3. TRINQUETE DE BENEFICIOS (RATCHET PROFIT LOCK) ===";
+input group "=== 💰 4. TRINQUETE DE BENEFICIOS (RATCHET PROFIT LOCK) ===";
 input bool                 InpUseRatchetLock       = true;                 // Activar Trinquete Protector de Beneficios
 input double               InpBE_Trigger_R         = 1.5;                  // Nivel R para Mover a Break-Even (1:1.5R)
 input double               InpBEOffsetPips         = 0.5;                  // Offset de Ganancia Asegurada en Break-Even (pips)
@@ -54,13 +61,13 @@ input double               InpLock2_Trigger_R      = 5.0;                  // Ni
 input double               InpLock2_Secure_R       = 2.5;                  // R Asegurado en Nivel 2 (+2.5R)
 input double               InpFinalTarget_R        = 8.0;                  // TP Final Objetivo (1:8.0R)
 
-input group "=== ⏱️ 4. FILTRO DE HORARIOS & EXPIRACIÓN LIMIT ===";
+input group "=== ⏱️ 5. FILTRO DE HORARIOS & EXPIRACIÓN LIMIT ===";
 input bool                 InpUseSessionFilter     = true;                 // Operar Solo en Killzones
 input int                  InpStartHour            = 8;                    // Hora Inicio (08:00 CET - Londres)
 input int                  InpEndHour              = 21;                   // Hora Fin (21:00 CET - Cierre NY)
 input int                  InpMaxBarsOrderPending  = 24;                   // Expiración de Orden Limit sin Tocar (Barras)
 
-input group "=== 🎨 5. IDENTIFICACIÓN Y GRÁFICO ===";
+input group "=== 🎨 6. IDENTIFICACIÓN Y GRÁFICO ===";
 input ulong                InpMagicNumber          = 991100;               // Magic Number
 input string               InpTradeComment         = "BPR_SNIPER";         // Comentario
 input bool                 InpDrawVisuals          = true;                 // Dibujar Zonas BPR en Gráfico
@@ -91,6 +98,12 @@ struct TradeTracker
    int      ratchetStep; // 0=Inicio, 1=BE (1.5R), 2=Lock1 (3R), 3=Lock2 (5R)
 };
 
+struct ConsumedBPR
+{
+   datetime creationTime;
+   double   ce50;
+};
+
 //--- VARIABLES GLOBALES ---
 CTrade         m_trade;
 CPositionInfo  m_pos;
@@ -99,7 +112,9 @@ COrderInfo     m_order;
 
 BPRZone        m_activeBprs[];
 TradeTracker   m_trackers[];
+ConsumedBPR    m_consumedBprs[];
 datetime       m_lastBarTime = 0;
+datetime       m_lastLossTime = 0;
 string         m_objPrefix = "BPR_EA_";
 
 //+------------------------------------------------------------------+
@@ -113,6 +128,8 @@ int OnInit()
 
    ArrayResize(m_activeBprs, 0);
    ArrayResize(m_trackers, 0);
+   ArrayResize(m_consumedBprs, 0);
+   m_lastLossTime = 0;
 
    if(InpDrawVisuals)
       ObjectsDeleteAll(0, m_objPrefix);
@@ -121,8 +138,9 @@ int OnInit()
       CreateHUD();
 
    EventSetMillisecondTimer(250);
-   PrintFormat("🚀 [EA_BPR_Institutional_Sniper v2.0] Iniciado en %s | Base: %s | Min Confluencias: %d | Ratchet: %s",
-               _Symbol, EnumToString(InpWorkTimeframe), InpMinConfluences, InpUseRatchetLock ? "ACTIVADO" : "DESACTIVADO");
+   PrintFormat("🚀 [EA_BPR_Institutional_Sniper v3.0] Iniciado en %s | Base: %s | Buffer SL: %.2f | Anti-Cuchillo: %s | 1-Trade/BPR: %s",
+               _Symbol, EnumToString(InpWorkTimeframe), InpSLBufferUnits,
+               InpUseAntiKnifeFilter ? "ACTIVO" : "OFF", InpOneTradePerBpr ? "ACTIVO" : "OFF");
    return(INIT_SUCCEEDED);
 }
 
@@ -161,7 +179,6 @@ void OnTimer()
 //+------------------------------------------------------------------+
 void OnTick()
 {
-   // 1. Monitoreo por vela en la temporalidad de trabajo
    datetime currentBar = iTime(_Symbol, InpWorkTimeframe, 0);
    if(currentBar != m_lastBarTime)
    {
@@ -169,8 +186,38 @@ void OnTick()
       ScanAndEvaluateBPRs();
    }
 
-   // 2. Gestión activa del Ratchet en cada tick (crucial para backtests y vivo)
    ManageRatchetAndProtections();
+}
+
+//+------------------------------------------------------------------+
+//| Trade Transaction handler (Detectar Stop Loss para Enfriamiento) |
+//+------------------------------------------------------------------+
+void OnTradeTransaction(const MqlTradeTransaction& trans,
+                        const MqlTradeRequest& request,
+                        const MqlTradeResult& result)
+{
+   if(trans.type == TRADE_TRANSACTION_DEAL_ADD)
+   {
+      ulong dealTicket = trans.deal;
+      if(HistoryDealSelect(dealTicket))
+      {
+        long dealMagic = HistoryDealGetInteger(dealTicket, DEAL_MAGIC);
+        if(dealMagic == (long)InpMagicNumber && HistoryDealGetString(dealTicket, DEAL_SYMBOL) == _Symbol)
+        {
+           ENUM_DEAL_ENTRY entry = (ENUM_DEAL_ENTRY)HistoryDealGetInteger(dealTicket, DEAL_ENTRY);
+           if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_INOUT)
+           {
+              double profit = HistoryDealGetDouble(dealTicket, DEAL_PROFIT);
+              if(profit < -0.1) // Salida con pérdida (SL)
+              {
+                 m_lastLossTime = TimeCurrent();
+                 PrintFormat("⚠️ [ENFRIAMIENTO ACTIVADO] Pérdida detectada en deal #%d (Profit: %.2f$). Enfriando durante %d barras.",
+                             dealTicket, profit, InpLossCooldownBars);
+              }
+           }
+        }
+      }
+   }
 }
 
 //+------------------------------------------------------------------+
@@ -180,7 +227,6 @@ void ScanAndEvaluateBPRs()
 {
    ArrayResize(m_activeBprs, 0);
 
-   // 1. Extraer BPRs de la temporalidad de trabajo
    int barsToScan = 200;
    MqlRates workRates[];
    ArraySetAsSeries(workRates, false);
@@ -212,11 +258,11 @@ void ScanAndEvaluateBPRs()
             bpr.ce50             = NormalizeDouble((cHigh + cLow) / 2.0, _Digits);
             bpr.creationTime     = workRates[i].time;
             bpr.isBullishGenesis = true;
-            bpr.confluenceCount  = 1; // Cuenta la temporalidad base
+            bpr.confluenceCount  = 1;
             bpr.confluenceInfo   = EnumToString(InpWorkTimeframe);
             bpr.isMitigated      = false;
 
-            // Comprobar si ya fue mitigado por velas posteriores
+            // Verificar si fue mitigado
             for(int m = i + 1; m < ArraySize(workRates); m++)
             {
                if(workRates[m].close < cLow)
@@ -266,14 +312,11 @@ void ScanAndEvaluateBPRs()
       }
    }
 
-   // 2. Evaluar Confluencia Dinámica con todas las demás temporalidades activadas
    CheckDynamicMultiTFConfluences();
 
-   // 3. Dibujar visuales si está activado
    if(InpDrawVisuals)
       RenderVisuals();
 
-   // 4. Evaluar colocación de órdenes Limit
    EvaluateLimitOrderPlacement();
 }
 
@@ -304,7 +347,6 @@ void CheckDynamicMultiTFConfluences()
       {
          for(int j = 0; j < ArraySize(otherZones); j++)
          {
-            // Solape de cajas: max(low1, low2) < min(high1, high2)
             double overlapLow  = MathMax(m_activeBprs[i].low, otherZones[j].low);
             double overlapHigh = MathMin(m_activeBprs[i].high, otherZones[j].high);
 
@@ -312,7 +354,7 @@ void CheckDynamicMultiTFConfluences()
             {
                m_activeBprs[i].confluenceCount++;
                m_activeBprs[i].confluenceInfo += (" + " + EnumToString(currentTf));
-               break; // Una confluencia por timeframe es suficiente
+               break;
             }
          }
       }
@@ -370,11 +412,80 @@ void ExtractBprsFromTF(ENUM_TIMEFRAMES tf, int count, BPRZone &outZones[])
 }
 
 //+------------------------------------------------------------------+
-//| Colocación de Órdenes Limit en el CE 50% con Reglas Robustas    |
+//| Comprobar si un BPR ya fue consumido / operado                   |
+//+------------------------------------------------------------------+
+bool IsBprAlreadyConsumed(datetime t, double ce)
+{
+   if(!InpOneTradePerBpr) return false;
+
+   for(int i = 0; i < ArraySize(m_consumedBprs); i++)
+   {
+      if(m_consumedBprs[i].creationTime == t || MathAbs(m_consumedBprs[i].ce50 - ce) <= 25 * _Point)
+         return true;
+   }
+   return false;
+}
+
+void MarkBprAsConsumed(datetime t, double ce)
+{
+   int sz = ArraySize(m_consumedBprs);
+   ArrayResize(m_consumedBprs, sz + 1);
+   m_consumedBprs[sz].creationTime = t;
+   m_consumedBprs[sz].ce50         = ce;
+}
+
+//+------------------------------------------------------------------+
+//| Filtro Anti-Cuchillo (Impulso violento en contra)                |
+//+------------------------------------------------------------------+
+bool IsImpulsiveKnife(int direction) // 1=Comprando, -1=Vendiendo
+{
+   if(!InpUseAntiKnifeFilter) return false;
+
+   MqlRates rates[];
+   ArraySetAsSeries(rates, true);
+   if(CopyRates(_Symbol, InpWorkTimeframe, 1, 14, rates) < 14)
+      return false;
+
+   double totalRange = 0.0;
+   for(int i = 1; i < 14; i++)
+      totalRange += (rates[i].high - rates[i].low);
+   double avgRange = totalRange / 13.0;
+   if(avgRange <= 0.0) return false;
+
+   double lastRange = rates[0].high - rates[0].low;
+
+   if(lastRange >= InpMaxImpulseCandleRatio * avgRange)
+   {
+      // Comprando (+1), pero la última vela cayó en picado cerrando cerca de mínimos
+      if(direction == 1 && rates[0].close < rates[0].open && (rates[0].close - rates[0].low) < 0.25 * lastRange)
+      {
+         PrintFormat("⚠️ [ANTI-CUCHILLO] Compra pausada: Caída violenta de M15 (Rango: %.2f vs Promedio: %.2f)", lastRange, avgRange);
+         return true;
+      }
+      // Vendiendo (-1), pero la última vela se disparó cerrando cerca de máximos
+      if(direction == -1 && rates[0].close > rates[0].open && (rates[0].high - rates[0].close) < 0.25 * lastRange)
+      {
+         PrintFormat("⚠️ [ANTI-CUCHILLO] Venta pausada: Subida violenta de M15 (Rango: %.2f vs Promedio: %.2f)", lastRange, avgRange);
+         return true;
+      }
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
+//| Colocación de Órdenes Limit con Reglas Institucionales Robustas  |
 //+------------------------------------------------------------------+
 void EvaluateLimitOrderPlacement()
 {
    if(InpUseSessionFilter && !IsInSession()) return;
+
+   // 1. Enfriamiento tras pérdida
+   if(m_lastLossTime > 0)
+   {
+      int barsSinceLoss = iBarShift(_Symbol, InpWorkTimeframe, m_lastLossTime);
+      if(barsSinceLoss >= 0 && barsSinceLoss < InpLossCooldownBars)
+         return; // Aún en periodo de enfriamiento
+   }
 
    int currentActive = GetActivePositionsAndOrdersCount();
    if(currentActive >= InpMaxActiveTrades) return;
@@ -387,19 +498,24 @@ void EvaluateLimitOrderPlacement()
    if(_Digits == 2 || _Digits == 3) // Oro o JPY
       bufferPts = InpSLBufferUnits / point;
    else
-      bufferPts = (InpSLBufferUnits * 10) / point; // Pips a puntos
+      bufferPts = (InpSLBufferUnits * 10) / point;
 
    double bufferPrice = bufferPts * _Point;
+   double minSLDist   = InpMinSLPoints * _Point;
 
    // Iterar desde los BPRs más recientes
    for(int i = ArraySize(m_activeBprs) - 1; i >= 0; i--)
    {
-      // 1. Filtro de confluencia mínima
+      // Filtro de confluencia mínima
       if(m_activeBprs[i].confluenceCount < InpMinConfluences)
          continue;
 
-      // 2. Filtro de BPR virgen (no mitigado)
+      // Filtro de BPR virgen
       if(InpOnlyVirginBprs && m_activeBprs[i].isMitigated)
+         continue;
+
+      // Descarte estricto si ya se operó este BPR
+      if(IsBprAlreadyConsumed(m_activeBprs[i].creationTime, m_activeBprs[i].ce50))
          continue;
 
       double ce50 = m_activeBprs[i].ce50;
@@ -409,25 +525,27 @@ void EvaluateLimitOrderPlacement()
       // -------------------------------------------------------------
       // CASO A: El precio viene por DEBAJO -> SELL LIMIT en CE50
       // -------------------------------------------------------------
-      if(ask < ce50 && (ce50 - ask) >= 15 * _Point)
+      if(ask < ce50 && (ce50 - ask) >= 20 * _Point)
       {
          if(!HasExistingOrderNear(ce50))
          {
-            double sl = NormalizeDouble(high + bufferPrice, _Digits);
-            double slDist = sl - ce50;
+            if(IsImpulsiveKnife(-1)) continue; // Anti-Cuchillo
 
-            if(slDist > 10 * _Point)
+            double rawSL = high + bufferPrice;
+            double slDist = rawSL - ce50;
+            if(slDist < minSLDist) slDist = minSLDist;
+
+            double sl = NormalizeDouble(ce50 + slDist, _Digits);
+            double tp = NormalizeDouble(ce50 - (slDist * InpFinalTarget_R), _Digits);
+            double lot = CalculateLotSize(ce50, sl);
+
+            string comment = StringFormat("%s_SELL_LMT", InpTradeComment);
+            if(m_trade.SellLimit(lot, ce50, _Symbol, sl, tp, ORDER_TIME_GTC, 0, comment))
             {
-               double tp = NormalizeDouble(ce50 - (slDist * InpFinalTarget_R), _Digits);
-               double lot = CalculateLotSize(ce50, sl);
-
-               string comment = StringFormat("%s_SELL_LMT", InpTradeComment);
-               if(m_trade.SellLimit(lot, ce50, _Symbol, sl, tp, ORDER_TIME_GTC, 0, comment))
-               {
-                  PrintFormat("🎯 [SELL LIMIT] CE 50%%: %.2f | SL: %.2f | TP: %.2f | Lote: %.2f | Confluencias: %d (%s)",
-                              ce50, sl, tp, lot, m_activeBprs[i].confluenceCount, m_activeBprs[i].confluenceInfo);
-                  return;
-               }
+               MarkBprAsConsumed(m_activeBprs[i].creationTime, ce50);
+               PrintFormat("🎯 [SELL LIMIT] CE 50%%: %.2f | SL: %.2f (Dist: %.2f$) | TP: %.2f | Lote: %.2f | Conf: %d (%s)",
+                           ce50, sl, slDist, tp, lot, m_activeBprs[i].confluenceCount, m_activeBprs[i].confluenceInfo);
+               return;
             }
          }
       }
@@ -435,25 +553,27 @@ void EvaluateLimitOrderPlacement()
       // -------------------------------------------------------------
       // CASO B: El precio viene por ENCIMA -> BUY LIMIT en CE50
       // -------------------------------------------------------------
-      if(bid > ce50 && (bid - ce50) >= 15 * _Point)
+      if(bid > ce50 && (bid - ce50) >= 20 * _Point)
       {
          if(!HasExistingOrderNear(ce50))
          {
-            double sl = NormalizeDouble(low - bufferPrice, _Digits);
-            double slDist = ce50 - sl;
+            if(IsImpulsiveKnife(1)) continue; // Anti-Cuchillo
 
-            if(slDist > 10 * _Point)
+            double rawSL = low - bufferPrice;
+            double slDist = ce50 - rawSL;
+            if(slDist < minSLDist) slDist = minSLDist;
+
+            double sl = NormalizeDouble(ce50 - slDist, _Digits);
+            double tp = NormalizeDouble(ce50 + (slDist * InpFinalTarget_R), _Digits);
+            double lot = CalculateLotSize(ce50, sl);
+
+            string comment = StringFormat("%s_BUY_LMT", InpTradeComment);
+            if(m_trade.BuyLimit(lot, ce50, _Symbol, sl, tp, ORDER_TIME_GTC, 0, comment))
             {
-               double tp = NormalizeDouble(ce50 + (slDist * InpFinalTarget_R), _Digits);
-               double lot = CalculateLotSize(ce50, sl);
-
-               string comment = StringFormat("%s_BUY_LMT", InpTradeComment);
-               if(m_trade.BuyLimit(lot, ce50, _Symbol, sl, tp, ORDER_TIME_GTC, 0, comment))
-               {
-                  PrintFormat("🎯 [BUY LIMIT] CE 50%%: %.2f | SL: %.2f | TP: %.2f | Lote: %.2f | Confluencias: %d (%s)",
-                              ce50, sl, tp, lot, m_activeBprs[i].confluenceCount, m_activeBprs[i].confluenceInfo);
-                  return;
-               }
+               MarkBprAsConsumed(m_activeBprs[i].creationTime, ce50);
+               PrintFormat("🎯 [BUY LIMIT] CE 50%%: %.2f | SL: %.2f (Dist: %.2f$) | TP: %.2f | Lote: %.2f | Conf: %d (%s)",
+                           ce50, sl, slDist, tp, lot, m_activeBprs[i].confluenceCount, m_activeBprs[i].confluenceInfo);
+               return;
             }
          }
       }
@@ -494,13 +614,10 @@ void ManageRatchetAndProtections()
       double profitPts = (type == POSITION_TYPE_BUY) ? (curPrice - openPrice) / _Point : (openPrice - curPrice) / _Point;
       double currentR = profitPts / riskPts;
 
-      // Calcular distancia mínima de stops permitida por el broker
       double minStopDist = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * _Point;
-      if(minStopDist <= 0) minStopDist = 10 * _Point;
+      if(minStopDist <= 0) minStopDist = 15 * _Point;
 
-      // -------------------------------------------------------------
       // ESCALÓN 3: 1:5.0R -> Asegurar +2.5R
-      // -------------------------------------------------------------
       if(currentR >= InpLock2_Trigger_R && m_trackers[tIdx].ratchetStep < 3)
       {
          double lockDist = riskPts * _Point * InpLock2_Secure_R;
@@ -519,9 +636,7 @@ void ManageRatchetAndProtections()
             }
          }
       }
-      // -------------------------------------------------------------
       // ESCALÓN 2: 1:3.0R -> Asegurar +1.0R
-      // -------------------------------------------------------------
       else if(currentR >= InpLock1_Trigger_R && m_trackers[tIdx].ratchetStep < 2)
       {
          double lockDist = riskPts * _Point * InpLock1_Secure_R;
@@ -540,9 +655,7 @@ void ManageRatchetAndProtections()
             }
          }
       }
-      // -------------------------------------------------------------
-      // ESCALÓN 1: 1:1.5R -> Mover a Break-Even + Pequeño Buffer
-      // -------------------------------------------------------------
+      // ESCALÓN 1: 1:1.5R -> Mover a Break-Even
       else if(currentR >= InpBE_Trigger_R && m_trackers[tIdx].ratchetStep < 1)
       {
          double beOffset = InpBEOffsetPips * ((_Digits == 3 || _Digits == 5) ? (10 * _Point) : _Point);
@@ -664,7 +777,7 @@ bool HasExistingOrderNear(double price)
       if(ticket > 0 && OrderGetInteger(ORDER_MAGIC) == InpMagicNumber && OrderGetString(ORDER_SYMBOL) == _Symbol)
       {
          double orderPrice = OrderGetDouble(ORDER_PRICE_OPEN);
-         if(MathAbs(orderPrice - price) <= 20 * _Point)
+         if(MathAbs(orderPrice - price) <= 25 * _Point)
             return true;
       }
    }
@@ -711,7 +824,6 @@ void RenderVisuals()
       datetime tEnd   = TimeCurrent() + PeriodSeconds(InpWorkTimeframe) * 10;
       color col       = (m_activeBprs[i].confluenceCount >= InpMinConfluences) ? InpConfluenceColor : InpBprBaseColor;
 
-      // Caja BPR
       if(ObjectFind(0, nameBox) < 0)
       {
          ObjectCreate(0, nameBox, OBJ_RECTANGLE, 0, tStart, m_activeBprs[i].high, tEnd, m_activeBprs[i].low);
@@ -727,7 +839,6 @@ void RenderVisuals()
          ObjectSetInteger(0, nameBox, OBJPROP_COLOR, col);
       }
 
-      // Línea CE 50%
       if(ObjectFind(0, nameCe) < 0)
       {
          ObjectCreate(0, nameCe, OBJ_TREND, 0, tStart, m_activeBprs[i].ce50, tEnd, m_activeBprs[i].ce50);
@@ -755,8 +866,8 @@ void CreateHUD()
       ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
       ObjectSetInteger(0, name, OBJPROP_XDISTANCE, 20);
       ObjectSetInteger(0, name, OBJPROP_YDISTANCE, 50);
-      ObjectSetInteger(0, name, OBJPROP_XSIZE, 300);
-      ObjectSetInteger(0, name, OBJPROP_YSIZE, 130);
+      ObjectSetInteger(0, name, OBJPROP_XSIZE, 310);
+      ObjectSetInteger(0, name, OBJPROP_YSIZE, 135);
       ObjectSetInteger(0, name, OBJPROP_BGCOLOR, C'15,23,42');
       ObjectSetInteger(0, name, OBJPROP_BORDER_COLOR, C'245,158,11');
       ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
@@ -771,7 +882,7 @@ void CreateHUD()
       ObjectSetInteger(0, labelName, OBJPROP_COLOR, clrWhite);
       ObjectSetInteger(0, labelName, OBJPROP_FONTSIZE, 9);
       ObjectSetString(0, labelName, OBJPROP_FONT, "Segoe UI");
-      ObjectSetString(0, labelName, OBJPROP_TEXT, "Iniciando BPR Sniper v2.0...");
+      ObjectSetString(0, labelName, OBJPROP_TEXT, "Iniciando BPR Sniper v3.0...");
    }
 }
 
@@ -783,19 +894,20 @@ void UpdateHUD()
    int confCount = 0;
    for(int i = 0; i < ArraySize(m_activeBprs); i++)
    {
-      if(m_activeBprs[i].confluenceCount >= InpMinConfluences)
+      if(m_activeBprs[i].confluenceCount >= InpMinConfluences && !IsBprAlreadyConsumed(m_activeBprs[i].creationTime, m_activeBprs[i].ce50))
          confCount++;
    }
 
-   string text = StringFormat("🎯 BPR SNIPER v2.0 (MULTI-TF)\n"
+   string text = StringFormat("🎯 BPR SNIPER v3.0 (INSTITUTIONAL)\n"
                               "━━━━━━━━━━━━━━━━━━━━━━\n"
                               "Par: %s | Base: %s\n"
-                              "BPRs Activos: %d | Confluencias (≥%d TF): %d\n"
-                              "Riesgo: %.2f%% | Ratchet Lock: %s\n"
+                              "BPRs Vírgenes: %d (≥%d TF: %d)\n"
+                              "SL Buffer: %.2f$ (Min: %.2f$) | Anti-Cuchillo: %s\n"
                               "Trades Vivos: %d / %d",
                               _Symbol, EnumToString(InpWorkTimeframe),
                               ArraySize(m_activeBprs), InpMinConfluences, confCount,
-                              InpRiskPercent, InpUseRatchetLock ? "ACTIVO" : "OFF",
+                              InpSLBufferUnits, InpMinSLPoints * _Point,
+                              InpUseAntiKnifeFilter ? "ACTIVO" : "OFF",
                               GetActivePositionsAndOrdersCount(), InpMaxActiveTrades);
 
    ObjectSetString(0, labelName, OBJPROP_TEXT, text);
