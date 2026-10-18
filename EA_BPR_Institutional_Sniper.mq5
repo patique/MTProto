@@ -51,10 +51,11 @@ input double               InpSLBufferUnits        = 3.00;                 // Ho
 input double               InpMinSLPoints          = 250.0;                // Stop Loss Mínimo Seguro en Puntos (250 pts = $2.50 Oro)
 input int                  InpMaxActiveTrades      = 1;                    // Máximo de Operaciones Simultáneas
 
-input group "=== 💰 4. TRINQUETE DE BENEFICIOS (RATCHET PROFIT LOCK) ===";
-input bool                 InpUseRatchetLock       = true;                 // Activar Trinquete Protector de Beneficios
+input group "=== 💰 4. PROTECCIÓN BREAK-EVEN & TRINQUETE RATCHET ===";
+input bool                 InpUseBreakEven         = true;                 // Activar Mover a Break-Even (Riesgo Cero)
 input double               InpBE_Trigger_R         = 1.5;                  // Nivel R para Mover a Break-Even (1:1.5R)
 input double               InpBEOffsetPips         = 0.5;                  // Offset de Ganancia Asegurada en Break-Even (pips)
+input bool                 InpUseRatchetLock       = true;                 // Activar Trinquete de Beneficios (Trailing por múltiplos R)
 input double               InpLock1_Trigger_R      = 2.0;                  // Nivel R para Asegurar Nivel 1 (1:2.0R) -> Asegura +0.75R
 input double               InpLock1_Secure_R       = 0.75;                 // R Asegurado en Nivel 1 (+0.75R)
 input double               InpLock2_Trigger_R      = 3.5;                  // Nivel R para Asegurar Nivel 2 (1:3.5R) -> Asegura +1.5R
@@ -594,7 +595,7 @@ void EvaluateLimitOrderPlacement()
 //+------------------------------------------------------------------+
 void ManageRatchetAndProtections()
 {
-   if(!InpUseRatchetLock) return;
+   if(!InpUseBreakEven && !InpUseRatchetLock) return;
 
    int total = PositionsTotal();
    for(int i = total - 1; i >= 0; i--)
@@ -626,65 +627,73 @@ void ManageRatchetAndProtections()
       double minStopDist = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * _Point;
       if(minStopDist <= 0) minStopDist = 15 * _Point;
 
-      // ESCALÓN 4: 1:5.0R -> Asegurar +3.0R
-      if(currentR >= InpLock3_Trigger_R && m_trackers[tIdx].ratchetStep < 4)
+      // 1. RATCHET PROFIT LOCK (Escalones de Beneficio Asegurado)
+      if(InpUseRatchetLock)
       {
-         double lockDist = riskPts * _Point * InpLock3_Secure_R;
-         double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
-         targetSL = NormalizeDouble(targetSL, _Digits);
-
-         bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
-                                                      : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
-
-         if(canModify)
+         // ESCALÓN 4: 1:5.0R -> Asegurar +3.0R
+         if(currentR >= InpLock3_Trigger_R && m_trackers[tIdx].ratchetStep < 4)
          {
-            if(m_trade.PositionModify(ticket, targetSL, currentTP))
+            double lockDist = riskPts * _Point * InpLock3_Secure_R;
+            double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
+            targetSL = NormalizeDouble(targetSL, _Digits);
+
+            bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
+                                                         : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
+
+            if(canModify)
             {
-               m_trackers[tIdx].ratchetStep = 4;
-               PrintFormat("🏆 [RATCHET NIVEL 3] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock3_Secure_R, targetSL);
+               if(m_trade.PositionModify(ticket, targetSL, currentTP))
+               {
+                  m_trackers[tIdx].ratchetStep = 4;
+                  PrintFormat("🏆 [RATCHET NIVEL 3] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock3_Secure_R, targetSL);
+                  continue;
+               }
+            }
+         }
+         // ESCALÓN 3: 1:3.5R -> Asegurar +1.5R
+         else if(currentR >= InpLock2_Trigger_R && m_trackers[tIdx].ratchetStep < 3)
+         {
+            double lockDist = riskPts * _Point * InpLock2_Secure_R;
+            double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
+            targetSL = NormalizeDouble(targetSL, _Digits);
+
+            bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
+                                                         : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
+
+            if(canModify)
+            {
+               if(m_trade.PositionModify(ticket, targetSL, currentTP))
+               {
+                  m_trackers[tIdx].ratchetStep = 3;
+                  PrintFormat("🚀 [RATCHET NIVEL 2] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock2_Secure_R, targetSL);
+                  continue;
+               }
+            }
+         }
+         // ESCALÓN 2: 1:2.0R -> Asegurar +0.75R
+         else if(currentR >= InpLock1_Trigger_R && m_trackers[tIdx].ratchetStep < 2)
+         {
+            double lockDist = riskPts * _Point * InpLock1_Secure_R;
+            double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
+            targetSL = NormalizeDouble(targetSL, _Digits);
+
+            bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
+                                                         : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
+
+            if(canModify)
+            {
+               if(m_trade.PositionModify(ticket, targetSL, currentTP))
+               {
+                  m_trackers[tIdx].ratchetStep = 2;
+                  PrintFormat("💰 [RATCHET NIVEL 1] Ticket #%d a 1:%.1fR -> SL asegurado a +%.2fR (%.2f)", ticket, currentR, InpLock1_Secure_R, targetSL);
+                  continue;
+               }
             }
          }
       }
-      // ESCALÓN 3: 1:3.5R -> Asegurar +1.5R
-      else if(currentR >= InpLock2_Trigger_R && m_trackers[tIdx].ratchetStep < 3)
-      {
-         double lockDist = riskPts * _Point * InpLock2_Secure_R;
-         double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
-         targetSL = NormalizeDouble(targetSL, _Digits);
 
-         bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
-                                                      : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
-
-         if(canModify)
-         {
-            if(m_trade.PositionModify(ticket, targetSL, currentTP))
-            {
-               m_trackers[tIdx].ratchetStep = 3;
-               PrintFormat("🚀 [RATCHET NIVEL 2] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock2_Secure_R, targetSL);
-            }
-         }
-      }
-      // ESCALÓN 2: 1:2.0R -> Asegurar +0.75R (Adelantado para capturar ganancias)
-      else if(currentR >= InpLock1_Trigger_R && m_trackers[tIdx].ratchetStep < 2)
-      {
-         double lockDist = riskPts * _Point * InpLock1_Secure_R;
-         double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
-         targetSL = NormalizeDouble(targetSL, _Digits);
-
-         bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
-                                                      : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
-
-         if(canModify)
-         {
-            if(m_trade.PositionModify(ticket, targetSL, currentTP))
-            {
-               m_trackers[tIdx].ratchetStep = 2;
-               PrintFormat("💰 [RATCHET NIVEL 1] Ticket #%d a 1:%.1fR -> SL asegurado a +%.2fR (%.2f)", ticket, currentR, InpLock1_Secure_R, targetSL);
-            }
-         }
-      }
-      // ESCALÓN 1: 1:1.5R -> Mover a Break-Even (Riesgo Cero)
-      else if(currentR >= InpBE_Trigger_R && m_trackers[tIdx].ratchetStep < 1)
+      // 2. BREAK-EVEN INDEPENDIENTE (Blindaje a Riesgo Cero)
+      if(InpUseBreakEven && currentR >= InpBE_Trigger_R && m_trackers[tIdx].ratchetStep < 1)
       {
          double beOffset = InpBEOffsetPips * ((_Digits == 3 || _Digits == 5) ? (10 * _Point) : _Point);
          if(beOffset < minStopDist) beOffset = minStopDist;
