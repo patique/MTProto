@@ -39,9 +39,9 @@ enum ENUM_TRIGGER_MODE
 
 //--- PARÁMETROS DE ENTRADA (INPUTS) ---
 input group "=== 📊 1. CONFIGURACIÓN DE GAPS ICT (NWOG / NDOG) ===";
-input ENUM_GAP_TYPE      InpGapType              = GAP_BOTH;             // Tipo de Gaps a Detectar
-input int                InpMaxGapsToTrack       = 3;                    // Cantidad Máxima de Gaps Activos a Monitorear
-input double             InpMinGapPoints         = 150.0;                // Tamaño Mínimo de Gap en Puntos (150 pts = 1.50$ Oro)
+input ENUM_GAP_TYPE      InpGapType              = GAP_NWOG_ONLY;        // Tipo de Gaps a Detectar (NWOG Semanal por defecto)
+input int                InpMaxGapsToTrack       = 5;                    // Cantidad Máxima de Gaps Activos a Monitorear
+input double             InpMinGapPoints         = 20.0;                 // Tamaño Mínimo de Gap en Puntos (20 pts = 0.20$ Oro)
 input bool               InpUseEHPDA             = true;                 // Calcular y Dibujar EHPDA (Event Horizon)
 
 input group "=== 🔄 2. INVERSIÓN DE ROL (S/R FLIP) Y COOLDOWN ===";
@@ -105,7 +105,9 @@ struct GapData
    int      tradeCount;    // Número de veces que este gap ha sido operado
    string   typeStr;       // "NWOG" o "NDOG"
    string   boxName;
+   string   topLineName;
    string   ceLineName;
+   string   btmLineName;
 };
 
 //--- VARIABLES GLOBALES ---
@@ -258,9 +260,11 @@ void CheckForNewGaps()
 //+------------------------------------------------------------------+
 void ScanGapsHistorical()
 {
+   ArrayResize(m_gaps, 0);
+
    if(InpGapType == GAP_NWOG_ONLY || InpGapType == GAP_BOTH)
    {
-      for(int shift = InpMaxGapsToTrack; shift >= 1; shift--)
+      for(int shift = InpMaxGapsToTrack - 1; shift >= 0; shift--)
       {
          MqlRates rates[];
          ArraySetAsSeries(rates, true);
@@ -280,7 +284,7 @@ void ScanGapsHistorical()
 
    if(InpGapType == GAP_NDOG_ONLY || InpGapType == GAP_BOTH)
    {
-      for(int shift = InpMaxGapsToTrack; shift >= 1; shift--)
+      for(int shift = InpMaxGapsToTrack - 1; shift >= 0; shift--)
       {
          MqlRates rates[];
          ArraySetAsSeries(rates, true);
@@ -343,19 +347,23 @@ void AddGapData(datetime t, double currOpen, double prevClose, string typeStr)
    newGap.tradeCount    = 0;
    newGap.typeStr       = typeStr;
    newGap.boxName       = StringFormat("ICT_GAP_%s_%d", typeStr, (int)t);
+   newGap.topLineName   = StringFormat("ICT_GAP_TOP_%s_%d", typeStr, (int)t);
    newGap.ceLineName    = StringFormat("ICT_GAP_CE_%s_%d", typeStr, (int)t);
+   newGap.btmLineName   = StringFormat("ICT_GAP_BTM_%s_%d", typeStr, (int)t);
 
    int size = ArraySize(m_gaps);
    ArrayResize(m_gaps, size + 1);
    m_gaps[size] = newGap;
 
    // Mantener únicamente los últimos N gaps
-   if(ArraySize(m_gaps) > InpMaxGapsToTrack * 2)
+   if(ArraySize(m_gaps) > InpMaxGapsToTrack)
    {
       if(InpDrawVisuals)
       {
          ObjectDelete(0, m_gaps[0].boxName);
+         ObjectDelete(0, m_gaps[0].topLineName);
          ObjectDelete(0, m_gaps[0].ceLineName);
+         ObjectDelete(0, m_gaps[0].btmLineName);
       }
       for(int i = 0; i < ArraySize(m_gaps) - 1; i++)
          m_gaps[i] = m_gaps[i+1];
@@ -391,7 +399,7 @@ void RedrawAllGaps()
 {
    if(!InpDrawVisuals) return;
 
-   datetime chartEnd = TimeCurrent() + PeriodSeconds(PERIOD_D1) * 3;
+   datetime chartEnd = TimeCurrent() + PeriodSeconds(PERIOD_D1) * 30;
 
    for(int i = 0; i < ArraySize(m_gaps); i++)
    {
@@ -418,7 +426,24 @@ void RedrawAllGaps()
          ObjectSetInteger(0, m_gaps[i].boxName, OBJPROP_BGCOLOR, gapColor);
       }
 
-      // 2. Línea discontinua central CE 50%
+      // 2. Línea Superior (Top) proyectada a la derecha
+      if(ObjectFind(0, m_gaps[i].topLineName) < 0)
+      {
+         ObjectCreate(0, m_gaps[i].topLineName, OBJ_TREND, 0, m_gaps[i].time, m_gaps[i].top, chartEnd, m_gaps[i].top);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_COLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_STYLE, STYLE_SOLID);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_WIDTH, 1);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_RAY_RIGHT, true);
+      }
+      else
+      {
+         ObjectSetDouble(0, m_gaps[i].topLineName, OBJPROP_PRICE, 0, m_gaps[i].top);
+         ObjectSetDouble(0, m_gaps[i].topLineName, OBJPROP_PRICE, 1, m_gaps[i].top);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_TIME, 1, chartEnd);
+         ObjectSetInteger(0, m_gaps[i].topLineName, OBJPROP_COLOR, gapColor);
+      }
+
+      // 3. Línea Central CE 50% proyectada a la derecha (Discontinua)
       if(ObjectFind(0, m_gaps[i].ceLineName) < 0)
       {
          ObjectCreate(0, m_gaps[i].ceLineName, OBJ_TREND, 0, m_gaps[i].time, m_gaps[i].ce50, chartEnd, m_gaps[i].ce50);
@@ -434,9 +459,26 @@ void RedrawAllGaps()
          ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_TIME, 1, chartEnd);
          ObjectSetInteger(0, m_gaps[i].ceLineName, OBJPROP_COLOR, gapColor);
       }
+
+      // 4. Línea Inferior (Bottom) proyectada a la derecha
+      if(ObjectFind(0, m_gaps[i].btmLineName) < 0)
+      {
+         ObjectCreate(0, m_gaps[i].btmLineName, OBJ_TREND, 0, m_gaps[i].time, m_gaps[i].bottom, chartEnd, m_gaps[i].bottom);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_COLOR, gapColor);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_STYLE, STYLE_SOLID);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_WIDTH, 1);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_RAY_RIGHT, true);
+      }
+      else
+      {
+         ObjectSetDouble(0, m_gaps[i].btmLineName, OBJPROP_PRICE, 0, m_gaps[i].bottom);
+         ObjectSetDouble(0, m_gaps[i].btmLineName, OBJPROP_PRICE, 1, m_gaps[i].bottom);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_TIME, 1, chartEnd);
+         ObjectSetInteger(0, m_gaps[i].btmLineName, OBJPROP_COLOR, gapColor);
+      }
    }
 
-   // 3. Dibujar niveles EHPDA
+   // 5. Dibujar niveles EHPDA
    if(InpUseEHPDA)
    {
       for(int e = 0; e < ArraySize(m_ehpdaLevels); e++)
@@ -452,7 +494,7 @@ void RedrawAllGaps()
          }
          else
          {
-            ObjectSetDouble(0, ehName, OBJPROP_PRICE, m_ehpdaLevels[e]);
+            ObjectSetDouble(0, ehName, OBJPROP_PRICE, 0, m_ehpdaLevels[e]);
          }
       }
    }
