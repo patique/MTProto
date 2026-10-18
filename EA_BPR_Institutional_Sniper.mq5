@@ -55,16 +55,25 @@ input group "=== 💰 4. TRINQUETE DE BENEFICIOS (RATCHET PROFIT LOCK) ===";
 input bool                 InpUseRatchetLock       = true;                 // Activar Trinquete Protector de Beneficios
 input double               InpBE_Trigger_R         = 1.5;                  // Nivel R para Mover a Break-Even (1:1.5R)
 input double               InpBEOffsetPips         = 0.5;                  // Offset de Ganancia Asegurada en Break-Even (pips)
-input double               InpLock1_Trigger_R      = 3.0;                  // Nivel R para Asegurar Nivel 1 (1:3.0R)
-input double               InpLock1_Secure_R       = 1.0;                  // R Asegurado en Nivel 1 (+1.0R)
-input double               InpLock2_Trigger_R      = 5.0;                  // Nivel R para Asegurar Nivel 2 (1:5.0R)
-input double               InpLock2_Secure_R       = 2.5;                  // R Asegurado en Nivel 2 (+2.5R)
+input double               InpLock1_Trigger_R      = 2.0;                  // Nivel R para Asegurar Nivel 1 (1:2.0R) -> Asegura +0.75R
+input double               InpLock1_Secure_R       = 0.75;                 // R Asegurado en Nivel 1 (+0.75R)
+input double               InpLock2_Trigger_R      = 3.5;                  // Nivel R para Asegurar Nivel 2 (1:3.5R) -> Asegura +1.5R
+input double               InpLock2_Secure_R       = 1.5;                  // R Asegurado en Nivel 2 (+1.5R)
+input double               InpLock3_Trigger_R      = 5.0;                  // Nivel R para Asegurar Nivel 3 (1:5.0R) -> Asegura +3.0R
+input double               InpLock3_Secure_R       = 3.0;                  // R Asegurado en Nivel 3 (+3.0R)
 input double               InpFinalTarget_R        = 8.0;                  // TP Final Objetivo (1:8.0R)
 
-input group "=== ⏱️ 5. FILTRO DE HORARIOS & EXPIRACIÓN LIMIT ===";
-input bool                 InpUseSessionFilter     = true;                 // Operar Solo en Killzones
-input int                  InpStartHour            = 8;                    // Hora Inicio (08:00 CET - Londres)
-input int                  InpEndHour              = 21;                   // Hora Fin (21:00 CET - Cierre NY)
+input group "=== ⏱️ 5. FILTRO DE KILLZONES (SIN APERTURAS SALVAJES) ===";
+input bool                 InpUseSessionFilter     = true;                 // Activar Filtro Horario Institucional
+input bool                 InpAvoidOpens           = true;                 // Evitar Aperturas Violentas (08:00 Londres y 15:00 NY)
+input int                  InpLondonStartHour      = 9;                    // Londres Inicio Hora (09:30 CET)
+input int                  InpLondonStartMin       = 30;                   // Londres Inicio Minuto (30)
+input int                  InpLondonEndHour        = 14;                   // Londres Fin Hora (14:00 CET)
+input int                  InpLondonEndMin         = 0;                    // Londres Fin Minuto (00)
+input int                  InpNYStartHour          = 16;                   // NY Inicio Hora (16:00 CET - tras asimilar apertura y noticias)
+input int                  InpNYStartMin           = 0;                    // NY Inicio Minuto (00)
+input int                  InpNYEndHour            = 19;                   // NY Fin Hora (19:00 CET)
+input int                  InpNYEndMin             = 0;                    // NY Fin Minuto (00)
 input int                  InpMaxBarsOrderPending  = 24;                   // Expiración de Orden Limit sin Tocar (Barras)
 
 input group "=== 🎨 6. IDENTIFICACIÓN Y GRÁFICO ===";
@@ -617,8 +626,27 @@ void ManageRatchetAndProtections()
       double minStopDist = (double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL) * _Point;
       if(minStopDist <= 0) minStopDist = 15 * _Point;
 
-      // ESCALÓN 3: 1:5.0R -> Asegurar +2.5R
-      if(currentR >= InpLock2_Trigger_R && m_trackers[tIdx].ratchetStep < 3)
+      // ESCALÓN 4: 1:5.0R -> Asegurar +3.0R
+      if(currentR >= InpLock3_Trigger_R && m_trackers[tIdx].ratchetStep < 4)
+      {
+         double lockDist = riskPts * _Point * InpLock3_Secure_R;
+         double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
+         targetSL = NormalizeDouble(targetSL, _Digits);
+
+         bool canModify = (type == POSITION_TYPE_BUY) ? (targetSL > currentSL && (curPrice - targetSL) >= minStopDist)
+                                                      : (targetSL < currentSL && (targetSL - curPrice) >= minStopDist);
+
+         if(canModify)
+         {
+            if(m_trade.PositionModify(ticket, targetSL, currentTP))
+            {
+               m_trackers[tIdx].ratchetStep = 4;
+               PrintFormat("🏆 [RATCHET NIVEL 3] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock3_Secure_R, targetSL);
+            }
+         }
+      }
+      // ESCALÓN 3: 1:3.5R -> Asegurar +1.5R
+      else if(currentR >= InpLock2_Trigger_R && m_trackers[tIdx].ratchetStep < 3)
       {
          double lockDist = riskPts * _Point * InpLock2_Secure_R;
          double targetSL = (type == POSITION_TYPE_BUY) ? (openPrice + lockDist) : (openPrice - lockDist);
@@ -632,11 +660,11 @@ void ManageRatchetAndProtections()
             if(m_trade.PositionModify(ticket, targetSL, currentTP))
             {
                m_trackers[tIdx].ratchetStep = 3;
-               PrintFormat("🏆 [RATCHET NIVEL 2] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock2_Secure_R, targetSL);
+               PrintFormat("🚀 [RATCHET NIVEL 2] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock2_Secure_R, targetSL);
             }
          }
       }
-      // ESCALÓN 2: 1:3.0R -> Asegurar +1.0R
+      // ESCALÓN 2: 1:2.0R -> Asegurar +0.75R (Adelantado para capturar ganancias)
       else if(currentR >= InpLock1_Trigger_R && m_trackers[tIdx].ratchetStep < 2)
       {
          double lockDist = riskPts * _Point * InpLock1_Secure_R;
@@ -651,11 +679,11 @@ void ManageRatchetAndProtections()
             if(m_trade.PositionModify(ticket, targetSL, currentTP))
             {
                m_trackers[tIdx].ratchetStep = 2;
-               PrintFormat("💰 [RATCHET NIVEL 1] Ticket #%d a 1:%.1fR -> SL asegurado a +%.1fR (%.2f)", ticket, currentR, InpLock1_Secure_R, targetSL);
+               PrintFormat("💰 [RATCHET NIVEL 1] Ticket #%d a 1:%.1fR -> SL asegurado a +%.2fR (%.2f)", ticket, currentR, InpLock1_Secure_R, targetSL);
             }
          }
       }
-      // ESCALÓN 1: 1:1.5R -> Mover a Break-Even
+      // ESCALÓN 1: 1:1.5R -> Mover a Break-Even (Riesgo Cero)
       else if(currentR >= InpBE_Trigger_R && m_trackers[tIdx].ratchetStep < 1)
       {
          double beOffset = InpBEOffsetPips * ((_Digits == 3 || _Digits == 5) ? (10 * _Point) : _Point);
@@ -802,12 +830,27 @@ int GetActivePositionsAndOrdersCount()
 
 bool IsInSession()
 {
+   if(!InpUseSessionFilter) return true;
+
    MqlDateTime dt;
    TimeCurrent(dt);
-   if(InpStartHour <= InpEndHour)
-      return (dt.hour >= InpStartHour && dt.hour < InpEndHour);
+   int currentMinutes = dt.hour * 60 + dt.min;
+
+   if(InpAvoidOpens)
+   {
+      int ldnStart = InpLondonStartHour * 60 + InpLondonStartMin;
+      int ldnEnd   = InpLondonEndHour * 60 + InpLondonEndMin;
+      int nyStart  = InpNYStartHour * 60 + InpNYStartMin;
+      int nyEnd    = InpNYEndHour * 60 + InpNYEndMin;
+
+      bool inLondon = (currentMinutes >= ldnStart && currentMinutes < ldnEnd);
+      bool inNY     = (currentMinutes >= nyStart && currentMinutes < nyEnd);
+      return (inLondon || inNY);
+   }
    else
-      return (dt.hour >= InpStartHour || dt.hour < InpEndHour);
+   {
+      return (dt.hour >= 8 && dt.hour < 21);
+   }
 }
 
 //+------------------------------------------------------------------+
